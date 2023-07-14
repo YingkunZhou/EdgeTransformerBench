@@ -19,7 +19,7 @@ from torchvision import datasets, transforms
 from timm.models import create_model
 from timm.utils import accuracy
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from speed_test import replace_batchnorm
+from speed_test import replace_batchnorm # FIXME: only for LeViT?
 
 import levit
 import levit_c
@@ -310,6 +310,12 @@ def main(args):
         weights_dict = weights_dict["model_ema"]
     elif "model" in weights_dict:
         weights_dict = weights_dict["model"]
+
+    if "LeViT_c_" in args.model:
+        D = model.state_dict()
+        for k in weights_dict.keys():
+            if D[k].shape != weights_dict[k].shape:
+                weights_dict[k] = weights_dict[k][:, :, None, None]
 
     model.load_state_dict(weights_dict)
 

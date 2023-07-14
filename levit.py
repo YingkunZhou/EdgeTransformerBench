@@ -32,37 +32,37 @@ __all__ = [specification.keys()]
 
 @register_model
 def LeViT_128S(num_classes=1000, distillation=True,
-               pretrained=False, pretrained_cfg=None, fuse=False, **kwarg):
+               pretrained=False, pretrained_cfg=None, **kwarg):
     return model_factory(**specification['LeViT_128S'], num_classes=num_classes,
-                         distillation=distillation, pretrained=pretrained, fuse=fuse, **kwarg)
+                         distillation=distillation, pretrained=pretrained, **kwarg)
 
 
 @register_model
 def LeViT_128(num_classes=1000, distillation=True,
-              pretrained=False, pretrained_cfg=None, fuse=False, **kwarg):
+              pretrained=False, pretrained_cfg=None, **kwarg):
     return model_factory(**specification['LeViT_128'], num_classes=num_classes,
-                         distillation=distillation, pretrained=pretrained, fuse=fuse, **kwarg)
+                         distillation=distillation, pretrained=pretrained, **kwarg)
 
 
 @register_model
 def LeViT_192(num_classes=1000, distillation=True,
-              pretrained=False, pretrained_cfg=None, fuse=False, **kwarg):
+              pretrained=False, pretrained_cfg=None, **kwarg):
     return model_factory(**specification['LeViT_192'], num_classes=num_classes,
-                         distillation=distillation, pretrained=pretrained, fuse=fuse, **kwarg)
+                         distillation=distillation, pretrained=pretrained, **kwarg)
 
 
 @register_model
 def LeViT_256(num_classes=1000, distillation=True,
-              pretrained=False, pretrained_cfg=None, fuse=False, **kwarg):
+              pretrained=False, pretrained_cfg=None, **kwarg):
     return model_factory(**specification['LeViT_256'], num_classes=num_classes,
-                         distillation=distillation, pretrained=pretrained, fuse=fuse, **kwarg)
+                         distillation=distillation, pretrained=pretrained, **kwarg)
 
 
 @register_model
 def LeViT_384(num_classes=1000, distillation=True,
-              pretrained=False, pretrained_cfg=None, fuse=False, **kwarg):
+              pretrained=False, pretrained_cfg=None, **kwarg):
     return model_factory(**specification['LeViT_384'], num_classes=num_classes,
-                         distillation=distillation, pretrained=pretrained, fuse=fuse, **kwarg)
+                         distillation=distillation, pretrained=pretrained, **kwarg)
 
 
 FLOPS_COUNTER = 0
@@ -456,7 +456,7 @@ class LeViT(torch.nn.Module):
 
 
 def model_factory(C, D, X, N, drop_path, weights,
-                  num_classes, distillation, pretrained, fuse, **kwargs):
+                  num_classes, distillation, pretrained, **kwargs):
     embed_dim = [int(x) for x in C.split('_')]
     num_heads = [int(x) for x in N.split('_')]
     depth = [int(x) for x in X.split('_')]

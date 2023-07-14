@@ -130,6 +130,27 @@ Test: Total time: 0:00:58 (0.0235 s / it)
 0.017895333468914032 1.0660666227340698
 Accuracy on 2500 test images: 75.9%
 
+$ python main.py --model LeViT_c_128S --weights weights/LeViT-128S-96703c44.pth --data-path imagenet/val --use_amp
+Creating model: LeViT_c_128S
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='LeViT_c_128S', model_ema=False, num_workers=10, pin_mem=True, use_amp=True, usi_eval=False, weights='weights/LeViT-128S-96703c44.pth')
+number of params: 7777058
+Test:  [  0/521]  eta: 0:44:17  loss: 0.3522 (0.3522)  acc1: 94.7917 (94.7917)  acc5: 97.9167 (97.9167)  time: 5.1007  data: 1.3764  max mem: 309
+Test:  [ 50/521]  eta: 0:01:26  loss: 0.6116 (0.6950)  acc1: 84.3750 (82.1078)  acc5: 95.8333 (95.4248)  time: 0.0856  data: 0.0047  max mem: 309
+Test:  [100/521]  eta: 0:00:56  loss: 0.6610 (0.7020)  acc1: 83.3333 (82.1885)  acc5: 94.7917 (95.2764)  time: 0.0819  data: 0.0292  max mem: 309
+Test:  [150/521]  eta: 0:00:43  loss: 0.6865 (0.7214)  acc1: 80.2083 (81.3190)  acc5: 96.8750 (95.5574)  time: 0.0872  data: 0.0403  max mem: 309
+Test:  [200/521]  eta: 0:00:35  loss: 0.6247 (0.7111)  acc1: 84.3750 (81.6439)  acc5: 95.8333 (95.7452)  time: 0.0861  data: 0.0376  max mem: 309
+Test:  [250/521]  eta: 0:00:28  loss: 0.9443 (0.7827)  acc1: 76.0417 (80.2249)  acc5: 91.6667 (94.8996)  time: 0.0771  data: 0.0329  max mem: 309
+Test:  [300/521]  eta: 0:00:21  loss: 1.1061 (0.8332)  acc1: 72.9167 (79.1771)  acc5: 91.6667 (94.3245)  time: 0.0782  data: 0.0317  max mem: 309
+Test:  [350/521]  eta: 0:00:16  loss: 1.1705 (0.8821)  acc1: 71.8750 (78.0864)  acc5: 91.6667 (93.7144)  time: 0.0812  data: 0.0367  max mem: 309
+Test:  [400/521]  eta: 0:00:11  loss: 1.0603 (0.9164)  acc1: 73.9583 (77.3665)  acc5: 90.6250 (93.2564)  time: 0.0831  data: 0.0380  max mem: 309
+Test:  [450/521]  eta: 0:00:06  loss: 1.2169 (0.9487)  acc1: 71.8750 (76.6376)  acc5: 90.6250 (92.8723)  time: 0.0764  data: 0.0312  max mem: 309
+Test:  [500/521]  eta: 0:00:01  loss: 0.8803 (0.9519)  acc1: 77.0833 (76.5095)  acc5: 92.7083 (92.8664)  time: 0.0787  data: 0.0331  max mem: 309
+Test:  [520/521]  eta: 0:00:00  loss: 0.7590 (0.9511)  acc1: 78.1250 (76.5380)  acc5: 95.8333 (92.9000)  time: 0.0890  data: 0.0326  max mem: 309
+Test: Total time: 0:00:48 (0.0923 s / it)
+* Acc@1 76.538 Acc@5 92.900 loss 0.951
+-0.034912109375 1.4052734375
+Accuracy on 50000 test images: 76.5%
+
 $ python main.py --model LeViT_128 --weights weights/LeViT-128-b88c2750.pth --data-path imagenet/val
 Creating model: LeViT_128
 dict_keys(['model'])
@@ -203,6 +224,27 @@ Test:  [520/521]  eta: 0:00:00  loss: 0.7122 (0.7453)  acc1: 78.1250 (81.5920)  
 Test: Total time: 0:01:20 (0.1545 s / it)
 * Acc@1 81.592 Acc@5 95.458 loss 0.745
 -0.03576463460922241 1.2441368103027344
+Accuracy on 50000 test images: 81.6%
+
+$ python main.py --model LeViT_c_256 --weights weights/LeViT-256-13b5763e.pth --data-path imagenet/val --use_amp
+Creating model: LeViT_c_256
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='LeViT_c_256', model_ema=False, num_workers=10, pin_mem=True, use_amp=True, usi_eval=False, weights='weights/LeViT-256-13b5763e.pth')
+number of params: 18893876
+Test:  [  0/521]  eta: 1:32:17  loss: 0.2500 (0.2500)  acc1: 95.8333 (95.8333)  acc5: 98.9583 (98.9583)  time: 10.6281  data: 2.9685  max mem: 428
+Test:  [ 50/521]  eta: 0:02:36  loss: 0.4373 (0.5338)  acc1: 87.5000 (86.3562)  acc5: 97.9167 (97.4060)  time: 0.1272  data: 0.0009  max mem: 428
+Test:  [100/521]  eta: 0:01:29  loss: 0.4636 (0.5332)  acc1: 88.5417 (86.7059)  acc5: 96.8750 (97.1947)  time: 0.0911  data: 0.0011  max mem: 428
+Test:  [150/521]  eta: 0:01:03  loss: 0.4963 (0.5572)  acc1: 87.5000 (86.0237)  acc5: 97.9167 (97.2958)  time: 0.0899  data: 0.0010  max mem: 428
+Test:  [200/521]  eta: 0:00:48  loss: 0.5069 (0.5581)  acc1: 88.5417 (86.1888)  acc5: 97.9167 (97.3932)  time: 0.0903  data: 0.0011  max mem: 428
+Test:  [250/521]  eta: 0:00:37  loss: 0.7450 (0.6151)  acc1: 80.2083 (84.8564)  acc5: 94.7917 (96.7588)  time: 0.0896  data: 0.0008  max mem: 428
+Test:  [300/521]  eta: 0:00:29  loss: 0.8435 (0.6569)  acc1: 79.1667 (83.8628)  acc5: 93.7500 (96.3524)  time: 0.0898  data: 0.0009  max mem: 428
+Test:  [350/521]  eta: 0:00:21  loss: 0.7789 (0.6919)  acc1: 78.1250 (82.8496)  acc5: 95.8333 (95.9995)  time: 0.0889  data: 0.0007  max mem: 428
+Test:  [400/521]  eta: 0:00:14  loss: 0.7873 (0.7146)  acc1: 80.2083 (82.4138)  acc5: 93.7500 (95.7294)  time: 0.0895  data: 0.0009  max mem: 428
+Test:  [450/521]  eta: 0:00:08  loss: 0.9108 (0.7382)  acc1: 78.1250 (81.7951)  acc5: 92.7083 (95.4776)  time: 0.0894  data: 0.0009  max mem: 428
+Test:  [500/521]  eta: 0:00:02  loss: 0.6893 (0.7432)  acc1: 80.2083 (81.6430)  acc5: 95.8333 (95.4632)  time: 0.0900  data: 0.0010  max mem: 428
+Test:  [520/521]  eta: 0:00:00  loss: 0.6808 (0.7453)  acc1: 80.2083 (81.5720)  acc5: 96.8750 (95.4600)  time: 0.1017  data: 0.0007  max mem: 428
+Test: Total time: 0:00:59 (0.1150 s / it)
+* Acc@1 81.572 Acc@5 95.460 loss 0.745
+-0.035736083984375 1.244140625
 Accuracy on 50000 test images: 81.6%
 
 Test: Total time: 0:01:11 (0.0287 s / it)
