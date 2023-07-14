@@ -1,0 +1,5 @@
+torch
+torchvision
+timm
+einops
+Pillow
