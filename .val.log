@@ -894,3 +894,164 @@ Test: Total time: 0:00:55 (0.0224 s / it)
 * Acc@1 81.960 Acc@5 96.840 loss 0.746
 0.0035404530353844166 0.6021001935005188
 Accuracy on 2500 test images: 82.0%
+
+$ python main.py --model resnet50 --extern --data-path imagenet/val --use_amp
+Creating model: resnet50
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='resnet50', model_ema=False, num_workers=10, pin_mem=True, extern=True, use_amp=True, usi_eval=False, weights='')
+number of params: 25557032
+Test:  [  0/521]  eta: 1:06:14  loss: 0.3526 (0.3526)  acc1: 93.7500 (93.7500)  acc5: 97.9167 (97.9167)  time: 7.6292  data: 1.2042  max mem: 844
+Test:  [ 50/521]  eta: 0:02:33  loss: 0.5995 (0.7347)  acc1: 87.5000 (84.5180)  acc5: 96.8750 (96.4665)  time: 0.1796  data: 0.0008  max mem: 844
+Test:  [100/521]  eta: 0:01:44  loss: 0.6093 (0.7170)  acc1: 87.5000 (85.0351)  acc5: 96.8750 (96.3903)  time: 0.1682  data: 0.0008  max mem: 844
+Test:  [150/521]  eta: 0:01:22  loss: 0.7075 (0.7327)  acc1: 84.3750 (84.4923)  acc5: 97.9167 (96.6129)  time: 0.1690  data: 0.0010  max mem: 844
+Test:  [200/521]  eta: 0:01:06  loss: 0.6330 (0.7309)  acc1: 87.5000 (84.6704)  acc5: 96.8750 (96.7040)  time: 0.1694  data: 0.0008  max mem: 844
+Test:  [250/521]  eta: 0:00:54  loss: 1.0169 (0.7971)  acc1: 80.2083 (83.4454)  acc5: 94.7917 (96.0159)  time: 0.1682  data: 0.0009  max mem: 844
+Test:  [300/521]  eta: 0:00:43  loss: 1.0364 (0.8425)  acc1: 79.1667 (82.5062)  acc5: 93.7500 (95.5807)  time: 0.1683  data: 0.0007  max mem: 844
+Test:  [350/521]  eta: 0:00:32  loss: 0.9985 (0.8818)  acc1: 79.1667 (81.5943)  acc5: 94.7917 (95.1300)  time: 0.1676  data: 0.0007  max mem: 844
+Test:  [400/521]  eta: 0:00:22  loss: 0.9833 (0.9056)  acc1: 78.1250 (81.1877)  acc5: 93.7500 (94.8878)  time: 0.1683  data: 0.0008  max mem: 844
+Test:  [450/521]  eta: 0:00:13  loss: 1.0992 (0.9294)  acc1: 78.1250 (80.6264)  acc5: 93.7500 (94.5815)  time: 0.1681  data: 0.0008  max mem: 844
+Test:  [500/521]  eta: 0:00:03  loss: 0.8528 (0.9364)  acc1: 79.1667 (80.4183)  acc5: 95.8333 (94.5775)  time: 0.1685  data: 0.0010  max mem: 844
+Test:  [520/521]  eta: 0:00:00  loss: 0.8270 (0.9384)  acc1: 81.2500 (80.3600)  acc5: 96.8750 (94.5900)  time: 0.1952  data: 0.0007  max mem: 844
+Test: Total time: 0:01:37 (0.1865 s / it)
+* Acc@1 80.360 Acc@5 94.590 loss 0.938
+-10.265625 1.712890625
+Accuracy on 50000 test images: 80.4%
+
+Test: Total time: 0:00:43 (0.0175 s / it)
+* Acc@1 80.280 Acc@5 95.840 loss 0.895
+-10.976021766662598 1.3443416357040405
+Accuracy on 2500 test images: 80.3%
+
+$ python main.py --model mobilenetv3_large_100 --extern --data-path imagenet/val --use_amp
+Creating model: mobilenetv3_large_100
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='mobilenetv3_large_100', model_ema=False, num_workers=10, pin_mem=True, extern=True, use_amp=True, usi_eval=False, weights='')
+number of params: 5483032
+Test:  [  0/521]  eta: 1:18:01  loss: 0.6055 (0.6055)  acc1: 91.6667 (91.6667)  acc5: 95.8333 (95.8333)  time: 8.9850  data: 2.9483  max mem: 578
+Test:  [ 50/521]  eta: 0:02:01  loss: 0.7257 (0.7812)  acc1: 83.3333 (81.5155)  acc5: 95.8333 (95.3431)  time: 0.0834  data: 0.0016  max mem: 578
+Test:  [100/521]  eta: 0:01:11  loss: 0.7621 (0.7848)  acc1: 82.2917 (81.7554)  acc5: 95.8333 (95.2145)  time: 0.0799  data: 0.0084  max mem: 578
+Test:  [150/521]  eta: 0:00:51  loss: 0.7916 (0.7908)  acc1: 82.2917 (81.2707)  acc5: 96.8750 (95.5919)  time: 0.0783  data: 0.0102  max mem: 578
+Test:  [200/521]  eta: 0:00:40  loss: 0.7122 (0.7758)  acc1: 83.3333 (81.6335)  acc5: 96.8750 (95.7608)  time: 0.0864  data: 0.0179  max mem: 578
+Test:  [250/521]  eta: 0:00:31  loss: 1.0663 (0.8542)  acc1: 76.0417 (79.8722)  acc5: 91.6667 (94.8456)  time: 0.0827  data: 0.0133  max mem: 578
+Test:  [300/521]  eta: 0:00:24  loss: 1.1887 (0.9109)  acc1: 71.8750 (78.5195)  acc5: 90.6250 (94.1203)  time: 0.0789  data: 0.0096  max mem: 578
+Test:  [350/521]  eta: 0:00:18  loss: 1.2116 (0.9600)  acc1: 70.8333 (77.4038)  acc5: 90.6250 (93.4799)  time: 0.0795  data: 0.0110  max mem: 578
+Test:  [400/521]  eta: 0:00:12  loss: 1.2091 (0.9963)  acc1: 71.8750 (76.7352)  acc5: 90.6250 (93.0175)  time: 0.0835  data: 0.0149  max mem: 578
+Test:  [450/521]  eta: 0:00:07  loss: 1.3283 (1.0317)  acc1: 69.7917 (75.9516)  acc5: 88.5417 (92.5467)  time: 0.0779  data: 0.0095  max mem: 578
+Test:  [500/521]  eta: 0:00:02  loss: 1.0027 (1.0363)  acc1: 76.0417 (75.7714)  acc5: 92.7083 (92.5295)  time: 0.0802  data: 0.0116  max mem: 578
+Test:  [520/521]  eta: 0:00:00  loss: 0.9138 (1.0355)  acc1: 76.0417 (75.7600)  acc5: 93.7500 (92.5400)  time: 0.1197  data: 0.0103  max mem: 578
+Test: Total time: 0:00:53 (0.1021 s / it)
+* Acc@1 75.760 Acc@5 92.540 loss 1.035
+-0.02178955078125 1.3349609375
+Accuracy on 50000 test images: 75.8%
+
+Test: Total time: 0:00:47 (0.0191 s / it)
+* Acc@1 75.720 Acc@5 93.760 loss 0.987
+-0.011805753223598003 0.8728793263435364
+Accuracy on 2500 test images: 75.7%
+
+224 + 32, 224
+$ python main.py --model tf_efficientnetv2_b0 --extern --data-path imagenet/val --use_amp
+Creating model: tf_efficientnetv2_b0
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='tf_efficientnetv2_b0', model_ema=False, num_workers=10, pin_mem=True, extern=True, use_amp=True, usi_eval=False, weights='')
+number of params: 7139704
+Test:  [  0/521]  eta: 1:04:14  loss: 0.3440 (0.3440)  acc1: 96.8750 (96.8750)  acc5: 97.9167 (97.9167)  time: 7.3991  data: 1.3512  max mem: 433
+Test:  [ 50/521]  eta: 0:02:05  loss: 0.5996 (0.6735)  acc1: 85.4167 (83.1495)  acc5: 96.8750 (96.4052)  time: 0.1245  data: 0.0008  max mem: 441
+Test:  [100/521]  eta: 0:01:16  loss: 0.6461 (0.6799)  acc1: 85.4167 (83.5190)  acc5: 96.8750 (96.2562)  time: 0.0924  data: 0.0010  max mem: 441
+Test:  [150/521]  eta: 0:00:56  loss: 0.6931 (0.6948)  acc1: 84.3750 (83.1264)  acc5: 97.9167 (96.5577)  time: 0.0924  data: 0.0009  max mem: 441
+Test:  [200/521]  eta: 0:00:43  loss: 0.6395 (0.6849)  acc1: 84.3750 (83.4422)  acc5: 96.8750 (96.5848)  time: 0.0929  data: 0.0012  max mem: 441
+Test:  [250/521]  eta: 0:00:34  loss: 0.8889 (0.7483)  acc1: 77.0833 (81.9597)  acc5: 93.7500 (95.8084)  time: 0.0918  data: 0.0009  max mem: 441
+Test:  [300/521]  eta: 0:00:26  loss: 1.0462 (0.7968)  acc1: 75.0000 (80.8416)  acc5: 93.7500 (95.3039)  time: 0.0928  data: 0.0009  max mem: 441
+Test:  [350/521]  eta: 0:00:20  loss: 1.0228 (0.8408)  acc1: 76.0417 (79.7899)  acc5: 92.7083 (94.7887)  time: 0.0938  data: 0.0019  max mem: 441
+Test:  [400/521]  eta: 0:00:13  loss: 1.0373 (0.8685)  acc1: 75.0000 (79.2368)  acc5: 92.7083 (94.4462)  time: 0.0922  data: 0.0009  max mem: 441
+Test:  [450/521]  eta: 0:00:07  loss: 1.1166 (0.8983)  acc1: 72.9167 (78.5731)  acc5: 91.6667 (94.0249)  time: 0.0923  data: 0.0011  max mem: 441
+Test:  [500/521]  eta: 0:00:02  loss: 0.8931 (0.9035)  acc1: 79.1667 (78.4244)  acc5: 94.7917 (94.0161)  time: 0.0922  data: 0.0009  max mem: 441
+Test:  [520/521]  eta: 0:00:00  loss: 0.8014 (0.9046)  acc1: 79.1667 (78.3820)  acc5: 95.8333 (94.0280)  time: 0.1232  data: 0.0007  max mem: 441
+Test: Total time: 0:00:58 (0.1128 s / it)
+* Acc@1 78.382 Acc@5 94.028 loss 0.905
+-0.0019159317016601562 1.0595703125
+Accuracy on 50000 test images: 78.4%
+
+Test: Total time: 0:01:05 (0.0261 s / it)
+* Acc@1 78.120 Acc@5 95.520 loss 0.822
+0.005254324059933424 0.7355486154556274
+Accuracy on 2500 test images: 78.1%
+
+240 + 32, 240
+$ python main.py --model tf_efficientnetv2_b1 --extern --data-path imagenet/val --use_amp
+Creating model: tf_efficientnetv2_b1
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='tf_efficientnetv2_b1', model_ema=False, num_workers=10, pin_mem=True, extern=True, use_amp=True, usi_eval=False, weights='')
+number of params: 8141052
+Test:  [  0/521]  eta: 1:18:19  loss: 0.3502 (0.3502)  acc1: 94.7917 (94.7917)  acc5: 98.9583 (98.9583)  time: 9.0194  data: 3.2925  max mem: 518
+Test:  [ 50/521]  eta: 0:02:31  loss: 0.5608 (0.6403)  acc1: 87.5000 (84.3954)  acc5: 96.8750 (96.8954)  time: 0.1480  data: 0.0008  max mem: 518
+Test:  [100/521]  eta: 0:01:35  loss: 0.5794 (0.6404)  acc1: 87.5000 (84.7257)  acc5: 96.8750 (96.7616)  time: 0.1309  data: 0.0007  max mem: 518
+Test:  [150/521]  eta: 0:01:12  loss: 0.6950 (0.6581)  acc1: 84.3750 (84.0646)  acc5: 97.9167 (96.9785)  time: 0.1311  data: 0.0007  max mem: 518
+Test:  [200/521]  eta: 0:00:57  loss: 0.5974 (0.6489)  acc1: 86.4583 (84.3957)  acc5: 97.9167 (97.0305)  time: 0.1315  data: 0.0008  max mem: 518
+Test:  [250/521]  eta: 0:00:46  loss: 0.8609 (0.7118)  acc1: 78.1250 (82.7731)  acc5: 93.7500 (96.3479)  time: 0.1315  data: 0.0008  max mem: 518
+Test:  [300/521]  eta: 0:00:36  loss: 0.9675 (0.7565)  acc1: 77.0833 (81.8141)  acc5: 93.7500 (95.8714)  time: 0.1315  data: 0.0007  max mem: 518
+Test:  [350/521]  eta: 0:00:27  loss: 1.0455 (0.7995)  acc1: 75.0000 (80.7900)  acc5: 93.7500 (95.3704)  time: 0.1308  data: 0.0007  max mem: 518
+Test:  [400/521]  eta: 0:00:18  loss: 0.9545 (0.8227)  acc1: 79.1667 (80.3746)  acc5: 92.7083 (95.0670)  time: 0.1314  data: 0.0008  max mem: 518
+Test:  [450/521]  eta: 0:00:10  loss: 1.0705 (0.8497)  acc1: 76.0417 (79.7464)  acc5: 92.7083 (94.7247)  time: 0.1319  data: 0.0009  max mem: 518
+Test:  [500/521]  eta: 0:00:03  loss: 0.8573 (0.8559)  acc1: 79.1667 (79.5264)  acc5: 94.7917 (94.7023)  time: 0.1312  data: 0.0007  max mem: 518
+Test:  [520/521]  eta: 0:00:00  loss: 0.8042 (0.8578)  acc1: 80.2083 (79.4720)  acc5: 95.8333 (94.7200)  time: 0.1674  data: 0.0006  max mem: 518
+Test: Total time: 0:01:20 (0.1536 s / it)
+* Acc@1 79.472 Acc@5 94.720 loss 0.858
+-0.001438140869140625 1.0087890625
+Accuracy on 50000 test images: 79.5%
+
+Test: Total time: 0:01:18 (0.0316 s / it)
+* Acc@1 79.320 Acc@5 96.040 loss 0.797
+0.003213047282770276 0.7606303691864014
+Accuracy on 2500 test images: 79.3%
+
+260 + 32, 260
+$ python main.py --model tf_efficientnetv2_b2 --extern --data-path imagenet/val --use_amp
+Creating model: tf_efficientnetv2_b2
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='tf_efficientnetv2_b2', model_ema=False, num_workers=10, pin_mem=True, extern=True, use_amp=True, usi_eval=False, weights='')
+number of params: 10096086
+Test:  [  0/521]  eta: 1:19:33  loss: 0.3013 (0.3013)  acc1: 95.8333 (95.8333)  acc5: 98.9583 (98.9583)  time: 9.1619  data: 1.6610  max mem: 610
+Test:  [ 50/521]  eta: 0:02:47  loss: 0.5213 (0.5912)  acc1: 87.5000 (85.4371)  acc5: 96.8750 (97.2018)  time: 0.1800  data: 0.0007  max mem: 610
+Test:  [100/521]  eta: 0:01:51  loss: 0.6003 (0.6009)  acc1: 86.4583 (85.7467)  acc5: 97.9167 (97.0091)  time: 0.1734  data: 0.0007  max mem: 610
+Test:  [150/521]  eta: 0:01:27  loss: 0.6170 (0.6176)  acc1: 86.4583 (85.1062)  acc5: 97.9167 (97.2061)  time: 0.1741  data: 0.0007  max mem: 610
+Test:  [200/521]  eta: 0:01:10  loss: 0.5507 (0.6135)  acc1: 87.5000 (85.2353)  acc5: 97.9167 (97.2740)  time: 0.1744  data: 0.0008  max mem: 610
+Test:  [250/521]  eta: 0:00:57  loss: 0.8082 (0.6752)  acc1: 79.1667 (83.7525)  acc5: 94.7917 (96.5845)  time: 0.1740  data: 0.0007  max mem: 610
+Test:  [300/521]  eta: 0:00:45  loss: 0.9283 (0.7190)  acc1: 77.0833 (82.7173)  acc5: 93.7500 (96.1344)  time: 0.1741  data: 0.0007  max mem: 610
+Test:  [350/521]  eta: 0:00:34  loss: 0.9965 (0.7609)  acc1: 77.0833 (81.7278)  acc5: 93.7500 (95.6464)  time: 0.1739  data: 0.0008  max mem: 610
+Test:  [400/521]  eta: 0:00:23  loss: 0.9129 (0.7866)  acc1: 78.1250 (81.1175)  acc5: 93.7500 (95.3632)  time: 0.1742  data: 0.0007  max mem: 610
+Test:  [450/521]  eta: 0:00:13  loss: 0.9865 (0.8129)  acc1: 76.0417 (80.4670)  acc5: 92.7083 (95.0642)  time: 0.1737  data: 0.0007  max mem: 610
+Test:  [500/521]  eta: 0:00:04  loss: 0.7932 (0.8183)  acc1: 80.2083 (80.2811)  acc5: 95.8333 (95.0516)  time: 0.1741  data: 0.0007  max mem: 610
+Test:  [520/521]  eta: 0:00:00  loss: 0.7376 (0.8216)  acc1: 80.2083 (80.1960)  acc5: 96.8750 (95.0400)  time: 0.2176  data: 0.0006  max mem: 610
+Test: Total time: 0:01:42 (0.1962 s / it)
+* Acc@1 80.196 Acc@5 95.040 loss 0.822
+-0.0004673004150390625 0.955078125
+Accuracy on 50000 test images: 80.2%
+
+Test: Total time: 0:01:20 (0.0320 s / it)
+* Acc@1 81.680 Acc@5 96.040 loss 0.744
+0.004489909391850233 0.669105052947998
+Accuracy on 2500 test images: 81.7%
+
+300 + 32, 300
+[0.5,0.5,0.5], [0.5,0.5,0.5]
+$ python main.py --model tf_efficientnetv2_b3 --extern --data-path imagenet/val --use_amp
+Creating model: tf_efficientnetv2_b3
+Namespace(batch_size=64, data_path='imagenet/val', device='cuda', fuse=False, model='tf_efficientnetv2_b3', model_ema=False, num_workers=10, pin_mem=True, extern=True, use_amp=True, usi_eval=False, weights='')
+number of params: 14358406
+Test:  [  0/521]  eta: 1:43:22  loss: 0.3258 (0.3258)  acc1: 94.7917 (94.7917)  acc5: 98.9583 (98.9583)  time: 11.9041  data: 2.8906  max mem: 878
+Test:  [ 50/521]  eta: 0:03:59  loss: 0.5462 (0.5924)  acc1: 89.5833 (86.2745)  acc5: 97.9167 (97.7737)  time: 0.2798  data: 0.0007  max mem: 878
+Test:  [100/521]  eta: 0:02:45  loss: 0.5417 (0.5923)  acc1: 88.5417 (86.6337)  acc5: 97.9167 (97.6795)  time: 0.2761  data: 0.0006  max mem: 878
+Test:  [150/521]  eta: 0:02:11  loss: 0.6922 (0.6272)  acc1: 83.3333 (85.4857)  acc5: 97.9167 (97.6338)  time: 0.2762  data: 0.0006  max mem: 878
+Test:  [200/521]  eta: 0:01:47  loss: 0.5331 (0.6187)  acc1: 88.5417 (85.7380)  acc5: 97.9167 (97.7146)  time: 0.2764  data: 0.0006  max mem: 878
+Test:  [250/521]  eta: 0:01:27  loss: 0.7917 (0.6659)  acc1: 81.2500 (84.6033)  acc5: 95.8333 (97.2361)  time: 0.2778  data: 0.0006  max mem: 878
+Test:  [300/521]  eta: 0:01:09  loss: 0.8853 (0.7108)  acc1: 80.2083 (83.4683)  acc5: 94.7917 (96.8231)  time: 0.2760  data: 0.0007  max mem: 878
+Test:  [350/521]  eta: 0:00:52  loss: 0.8672 (0.7443)  acc1: 80.2083 (82.6686)  acc5: 95.8333 (96.4714)  time: 0.2755  data: 0.0006  max mem: 878
+Test:  [400/521]  eta: 0:00:36  loss: 0.8948 (0.7639)  acc1: 79.1667 (82.1878)  acc5: 94.7917 (96.2490)  time: 0.2759  data: 0.0006  max mem: 878
+Test:  [450/521]  eta: 0:00:21  loss: 0.8743 (0.7838)  acc1: 79.1667 (81.7535)  acc5: 95.8333 (96.0874)  time: 0.2762  data: 0.0006  max mem: 878
+Test:  [500/521]  eta: 0:00:06  loss: 0.7441 (0.7849)  acc1: 83.3333 (81.6866)  acc5: 96.8750 (96.1307)  time: 0.2758  data: 0.0006  max mem: 878
+Test:  [520/521]  eta: 0:00:00  loss: 0.6857 (0.7869)  acc1: 84.3750 (81.6100)  acc5: 96.8750 (96.1380)  time: 0.3323  data: 0.0005  max mem: 878
+Test: Total time: 0:02:38 (0.3045 s / it)
+* Acc@1 81.610 Acc@5 96.138 loss 0.787
+-0.2081298828125 1.029296875
+Accuracy on 50000 test images: 81.6%
+
+Test: Total time: 0:01:32 (0.0368 s / it)
+* Acc@1 81.880 Acc@5 96.720 loss 0.742
+-0.1665310263633728 0.7678758502006531
+Accuracy on 2500 test images: 81.9%

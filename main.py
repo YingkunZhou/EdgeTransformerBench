@@ -187,6 +187,7 @@ def get_args_parser():
     parser.add_argument('--weights', default='', type=str, help='weights path')
     parser.add_argument('--fuse', action='store_true', default=False)
     parser.add_argument('--model-ema', action='store_true', default=False)
+    parser.add_argument('--extern', action='store_true', default=False)
 
     parser.add_argument('--usi_eval', action='store_true', default=False,
                         help="Enable it when testing USI model.")
@@ -219,44 +220,54 @@ def pil_loader_BGR(path: str) -> Image.Image:
         return Image.merge("RGB", (B, G, R))
 
 def build_dataset(args):
-    t = []
-    is_mobilevit = "mobilevit" in args.model
+    is_resnet50  = "resnet50" in args.model
     is_edgenext  = "edgenext" in args.model
+    is_mobilevit = "mobilevit" in args.model
+    is_mobilevitv1 = "mobilevit_" in args.model
+    is_efficientnetv2_b3 = "efficientnetv2_b3" in args.model
 
-    size = 256
-    if args.usi_eval: # for EdgeNeXt
-        size = int(256 / 0.95)
-    elif is_mobilevit:
-        # https://huggingface.co/apple/mobilevit-small
-        size = 288
+    if args.model in resolution_dict:
+        input_size = resolution_dict[args.model]
+    elif is_mobilevit or is_edgenext:
+        input_size = 256
+    else:
+        input_size = 224
+
+    t = []
+
+    if is_resnet50 or args.usi_eval: # for EdgeNeXt
+        crop_pct = 0.95
+        size = int(input_size / crop_pct)
     elif is_edgenext:
-        size = int(256 * 256 / 224)
+        crop_pct = 224 / 256
+        size = int(input_size / crop_pct)
+    else:
+        size = input_size + 32
+
     t.append(
         # to maintain same ratio w.r.t. 224 images
         transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC),
     )
-
-    input_size = 224
-    if is_mobilevit or is_edgenext:
-        input_size = 256
-
     t.append(transforms.CenterCrop(input_size))
-
     t.append(transforms.ToTensor())
-    if not is_mobilevit:
+    if is_mobilevit:
+        pass
+    elif is_efficientnetv2_b3:
+        t.append(transforms.Normalize([0.5,0.5,0.5], [0.5,0.5,0.5]))
+    else:
         t.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
 
-    # args.data_set == 'IMNET':
     root = os.path.join(args.data_path)
-    is_mobilevitv1 = "mobilevit_" in args.model
     loader = pil_loader_BGR if is_mobilevitv1 else pil_loader_RGB
     dataset = datasets.ImageFolder(root, transform=transforms.Compose(t), loader=loader)
+
+    args.subset = len(dataset) == 2500
     nb_classes = 1000
 
     return dataset, nb_classes
 
 @torch.no_grad()
-def evaluate(data_loader, model, device, use_amp=False):
+def evaluate(data_loader, model, device, args):
     criterion = torch.nn.CrossEntropyLoss()
 
     metric_logger = MetricLogger(delimiter="  ")
@@ -267,12 +278,13 @@ def evaluate(data_loader, model, device, use_amp=False):
 
     for images, target in metric_logger.log_every(data_loader, 50, header):
         batch_size = images.shape[0]
-        if batch_size == 1: target = target * 20
-        images = images.to(device, non_blocking=True)
-        target = target.to(device, non_blocking=True)
+        non_blocking = batch_size > 1
+        if args.subset: target = target * 20
+        images = images.to(device, non_blocking=non_blocking)
+        target = target.to(device, non_blocking=non_blocking)
 
         # compute output
-        if use_amp: # will acc val speed
+        if args.use_amp: # will acc val speed
             with torch.cuda.amp.autocast():
                 output = model(images)
                 loss = criterion(output, target)
@@ -297,34 +309,36 @@ def main(args):
     device = torch.device(args.device)
 
     print(f"Creating model: {args.model}")
-    model = create_model(args.model)
+    model = create_model(args.model, pretrained=args.extern)
 
-    # load model weights
-    weights_dict = torch.load(args.weights, map_location="cpu")
-    # print(weights_dict.keys())
+    if not args.extern:
+        # load model weights
+        weights_dict = torch.load(args.weights, map_location="cpu")
+        # print(weights_dict.keys())
 
-    if "state_dict" in weights_dict:
-        args.usi_eval = True
-        weights_dict = weights_dict["state_dict"]
-    elif args.model_ema: # for EdgeNeXt
-        weights_dict = weights_dict["model_ema"]
-    elif "model" in weights_dict:
-        weights_dict = weights_dict["model"]
+        if "state_dict" in weights_dict:
+            args.usi_eval = True
+            weights_dict = weights_dict["state_dict"]
+        elif args.model_ema: # for EdgeNeXt
+            weights_dict = weights_dict["model_ema"]
+        elif "model" in weights_dict:
+            weights_dict = weights_dict["model"]
 
-    if "LeViT_c_" in args.model:
-        D = model.state_dict()
-        for k in weights_dict.keys():
-            if D[k].shape != weights_dict[k].shape:
-                weights_dict[k] = weights_dict[k][:, :, None, None]
+        if "LeViT_c_" in args.model:
+            D = model.state_dict()
+            for k in weights_dict.keys():
+                if D[k].shape != weights_dict[k].shape:
+                    weights_dict[k] = weights_dict[k][:, :, None, None]
 
-    model.load_state_dict(weights_dict)
+        model.load_state_dict(weights_dict)
 
     if args.fuse:
         replace_batchnorm(model)  # TODO: acc val speed & acc
 
     model.to(device)
 
-    if args.batch_size == 1: args.num_workers = 1
+    if args.batch_size == 1:
+        args.num_workers = 1
     print(args)
 
     n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -346,8 +360,15 @@ def main(args):
         drop_last=False
     )
 
-    test_stats = evaluate(data_loader_val, model, device, use_amp=args.use_amp)
+    test_stats = evaluate(data_loader_val, model, device, args)
     print(f"Accuracy on {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
+
+resolution_dict = {
+    'tf_efficientnetv2_b0': 224,
+    'tf_efficientnetv2_b1': 240,
+    'tf_efficientnetv2_b2': 260,
+    'tf_efficientnetv2_b3': 300,
+}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('EdgeTransformerPerf evaluation script', parents=[get_args_parser()])
