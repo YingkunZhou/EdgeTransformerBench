@@ -196,7 +196,7 @@ def get_args_parser():
     parser.add_argument('--num_workers', default=10, type=int)
 
     # Dataset parameters
-    parser.add_argument('--data-path', default='../imagenet', type=str, help='dataset path')
+    parser.add_argument('--data-path', default='imagenet/val', type=str, help='dataset path')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--pin-mem', action='store_true',
@@ -348,7 +348,7 @@ def main(args):
     torch.manual_seed(0)
     np.random.seed(0)
 
-    cudnn.benchmark = True
+    cudnn.benchmark = True # TODO:?
     dataset_val, args.nb_classes = build_dataset(args=args)
     sampler_val = torch.utils.data.SequentialSampler(dataset_val)
     data_loader_val = torch.utils.data.DataLoader(

@@ -1,0 +1,103 @@
+$ OMP_NUM_THREADS=1 python speed_test.py 2>warning.log
+nb processors 12
+model name      : ARMv8 Processor rev 1 (v8l)
+Using 1 cpu thread
+Creating model: efficientformerv2_s0
+[(985, 11.767036437988281), (644, 4.848295211791992), (108, 3.925717353820801)]
+min =  231.62ms  max =  241.27ms  mean =  233.39ms, median =  233.17ms
+Creating model: efficientformerv2_s1
+[(985, 13.112430572509766), (89, 4.16266393661499), (984, 4.077515125274658)]
+min =  343.43ms  max =  353.40ms  mean =  345.20ms, median =  344.80ms
+Creating model: efficientformerv2_s2
+[(985, 12.485485076904297), (22, 3.6932241916656494), (309, 3.692009687423706)]
+min =  572.71ms  max =  585.00ms  mean =  575.34ms, median =  574.92ms
+Creating model: SwiftFormer_XS
+[(985, 11.914166450500488), (883, 5.001725673675537), (310, 4.622917175292969)]
+min =  139.71ms  max =  143.45ms  mean =  140.48ms, median =  140.37ms
+Creating model: SwiftFormer_S
+[(985, 12.528474807739258), (89, 4.334186553955078), (720, 4.178121089935303)]
+min =  199.05ms  max =  203.95ms  mean =  200.43ms, median =  200.29ms
+Creating model: SwiftFormer_L1
+[(985, 13.233625411987305), (309, 3.9212820529937744), (310, 3.8075733184814453)]
+min =  282.36ms  max =  289.76ms  mean =  284.17ms, median =  283.98ms
+Creating model: EMO_1M
+[(985, 10.011183738708496), (309, 4.270286560058594), (310, 3.9134485721588135)]
+min =  123.60ms  max =  127.65ms  mean =  124.70ms, median =  124.62ms
+Creating model: EMO_2M
+[(985, 9.367955207824707), (309, 3.259868621826172), (308, 3.0081465244293213)]
+min =  174.68ms  max =  189.89ms  mean =  176.64ms, median =  175.74ms
+Creating model: EMO_5M
+[(985, 9.141463279724121), (883, 2.9905519485473633), (308, 2.4543874263763428)]
+min =  283.13ms  max =  295.18ms  mean =  284.94ms, median =  284.12ms
+Creating model: EMO_6M
+[(985, 9.39677619934082), (883, 2.2409355640411377), (309, 2.083860158920288)]
+min =  308.22ms  max =  315.76ms  mean =  309.77ms, median =  309.33ms
+Creating model: edgenext_xx_small
+[(985, 10.885465621948242), (309, 4.954113960266113), (310, 4.638608455657959)]
+min =   79.83ms  max =   82.48ms  mean =   80.44ms, median =   80.34ms
+Creating model: edgenext_x_small
+[(985, 9.799910545349121), (309, 4.595180988311768), (308, 3.8170089721679688)]
+min =  151.42ms  max =  155.18ms  mean =  152.36ms, median =  152.29ms
+Creating model: edgenext_small
+[(985, 12.15629768371582), (309, 4.532577037811279), (308, 4.049806118011475)]
+min =  259.48ms  max =  263.82ms  mean =  260.67ms, median =  260.48ms
+Creating model: mobilevitv2_050
+[(985, 8.349030494689941), (309, 2.5841283798217773), (584, 2.319408893585205)]
+min =  106.38ms  max =  108.69ms  mean =  107.14ms, median =  107.05ms
+Creating model: mobilevitv2_075
+[(985, 8.164344787597656), (309, 2.387444496154785), (308, 1.8584959506988525)]
+min =  181.12ms  max =  186.16ms  mean =  182.38ms, median =  182.28ms
+Creating model: mobilevitv2_100
+[(985, 8.236357688903809), (557, 2.2240982055664062), (309, 1.8535701036453247)]
+min =  274.42ms  max =  279.03ms  mean =  275.44ms, median =  275.21ms
+Creating model: mobilevitv2_125
+[(985, 8.272745132446289), (309, 2.0136656761169434), (883, 1.3231408596038818)]
+min =  374.37ms  max =  381.27ms  mean =  376.22ms, median =  376.07ms
+Creating model: mobilevitv2_150
+[(985, 9.09706974029541), (308, 2.224851131439209), (301, 2.1440443992614746)]
+min =  496.32ms  max =  500.79ms  mean =  497.66ms, median =  497.60ms
+Creating model: mobilevitv2_175
+[(985, 8.880781173706055), (494, 2.0807061195373535), (968, 1.885856032371521)]
+min =  622.20ms  max =  629.79ms  mean =  623.63ms, median =  623.18ms
+Creating model: mobilevitv2_200
+[(985, 8.548127174377441), (309, 2.226963996887207), (883, 2.2137224674224854)]
+min =  763.67ms  max =  769.15ms  mean =  765.50ms, median =  765.19ms
+Creating model: mobilevit_xx_small
+[(985, 11.448772430419922), (946, 6.141321659088135), (883, 6.119373321533203)]
+min =  103.93ms  max =  107.63ms  mean =  104.54ms, median =  104.46ms
+Creating model: mobilevit_x_small
+[(985, 11.413053512573242), (723, 7.128032684326172), (470, 5.874289512634277)]
+min =  230.11ms  max =  234.42ms  mean =  231.52ms, median =  231.44ms
+Creating model: mobilevit_small
+[(985, 12.880537986755371), (605, 6.013976573944092), (838, 5.907944679260254)]
+min =  325.53ms  max =  332.08ms  mean =  327.23ms, median =  327.03ms
+Creating model: LeViT_128S
+[(985, 11.42782211303711), (308, 3.451137065887451), (309, 3.319760799407959)]
+min =   40.77ms  max =   48.00ms  mean =   41.17ms, median =   41.07ms
+Creating model: LeViT_128
+[(985, 11.089759826660156), (309, 3.409043312072754), (113, 3.385409116744995)]
+min =   53.53ms  max =   56.41ms  mean =   53.92ms, median =   53.88ms
+Creating model: LeViT_192
+[(985, 11.594854354858398), (308, 3.186356544494629), (644, 3.177922248840332)]
+min =   69.62ms  max =   73.78ms  mean =   70.09ms, median =   70.01ms
+Creating model: LeViT_256
+[(985, 11.363819122314453), (108, 3.3411951065063477), (310, 2.9294872283935547)]
+min =  111.65ms  max =  115.66ms  mean =  112.30ms, median =  112.23ms
+Creating model: resnet50
+[(985, 7.443358421325684), (113, -5.051445007324219), (310, -5.506588935852051)]
+min =  345.13ms  max =  351.30ms  mean =  346.38ms, median =  345.90ms
+Creating model: mobilenetv3_large_100
+[(985, 9.592706680297852), (308, 2.354276418685913), (310, 2.337050437927246)]
+min =   86.03ms  max =   91.87ms  mean =   86.72ms, median =   86.59ms
+Creating model: tf_efficientnetv2_b0
+[(985, 9.554757118225098), (309, 2.3783440589904785), (108, 2.289132595062256)]
+min =  189.96ms  max =  198.64ms  mean =  191.11ms, median =  190.82ms
+Creating model: tf_efficientnetv2_b1
+[(985, 9.484580039978027), (861, 2.2585253715515137), (309, 2.1344897747039795)]
+min =  266.78ms  max =  278.66ms  mean =  268.08ms, median =  267.68ms
+Creating model: tf_efficientnetv2_b2
+[(985, 9.816822052001953), (883, 2.518671751022339), (113, 2.046142816543579)]
+min =  335.87ms  max =  344.91ms  mean =  337.77ms, median =  337.42ms
+Creating model: tf_efficientnetv2_b3
+[(985, 9.089395523071289), (955, 2.8928232192993164), (947, 2.1881449222564697)]
+min =  543.90ms  max =  560.84ms  mean =  547.88ms, median =  547.07ms
