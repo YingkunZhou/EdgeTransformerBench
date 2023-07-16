@@ -1,0 +1,298 @@
+$ ./.log/val-div20.sh
+Creating model: efficientformerv2_s0
+number of params: 3600256
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='efficientformerv2_s0', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/eformer_s0_450.pth')
+Test:  [ 0/27]  eta: 0:03:02  loss: 0.6091 (0.6091)  acc1: 88.5417 (88.5417)  acc5: 95.8333 (95.8333)  time: 6.7653  data: 1.7494  max mem: 625
+Test:  [26/27]  eta: 0:00:00  loss: 0.7412 (0.8763)  acc1: 81.2500 (76.2800)  acc5: 94.7917 (93.6400)  time: 0.6087  data: 0.0652  max mem: 625
+Test: Total time: 0:00:16 (0.6118 s / it)
+* Acc@1 76.280 Acc@5 93.640 loss 0.876
+0.071041040122509 1.5506163835525513
+Accuracy on 2500 test images: 76.3%
+Creating model: efficientformerv2_s1
+number of params: 6185560
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='efficientformerv2_s1', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/eformer_s1_450.pth')
+Test:  [ 0/27]  eta: 0:02:09  loss: 0.5242 (0.5242)  acc1: 90.6250 (90.6250)  acc5: 94.7917 (94.7917)  time: 4.7923  data: 1.3517  max mem: 635
+Test:  [26/27]  eta: 0:00:00  loss: 0.7053 (0.7577)  acc1: 81.2500 (78.8000)  acc5: 96.8750 (95.7200)  time: 0.5095  data: 0.0504  max mem: 635
+Test: Total time: 0:00:13 (0.5131 s / it)
+* Acc@1 78.800 Acc@5 95.720 loss 0.758
+0.05888521671295166 1.3934839963912964
+Accuracy on 2500 test images: 78.8%
+Creating model: efficientformerv2_s2
+number of params: 12710112
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='efficientformerv2_s2', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/eformer_s2_450.pth')
+Test:  [ 0/27]  eta: 0:02:23  loss: 0.4906 (0.4906)  acc1: 91.6667 (91.6667)  acc5: 95.8333 (95.8333)  time: 5.3109  data: 1.4457  max mem: 661
+Test:  [26/27]  eta: 0:00:00  loss: 0.5943 (0.6582)  acc1: 85.4167 (81.9200)  acc5: 97.9167 (96.8000)  time: 0.7621  data: 0.0540  max mem: 661
+Test: Total time: 0:00:20 (0.7656 s / it)
+* Acc@1 81.920 Acc@5 96.800 loss 0.658
+0.13750699162483215 1.1254003047943115
+Accuracy on 2500 test images: 81.9%
+Creating model: SwiftFormer_XS
+number of params: 3475360
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='SwiftFormer_XS', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/SwiftFormer_XS_ckpt.pth')
+Test:  [ 0/27]  eta: 0:02:01  loss: 0.5703 (0.5703)  acc1: 90.6250 (90.6250)  acc5: 95.8333 (95.8333)  time: 4.4842  data: 1.3402  max mem: 694
+Test:  [26/27]  eta: 0:00:00  loss: 0.7479 (0.9033)  acc1: 81.2500 (76.1200)  acc5: 94.7917 (93.3200)  time: 0.3137  data: 0.0500  max mem: 694
+Test: Total time: 0:00:08 (0.3168 s / it)
+* Acc@1 76.120 Acc@5 93.320 loss 0.903
+0.0310654379427433 1.710776925086975
+Accuracy on 2500 test images: 76.1%
+Creating model: SwiftFormer_S
+number of params: 6092128
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='SwiftFormer_S', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/SwiftFormer_S_ckpt.pth')
+Test:  [ 0/27]  eta: 0:02:17  loss: 0.5038 (0.5038)  acc1: 90.6250 (90.6250)  acc5: 95.8333 (95.8333)  time: 5.0821  data: 1.3738  max mem: 704
+Test:  [26/27]  eta: 0:00:00  loss: 0.6326 (0.8018)  acc1: 83.3333 (78.3200)  acc5: 95.8333 (95.4400)  time: 0.3840  data: 0.0513  max mem: 704
+Test: Total time: 0:00:10 (0.3871 s / it)
+* Acc@1 78.320 Acc@5 95.440 loss 0.802
+0.08890864998102188 1.2751173973083496
+Accuracy on 2500 test images: 78.3%
+Creating model: SwiftFormer_L1
+number of params: 12057920
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='SwiftFormer_L1', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/SwiftFormer_L1_ckpt.pth')
+Test:  [ 0/27]  eta: 0:02:19  loss: 0.5153 (0.5153)  acc1: 90.6250 (90.6250)  acc5: 94.7917 (94.7917)  time: 5.1628  data: 1.4186  max mem: 727
+Test:  [26/27]  eta: 0:00:00  loss: 0.6814 (0.7195)  acc1: 85.4167 (80.6800)  acc5: 96.8750 (96.2800)  time: 0.4188  data: 0.0529  max mem: 727
+Test: Total time: 0:00:11 (0.4219 s / it)
+* Acc@1 80.680 Acc@5 96.280 loss 0.720
+0.09579240530729294 1.1684331893920898
+Accuracy on 2500 test images: 80.7%
+Creating model: EMO_1M
+number of params: 1361168
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='EMO_1M', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/EMO_1M.pth')
+Test:  [ 0/27]  eta: 0:02:04  loss: 0.7171 (0.7171)  acc1: 86.4583 (86.4583)  acc5: 93.7500 (93.7500)  time: 4.6246  data: 1.4704  max mem: 1276
+Test:  [26/27]  eta: 0:00:00  loss: 0.9962 (1.1162)  acc1: 76.0417 (70.7200)  acc5: 93.7500 (91.5600)  time: 0.3403  data: 0.0549  max mem: 1276
+Test: Total time: 0:00:09 (0.3434 s / it)
+* Acc@1 70.720 Acc@5 91.560 loss 1.116
+-0.028496742248535156 1.3406572341918945
+Accuracy on 2500 test images: 70.7%
+Creating model: EMO_2M
+number of params: 2377472
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='EMO_2M', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/EMO_2M.pth')
+Test:  [ 0/27]  eta: 0:02:28  loss: 0.6437 (0.6437)  acc1: 89.5833 (89.5833)  acc5: 95.8333 (95.8333)  time: 5.4856  data: 1.3582  max mem: 1280
+Test:  [26/27]  eta: 0:00:00  loss: 0.8251 (0.9791)  acc1: 78.1250 (74.8000)  acc5: 94.7917 (93.4400)  time: 0.4270  data: 0.0507  max mem: 1280
+Test: Total time: 0:00:11 (0.4301 s / it)
+* Acc@1 74.800 Acc@5 93.440 loss 0.979
+0.033096686005592346 1.0130516290664673
+Accuracy on 2500 test images: 74.8%
+Creating model: EMO_5M
+number of params: 5108848
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='EMO_5M', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/EMO_5M.pth')
+Test:  [ 0/27]  eta: 0:02:31  loss: 0.5248 (0.5248)  acc1: 93.7500 (93.7500)  acc5: 95.8333 (95.8333)  time: 5.6085  data: 1.4186  max mem: 1290
+Test:  [26/27]  eta: 0:00:00  loss: 0.7283 (0.8296)  acc1: 83.3333 (78.2400)  acc5: 96.8750 (95.0800)  time: 0.5010  data: 0.0529  max mem: 1290
+Test: Total time: 0:00:13 (0.5041 s / it)
+* Acc@1 78.240 Acc@5 95.080 loss 0.830
+0.03194018825888634 0.8998958468437195
+Accuracy on 2500 test images: 78.2%
+Creating model: EMO_6M
+number of params: 6168496
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='EMO_6M', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/EMO_6M.pth')
+Test:  [ 0/27]  eta: 0:02:29  loss: 0.5677 (0.5677)  acc1: 90.6250 (90.6250)  acc5: 95.8333 (95.8333)  time: 5.5308  data: 1.5761  max mem: 1294
+Test:  [26/27]  eta: 0:00:00  loss: 0.7001 (0.8082)  acc1: 83.3333 (79.2000)  acc5: 96.8750 (95.4000)  time: 0.5002  data: 0.0588  max mem: 1294
+Test: Total time: 0:00:13 (0.5033 s / it)
+* Acc@1 79.200 Acc@5 95.400 loss 0.808
+0.0006839804700575769 0.8178352117538452
+Accuracy on 2500 test images: 79.2%
+Creating model: edgenext_xx_small
+number of params: 1327216
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='edgenext_xx_small', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/edgenext_xx_small.pth')
+Test:  [ 0/27]  eta: 0:01:54  loss: 0.7419 (0.7419)  acc1: 84.3750 (84.3750)  acc5: 94.7917 (94.7917)  time: 4.2577  data: 1.4968  max mem: 445
+Test:  [26/27]  eta: 0:00:00  loss: 0.9830 (1.1645)  acc1: 77.0833 (70.8400)  acc5: 92.7083 (90.9600)  time: 0.3014  data: 0.0559  max mem: 446
+Test: Total time: 0:00:08 (0.3052 s / it)
+* Acc@1 70.840 Acc@5 90.960 loss 1.164
+0.040516551584005356 1.359604001045227
+Accuracy on 2500 test images: 70.8%
+Creating model: edgenext_x_small
+number of params: 2336804
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='edgenext_x_small', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/edgenext_x_small.pth')
+Test:  [ 0/27]  eta: 0:01:59  loss: 0.6218 (0.6218)  acc1: 91.6667 (91.6667)  acc5: 95.8333 (95.8333)  time: 4.4204  data: 1.6060  max mem: 569
+Test:  [26/27]  eta: 0:00:00  loss: 0.8926 (0.9886)  acc1: 79.1667 (74.9200)  acc5: 95.8333 (93.5600)  time: 0.3765  data: 0.0599  max mem: 569
+Test: Total time: 0:00:10 (0.3802 s / it)
+* Acc@1 74.920 Acc@5 93.560 loss 0.989
+0.02645476721227169 1.0981279611587524
+Accuracy on 2500 test images: 74.9%
+Creating model: edgenext_small
+number of params: 5586832
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='edgenext_small', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=True, weights='weights/edgenext_small_usi.pth')
+Test:  [ 0/27]  eta: 0:02:08  loss: 0.5153 (0.5153)  acc1: 92.7083 (92.7083)  acc5: 94.7917 (94.7917)  time: 4.7586  data: 1.5441  max mem: 821
+Test:  [26/27]  eta: 0:00:00  loss: 0.7073 (0.6914)  acc1: 83.3333 (80.7600)  acc5: 96.8750 (96.1600)  time: 0.4960  data: 0.0576  max mem: 822
+Test: Total time: 0:00:13 (0.4999 s / it)
+* Acc@1 80.760 Acc@5 96.160 loss 0.691
+0.021890733391046524 1.3143576383590698
+Accuracy on 2500 test images: 80.8%
+Creating model: mobilevitv2_050
+number of params: 1370593
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_050', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-0.5.pt')
+Test:  [ 0/27]  eta: 0:02:45  loss: 0.7098 (0.7098)  acc1: 89.5833 (89.5833)  acc5: 95.8333 (95.8333)  time: 6.1473  data: 1.5111  max mem: 1229
+Test:  [26/27]  eta: 0:00:00  loss: 1.0770 (1.2487)  acc1: 73.9583 (69.9200)  acc5: 93.7500 (91.1200)  time: 0.4013  data: 0.0563  max mem: 1229
+Test: Total time: 0:00:10 (0.4048 s / it)
+* Acc@1 69.920 Acc@5 91.120 loss 1.249
+-0.5358271598815918 1.1215933561325073
+Accuracy on 2500 test images: 69.9%
+Creating model: mobilevitv2_075
+number of params: 2866009
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_075', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-0.75.pt')
+Test:  [ 0/27]  eta: 0:03:18  loss: 0.6820 (0.6820)  acc1: 89.5833 (89.5833)  acc5: 95.8333 (95.8333)  time: 7.3429  data: 1.4567  max mem: 1811
+Test:  [26/27]  eta: 0:00:00  loss: 0.8182 (1.0132)  acc1: 81.2500 (75.0400)  acc5: 95.8333 (93.6000)  time: 0.5208  data: 0.0543  max mem: 1811
+Test: Total time: 0:00:14 (0.5241 s / it)
+* Acc@1 75.040 Acc@5 93.600 loss 1.013
+-0.5126516819000244 0.9374071359634399
+Accuracy on 2500 test images: 75.0%
+Creating model: mobilevitv2_100
+number of params: 4901841
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_100', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-1.0.pt')
+Test:  [ 0/27]  eta: 0:03:25  loss: 0.6217 (0.6217)  acc1: 91.6667 (91.6667)  acc5: 96.8750 (96.8750)  time: 7.6126  data: 1.5189  max mem: 2395
+Test:  [26/27]  eta: 0:00:00  loss: 0.7792 (0.9034)  acc1: 80.2083 (77.8400)  acc5: 96.8750 (95.4800)  time: 0.5925  data: 0.0566  max mem: 2395
+Test: Total time: 0:00:16 (0.5958 s / it)
+* Acc@1 77.840 Acc@5 95.480 loss 0.903
+-0.4664689600467682 0.8404049277305603
+Accuracy on 2500 test images: 77.8%
+Creating model: mobilevitv2_125
+number of params: 7478089
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_125', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-1.25.pt')
+Test:  [ 0/27]  eta: 0:03:56  loss: 0.5719 (0.5719)  acc1: 93.7500 (93.7500)  acc5: 95.8333 (95.8333)  time: 8.7417  data: 1.4463  max mem: 2981
+Test:  [26/27]  eta: 0:00:00  loss: 0.7600 (0.8550)  acc1: 82.2917 (79.1200)  acc5: 96.8750 (95.8000)  time: 0.7019  data: 0.0540  max mem: 2981
+Test: Total time: 0:00:19 (0.7051 s / it)
+* Acc@1 79.120 Acc@5 95.800 loss 0.855
+-0.3213719129562378 0.7466820478439331
+Accuracy on 2500 test images: 79.1%
+Creating model: mobilevitv2_150
+number of params: 10594753
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_150', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-1.5.pt')
+Test:  [ 0/27]  eta: 0:03:55  loss: 0.6191 (0.6191)  acc1: 91.6667 (91.6667)  acc5: 95.8333 (95.8333)  time: 8.7374  data: 1.3971  max mem: 3569
+Test:  [26/27]  eta: 0:00:00  loss: 0.7035 (0.7814)  acc1: 83.3333 (80.8400)  acc5: 96.8750 (96.4000)  time: 0.7889  data: 0.0522  max mem: 3569
+Test: Total time: 0:00:21 (0.7921 s / it)
+* Acc@1 80.840 Acc@5 96.400 loss 0.781
+0.00259206211194396 0.7185508012771606
+Accuracy on 2500 test images: 80.8%
+Creating model: mobilevitv2_175
+number of params: 14251833
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_175', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-1.75.pt')
+Test:  [ 0/27]  eta: 0:04:32  loss: 0.5736 (0.5736)  acc1: 91.6667 (91.6667)  acc5: 96.8750 (96.8750)  time: 10.0803  data: 1.6000  max mem: 4159
+Test:  [26/27]  eta: 0:00:00  loss: 0.6613 (0.7832)  acc1: 83.3333 (80.7600)  acc5: 97.9167 (96.7200)  time: 0.9136  data: 0.0598  max mem: 4159
+Test: Total time: 0:00:24 (0.9168 s / it)
+* Acc@1 80.760 Acc@5 96.720 loss 0.783
+-0.005595355294644833 0.6730597019195557
+Accuracy on 2500 test images: 80.8%
+Creating model: mobilevitv2_200
+number of params: 18449329
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevitv2_200', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevitv2-2.0.pt')
+Test:  [ 0/27]  eta: 0:05:04  loss: 0.5181 (0.5181)  acc1: 93.7500 (93.7500)  acc5: 97.9167 (97.9167)  time: 11.2849  data: 1.4629  max mem: 4751
+Test:  [26/27]  eta: 0:00:01  loss: 0.6587 (0.7258)  acc1: 87.5000 (81.9600)  acc5: 97.9167 (96.8400)  time: 1.0434  data: 0.0546  max mem: 4751
+Test: Total time: 0:00:28 (1.0466 s / it)
+* Acc@1 81.960 Acc@5 96.840 loss 0.726
+0.004085078369826078 0.6740564107894897
+Accuracy on 2500 test images: 82.0%
+Creating model: mobilevit_xx_small
+number of params: 1272024
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevit_xx_small', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevit_xxs.pt')
+Test:  [ 0/27]  eta: 0:02:16  loss: 0.7147 (0.7147)  acc1: 88.5417 (88.5417)  acc5: 94.7917 (94.7917)  time: 5.0631  data: 1.5172  max mem: 1076
+Test:  [26/27]  eta: 0:00:00  loss: 1.0379 (1.2205)  acc1: 71.8750 (69.0000)  acc5: 93.7500 (90.2800)  time: 0.3889  data: 0.0566  max mem: 1076
+Test: Total time: 0:00:10 (0.3926 s / it)
+* Acc@1 69.000 Acc@5 90.280 loss 1.221
+0.9146328568458557 1.5803173780441284
+Accuracy on 2500 test images: 69.0%
+Creating model: mobilevit_x_small
+number of params: 2317848
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevit_x_small', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevit_xs.pt')
+Test:  [ 0/27]  eta: 0:03:39  loss: 0.6416 (0.6416)  acc1: 88.5417 (88.5417)  acc5: 95.8333 (95.8333)  time: 8.1130  data: 1.6078  max mem: 2001
+Test:  [26/27]  eta: 0:00:00  loss: 0.8006 (0.9550)  acc1: 81.2500 (74.2400)  acc5: 94.7917 (93.6400)  time: 0.6211  data: 0.0600  max mem: 2001
+Test: Total time: 0:00:16 (0.6247 s / it)
+* Acc@1 74.240 Acc@5 93.640 loss 0.955
+2.328805685043335 1.2999194860458374
+Accuracy on 2500 test images: 74.2%
+Creating model: mobilevit_small
+number of params: 5578632
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=256, model='mobilevit_small', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/mobilevit_s.pt')
+Test:  [ 0/27]  eta: 0:03:42  loss: 0.5694 (0.5694)  acc1: 91.6667 (91.6667)  acc5: 95.8333 (95.8333)  time: 8.2251  data: 1.6215  max mem: 2013
+Test:  [26/27]  eta: 0:00:00  loss: 0.7159 (0.8476)  acc1: 82.2917 (77.6800)  acc5: 96.8750 (95.0000)  time: 0.7087  data: 0.0605  max mem: 2013
+Test: Total time: 0:00:19 (0.7125 s / it)
+* Acc@1 77.680 Acc@5 95.000 loss 0.848
+2.4557456970214844 1.144605278968811
+Accuracy on 2500 test images: 77.7%
+Creating model: LeViT_128S
+number of params: 7777058
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='LeViT_128S', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/LeViT-128S-96703c44.pth')
+Test:  [ 0/27]  eta: 0:01:39  loss: 0.6229 (0.6229)  acc1: 88.5417 (88.5417)  acc5: 94.7917 (94.7917)  time: 3.6693  data: 1.4674  max mem: 310
+Test:  [26/27]  eta: 0:00:00  loss: 0.7451 (0.8759)  acc1: 81.2500 (75.9200)  acc5: 94.7917 (94.3600)  time: 0.2130  data: 0.0548  max mem: 310
+Test: Total time: 0:00:05 (0.2164 s / it)
+* Acc@1 75.920 Acc@5 94.360 loss 0.876
+0.015212234109640121 1.1457985639572144
+Accuracy on 2500 test images: 75.9%
+Creating model: LeViT_128
+number of params: 9213936
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='LeViT_128', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/LeViT-128-b88c2750.pth')
+Test:  [ 0/27]  eta: 0:01:40  loss: 0.5805 (0.5805)  acc1: 90.6250 (90.6250)  acc5: 94.7917 (94.7917)  time: 3.7043  data: 1.5126  max mem: 318
+Test:  [26/27]  eta: 0:00:00  loss: 0.7144 (0.7818)  acc1: 82.2917 (79.3200)  acc5: 96.8750 (95.1600)  time: 0.2231  data: 0.0564  max mem: 318
+Test: Total time: 0:00:06 (0.2264 s / it)
+* Acc@1 79.320 Acc@5 95.160 loss 0.782
+-0.0028502808418124914 1.087525486946106
+Accuracy on 2500 test images: 79.3%
+Creating model: LeViT_192
+number of params: 10947069
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='LeViT_192', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/LeViT-192-92712e41.pth')
+Test:  [ 0/27]  eta: 0:02:28  loss: 0.4966 (0.4966)  acc1: 92.7083 (92.7083)  acc5: 94.7917 (94.7917)  time: 5.4838  data: 3.0538  max mem: 434
+Test:  [26/27]  eta: 0:00:00  loss: 0.6894 (0.7631)  acc1: 83.3333 (79.8000)  acc5: 95.8333 (95.6000)  time: 0.3288  data: 0.1135  max mem: 434
+Test: Total time: 0:00:08 (0.3320 s / it)
+* Acc@1 79.800 Acc@5 95.600 loss 0.763
+-0.07883083075284958 1.063360571861267
+Accuracy on 2500 test images: 79.8%
+Creating model: LeViT_256
+number of params: 18893876
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=False, fuse=False, input_size=224, model='LeViT_256', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='weights/LeViT-256-13b5763e.pth')
+Test:  [ 0/27]  eta: 0:01:41  loss: 0.5125 (0.5125)  acc1: 91.6667 (91.6667)  acc5: 95.8333 (95.8333)  time: 3.7647  data: 1.4412  max mem: 575
+Test:  [26/27]  eta: 0:00:00  loss: 0.5918 (0.7155)  acc1: 85.4167 (81.2400)  acc5: 96.8750 (96.0400)  time: 0.2683  data: 0.0537  max mem: 575
+Test: Total time: 0:00:07 (0.2719 s / it)
+* Acc@1 81.240 Acc@5 96.040 loss 0.716
+-0.00667482428252697 1.155754804611206
+Accuracy on 2500 test images: 81.2%
+Creating model: resnet50
+number of params: 25557032
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=True, fuse=False, input_size=224, model='resnet50', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='')
+Test:  [ 0/27]  eta: 0:03:06  loss: 0.6392 (0.6392)  acc1: 92.7083 (92.7083)  acc5: 96.8750 (96.8750)  time: 6.9017  data: 1.3981  max mem: 1404
+Test:  [26/27]  eta: 0:00:00  loss: 0.7073 (0.8630)  acc1: 83.3333 (80.2800)  acc5: 96.8750 (95.8000)  time: 0.5163  data: 0.0522  max mem: 1404
+Test: Total time: 0:00:14 (0.5200 s / it)
+* Acc@1 80.280 Acc@5 95.800 loss 0.863
+-10.830418586730957 1.3029481172561646
+Accuracy on 2500 test images: 80.3%
+Creating model: mobilenetv3_large_100
+number of params: 5483032
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=True, fuse=False, input_size=224, model='mobilenetv3_large_100', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='')
+Test:  [ 0/27]  eta: 0:02:01  loss: 0.5666 (0.5666)  acc1: 90.6250 (90.6250)  acc5: 95.8333 (95.8333)  time: 4.5103  data: 1.4801  max mem: 887
+Test:  [26/27]  eta: 0:00:00  loss: 0.7963 (0.9560)  acc1: 78.1250 (75.7200)  acc5: 95.8333 (93.7600)  time: 0.3233  data: 0.0552  max mem: 887
+Test: Total time: 0:00:08 (0.3267 s / it)
+* Acc@1 75.720 Acc@5 93.760 loss 0.956
+-0.014167479239404202 0.9108839631080627
+Accuracy on 2500 test images: 75.7%
+Creating model: tf_efficientnetv2_b0
+number of params: 7139704
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=True, fuse=False, input_size=224, model='tf_efficientnetv2_b0', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='')
+Test:  [ 0/27]  eta: 0:02:13  loss: 0.4617 (0.4617)  acc1: 93.7500 (93.7500)  acc5: 95.8333 (95.8333)  time: 4.9358  data: 1.4798  max mem: 820
+Test:  [26/27]  eta: 0:00:00  loss: 0.6945 (0.7994)  acc1: 82.2917 (78.1200)  acc5: 96.8750 (95.5200)  time: 0.3408  data: 0.0552  max mem: 820
+Test: Total time: 0:00:09 (0.3444 s / it)
+* Acc@1 78.120 Acc@5 95.520 loss 0.799
+0.004822313319891691 0.7471781969070435
+Accuracy on 2500 test images: 78.1%
+Creating model: tf_efficientnetv2_b1
+number of params: 8141052
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=True, fuse=False, input_size=240, model='tf_efficientnetv2_b1', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='')
+Test:  [ 0/27]  eta: 0:02:42  loss: 0.5313 (0.5313)  acc1: 90.6250 (90.6250)  acc5: 95.8333 (95.8333)  time: 6.0335  data: 1.4340  max mem: 813
+Test:  [26/27]  eta: 0:00:00  loss: 0.6809 (0.7747)  acc1: 82.2917 (79.3200)  acc5: 97.9167 (96.0400)  time: 0.4419  data: 0.0535  max mem: 813
+Test: Total time: 0:00:12 (0.4455 s / it)
+* Acc@1 79.320 Acc@5 96.040 loss 0.775
+0.002717898925766349 0.7758349776268005
+Accuracy on 2500 test images: 79.3%
+Creating model: tf_efficientnetv2_b2
+number of params: 10096086
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=True, fuse=False, input_size=260, model='tf_efficientnetv2_b2', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='')
+Test:  [ 0/27]  eta: 0:02:56  loss: 0.4970 (0.4970)  acc1: 92.7083 (92.7083)  acc5: 94.7917 (94.7917)  time: 6.5379  data: 1.5172  max mem: 955
+Test:  [26/27]  eta: 0:00:00  loss: 0.6024 (0.7219)  acc1: 85.4167 (81.6800)  acc5: 97.9167 (96.0400)  time: 0.5196  data: 0.0566  max mem: 955
+Test: Total time: 0:00:14 (0.5237 s / it)
+* Acc@1 81.680 Acc@5 96.040 loss 0.722
+0.004003650043159723 0.6925057172775269
+Accuracy on 2500 test images: 81.7%
+Creating model: tf_efficientnetv2_b3
+number of params: 14358406
+Namespace(batch_size=64, data_path='imagenet-div20', device='cuda', extern=True, fuse=False, input_size=300, model='tf_efficientnetv2_b3', model_ema=False, num_workers=10, pin_mem=True, subset_div=20, use_amp=False, usi_eval=False, weights='')
+Test:  [ 0/27]  eta: 0:03:42  loss: 0.5052 (0.5052)  acc1: 92.7083 (92.7083)  acc5: 96.8750 (96.8750)  time: 8.2513  data: 1.7713  max mem: 1573
+Test:  [26/27]  eta: 0:00:00  loss: 0.6160 (0.7215)  acc1: 83.3333 (81.8800)  acc5: 97.9167 (96.7200)  time: 0.7197  data: 0.0660  max mem: 1573
+Test: Total time: 0:00:19 (0.7246 s / it)
+* Acc@1 81.880 Acc@5 96.720 loss 0.721
+-0.1617262214422226 0.7737572193145752
+Accuracy on 2500 test images: 81.9%

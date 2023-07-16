@@ -19,7 +19,6 @@ from torchvision import datasets, transforms
 from timm.models import create_model
 from timm.utils import accuracy
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from speed_test import replace_batchnorm # FIXME: only for LeViT?
 
 import levit
 import levit_c
@@ -175,12 +174,14 @@ class MetricLogger(object):
         print('{} Total time: {} ({:.4f} s / it)'.format(
             header, total_time_str, total_time / len(iterable)))
 
+
 def get_args_parser():
     parser = argparse.ArgumentParser(
         'LeViT training and evaluation script', add_help=False)
     parser.add_argument('--batch-size', default=64, type=int)
 
     # Model parameters
+    parser.add_argument('--input-size', default=224, type=int)
     parser.add_argument('--model', default='LeViT_256', type=str, metavar='MODEL',
                         help='Name of model to train')
 
@@ -197,6 +198,7 @@ def get_args_parser():
 
     # Dataset parameters
     parser.add_argument('--data-path', default='imagenet/val', type=str, help='dataset path')
+    parser.add_argument('--subset-div', default=1, type=int)
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--pin-mem', action='store_true',
@@ -219,36 +221,28 @@ def pil_loader_BGR(path: str) -> Image.Image:
         R, G, B = img.convert("RGB").split()
         return Image.merge("RGB", (B, G, R))
 
-def build_dataset(args):
+def get_transform(args):
     is_resnet50  = "resnet50" in args.model
     is_edgenext  = "edgenext" in args.model
     is_mobilevit = "mobilevit" in args.model
-    is_mobilevitv1 = "mobilevit_" in args.model
     is_efficientnetv2_b3 = "efficientnetv2_b3" in args.model
-
-    if args.model in resolution_dict:
-        input_size = resolution_dict[args.model]
-    elif is_mobilevit or is_edgenext:
-        input_size = 256
-    else:
-        input_size = 224
 
     t = []
 
     if is_resnet50 or args.usi_eval: # for EdgeNeXt
         crop_pct = 0.95
-        size = int(input_size / crop_pct)
+        size = int(args.input_size / crop_pct)
     elif is_edgenext:
         crop_pct = 224 / 256
-        size = int(input_size / crop_pct)
+        size = int(args.input_size / crop_pct)
     else:
-        size = input_size + 32
+        size = args.input_size + 32
 
     t.append(
         # to maintain same ratio w.r.t. 224 images
         transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC),
     )
-    t.append(transforms.CenterCrop(input_size))
+    t.append(transforms.CenterCrop(args.input_size))
     t.append(transforms.ToTensor())
     if is_mobilevit:
         pass
@@ -257,14 +251,17 @@ def build_dataset(args):
     else:
         t.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
 
+    return transforms.Compose(t)
+
+def build_dataset(args):
+
     root = os.path.join(args.data_path)
-    loader = pil_loader_BGR if is_mobilevitv1 else pil_loader_RGB
-    dataset = datasets.ImageFolder(root, transform=transforms.Compose(t), loader=loader)
+    loader = pil_loader_BGR if "mobilevit_" in args.model else pil_loader_RGB
+    dataset = datasets.ImageFolder(root, transform=get_transform(args), loader=loader)
 
-    args.subset = len(dataset) == 2500
-    nb_classes = 1000
+    args.subset_div = 50000//len(dataset)
 
-    return dataset, nb_classes
+    return dataset
 
 @torch.no_grad()
 def evaluate(data_loader, model, device, args):
@@ -279,7 +276,8 @@ def evaluate(data_loader, model, device, args):
     for images, target in metric_logger.log_every(data_loader, 50, header):
         batch_size = images.shape[0]
         non_blocking = batch_size > 1
-        if args.subset: target = target * 20
+        target = target * args.subset_div + 15 if args.subset_div == 50 else 0
+
         images = images.to(device, non_blocking=non_blocking)
         target = target.to(device, non_blocking=non_blocking)
 
@@ -333,13 +331,9 @@ def main(args):
         model.load_state_dict(weights_dict)
 
     if args.fuse:
-        replace_batchnorm(model)  # TODO: acc val speed & acc
+        levit.replace_batchnorm(model)  # TODO: acc val speed & acc
 
     model.to(device)
-
-    if args.batch_size == 1:
-        args.num_workers = 1
-    print(args)
 
     n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print('number of params:', n_parameters)
@@ -347,9 +341,21 @@ def main(args):
     # fix the seed for reproducibility
     torch.manual_seed(0)
     np.random.seed(0)
-
     cudnn.benchmark = True # TODO:?
-    dataset_val, args.nb_classes = build_dataset(args=args)
+
+    if args.model in resolution_dict:
+        args.input_size = resolution_dict[args.model]
+    elif "edgenext" in args.model or "mobilevit" in args.model:
+        args.input_size = 256
+
+    if args.batch_size == 1:
+        args.num_workers = 1
+
+    dataset_val = build_dataset(args=args)
+
+    # summarize the final args
+    print(args)
+
     sampler_val = torch.utils.data.SequentialSampler(dataset_val)
     data_loader_val = torch.utils.data.DataLoader(
         dataset_val,

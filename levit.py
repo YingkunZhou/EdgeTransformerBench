@@ -68,6 +68,28 @@ def LeViT_384(num_classes=1000, distillation=True,
 FLOPS_COUNTER = 0
 
 
+# FIXME: only for LeViT?
+def replace_batchnorm(net):
+    for child_name, child in net.named_children():
+        if hasattr(child, 'fuse'):
+            setattr(net, child_name, child.fuse())
+        elif isinstance(child, torch.nn.Conv2d):
+            child.bias = torch.nn.Parameter(torch.zeros(child.weight.size(0)))
+        elif isinstance(child, torch.nn.BatchNorm2d):
+            setattr(net, child_name, torch.nn.Identity())
+        else:
+            replace_batchnorm(child)
+
+
+def replace_layernorm(net):
+    import apex
+    for child_name, child in net.named_children():
+        if isinstance(child, torch.nn.LayerNorm):
+            setattr(net, child_name, apex.normalization.FusedLayerNorm(
+                child.weight.size(0)))
+        else:
+            replace_layernorm(child)
+
 class Conv2d_BN(torch.nn.Sequential):
     def __init__(self, a, b, ks=1, stride=1, pad=0, dilation=1,
                  groups=1, bn_weight_init=1, resolution=-10000):

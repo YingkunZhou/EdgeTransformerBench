@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from timm.models import create_model
-
+from main import get_transform, build_dataset, evaluate
 
 import levit
 import levit_c
@@ -25,29 +25,6 @@ import mobilevit
 import mobilevit_v2
 
 torch.autograd.set_grad_enabled(False)
-
-
-def replace_batchnorm(net):
-    for child_name, child in net.named_children():
-        if hasattr(child, 'fuse'):
-            setattr(net, child_name, child.fuse())
-        elif isinstance(child, torch.nn.Conv2d):
-            child.bias = torch.nn.Parameter(torch.zeros(child.weight.size(0)))
-        elif isinstance(child, torch.nn.BatchNorm2d):
-            setattr(net, child_name, torch.nn.Identity())
-        else:
-            replace_batchnorm(child)
-
-
-def replace_layernorm(net):
-    import apex
-    for child_name, child in net.named_children():
-        if isinstance(child, torch.nn.LayerNorm):
-            setattr(net, child_name, apex.normalization.FusedLayerNorm(
-                child.weight.size(0)))
-        else:
-            replace_layernorm(child)
-
 
 WARMUP_SEC = 5
 TEST_SEC  = 20
@@ -102,43 +79,9 @@ def benchmarking_cuda(model, inputs):
     time_median = np.median(time_list) * 1000
     print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
 
-def get_transform(model_name, usi_eval=False, input_size=224):
-    is_resnet50  = "resnet50"  in model_name
-    is_edgenext  = "edgenext"  in model_name
-    is_mobilevit = "mobilevit" in model_name
-    is_efficientnetv2_b3 = "efficientnetv2_b3" in model_name
 
-    t = []
-
-    if is_resnet50 or usi_eval: # for EdgeNeXt
-        crop_pct = 0.95
-        size = int(input_size / crop_pct)
-    elif is_edgenext:
-        crop_pct = 224 / 256
-        size = int(input_size / crop_pct)
-    else:
-        size = input_size + 32
-
-    t.append(
-        # to maintain same ratio w.r.t. 224 images
-        transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC),
-    )
-    t.append(transforms.CenterCrop(input_size))
-
-    t.append(transforms.ToTensor())
-    if is_mobilevit:
-        pass
-    elif is_efficientnetv2_b3:
-        t.append(transforms.Normalize([0.5,0.5,0.5], [0.5,0.5,0.5]))
-    else:
-        t.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
-
-    return transforms.Compose(t)
-
-
-def load_image(model_name, usi_eval=False, input_size=224):
-
-    data_transform = get_transform(model_name, usi_eval, input_size)
+def load_image(args):
+    data_transform = get_transform(args)
     image = Image.open('daisy.jpg')
     # [N, C, H, W]
     image = data_transform(image)
@@ -152,10 +95,13 @@ def get_args_parser():
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--fuse', action='store_true', default=False)
+    parser.add_argument('--usi_eval', action='store_true', default=False)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
+    parser.add_argument('--only-test', default='zzz', type=str, help='only test a certain model series')
     # Dataset parameters
-    parser.add_argument('--data-path', default='imagenet-div20', type=str, help='dataset path')
+    parser.add_argument('--data-path', default='imagenet-div50', type=str, help='dataset path')
+    parser.add_argument('--num_workers', default=2, type=int)
     # Benchmark parameters
     parser.set_defaults(cpu=True)
     parser.add_argument('--no-cpu', action='store_false', dest='cpu')
@@ -219,10 +165,10 @@ if __name__ == '__main__':
             ('mobilevit_x_small' , 256, False, "mobilevit_xs.pt"),
             ('mobilevit_small'   , 256, False, "mobilevit_s.pt"),
 
-            ('LeViT_128S', 224, False, "LeViT-128S-96703c44.pth"),
-            ('LeViT_128' , 224, False, "LeViT-128-b88c2750.pth"),
-            ('LeViT_192' , 224, False, "LeViT-192-92712e41.pth"),
-            ('LeViT_256' , 224, False, "LeViT-256-13b5763e.pth"),
+            ('LeViT_128S', 224, False, "LeViT-128S.pth"),
+            ('LeViT_128' , 224, False, "LeViT-128.pth"),
+            ('LeViT_192' , 224, False, "LeViT-192.pth"),
+            ('LeViT_256' , 224, False, "LeViT-256.pth"),
 
             ('resnet50', 224, True, ""),
             ('mobilenetv3_large_100', 224, True, ""),
@@ -231,8 +177,12 @@ if __name__ == '__main__':
             ('tf_efficientnetv2_b2' , 260, True, ""),
             ('tf_efficientnetv2_b3' , 300, True, ""),
         ]:
+            if args.only_test not in name:
+                continue
 
-            usi_eval = False
+            args.usi_eval = False
+            args.model = name
+            args.input_size = resolution
 
             print(f"Creating model: {name}")
             model = create_model(
@@ -245,7 +195,7 @@ if __name__ == '__main__':
                 # print(weights_dict.keys())
 
                 if "state_dict" in weights_dict:
-                    usi_eval = True
+                    args.usi_eval = True
                     weights_dict = weights_dict["state_dict"]
                 elif "model" in weights_dict:
                     weights_dict = weights_dict["model"]
@@ -259,18 +209,28 @@ if __name__ == '__main__':
                 model.load_state_dict(weights_dict)
 
             if args.fuse:
-                replace_batchnorm(model)  # TODO: acc val speed & acc
+                levit.replace_batchnorm(model)  # TODO: acc val speed & acc
 
             model.to(device)
             model.eval()
-
-            # load test image
-            inputs = load_image(
-                name,
-                usi_eval=usi_eval,
-                input_size=resolution,
-            ).to(device)
-
+            inputs = torch.randn(args.batch_size, 3, resolution,
+                             resolution, device=device)
             trace_model = torch.jit.trace(model, inputs)
-            benchmarking(trace_model, inputs)
 
+            if False:
+                # load test image
+                inputs = load_image(args).to(device)
+                benchmarking(trace_model, inputs)
+            else:
+                dataset_val = build_dataset(args=args)
+                sampler_val = torch.utils.data.SequentialSampler(dataset_val)
+                data_loader_val = torch.utils.data.DataLoader(
+                    dataset_val,
+                    sampler=sampler_val,
+                    batch_size=args.batch_size,
+                    num_workers=args.num_workers,
+                    drop_last=False
+                )
+
+                test_stats = evaluate(data_loader_val, model, device, args)
+                print(f"Accuracy on {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
