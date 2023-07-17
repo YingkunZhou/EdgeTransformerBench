@@ -190,15 +190,12 @@ def get_args_parser():
     parser.add_argument('--model-ema', action='store_true', default=False)
     parser.add_argument('--extern', action='store_true', default=False)
 
-    parser.add_argument('--usi_eval', action='store_true', default=False,
-                        help="Enable it when testing USI model.")
     parser.add_argument('--use_amp', action='store_true', default=False,
                         help="Use PyTorch's AMP (Automatic Mixed Precision) or not")
     parser.add_argument('--num_workers', default=10, type=int)
 
     # Dataset parameters
     parser.add_argument('--data-path', default='imagenet/val', type=str, help='dataset path')
-    parser.add_argument('--subset-div', default=1, type=int)
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--pin-mem', action='store_true',
@@ -301,14 +298,15 @@ def evaluate(data_loader, model, device, args):
           .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))
     print(output.mean().item(), output.std().item())
 
-    return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
+    test_stats = {k: meter.global_avg for k, meter in metric_logger.meters.items()}
+    print(f"Accuracy on {args.len_dataset_val} test images: {test_stats['acc1']:.1f}%")
 
 def main(args):
     device = torch.device(args.device)
 
     print(f"Creating model: {args.model}")
     model = create_model(args.model, pretrained=args.extern)
-
+    args.usi_eval = False
     if not args.extern:
         # load model weights
         weights_dict = torch.load(args.weights, map_location="cpu")
@@ -365,9 +363,8 @@ def main(args):
         pin_memory=args.pin_mem,
         drop_last=False
     )
-
-    test_stats = evaluate(data_loader_val, model, device, args)
-    print(f"Accuracy on {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
+    args.len_dataset_val = len(dataset_val)
+    evaluate(data_loader_val, model, device, args)
 
 resolution_dict = {
     'tf_efficientnetv2_b0': 224,

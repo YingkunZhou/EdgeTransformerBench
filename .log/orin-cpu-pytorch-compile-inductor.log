@@ -1,0 +1,115 @@
+$ OMP_NUM_THREADS=1 python speed_test.py --use-compile
+nb processors 12
+model name      : ARMv8 Processor rev 1 (v8l)
+Using 1 cpu thread
+Creating model: efficientformerv2_s0
+[(985, 11.767030715942383), (644, 4.848299026489258), (108, 3.925724983215332)]
+min =  243.26ms  max =  246.24ms  mean =  244.52ms, median =  244.48ms
+Creating model: efficientformerv2_s1
+[(985, 13.112428665161133), (89, 4.162660598754883), (984, 4.077526569366455)]
+min =  352.71ms  max =  355.59ms  mean =  354.29ms, median =  354.26ms
+Creating model: efficientformerv2_s2
+[(985, 12.485471725463867), (22, 3.693230152130127), (309, 3.6920013427734375)]
+min =  598.79ms  max =  605.68ms  mean =  602.05ms, median =  602.29ms
+Creating model: SwiftFormer_XS
+[(985, 11.914163589477539), (883, 5.001732349395752), (310, 4.622920036315918)]
+min =  147.37ms  max =  178.27ms  mean =  148.39ms, median =  148.08ms
+Creating model: SwiftFormer_S
+[(985, 12.528478622436523), (89, 4.334187984466553), (720, 4.178120136260986)]
+min =  207.64ms  max =  220.70ms  mean =  209.15ms, median =  208.94ms
+Creating model: SwiftFormer_L1
+[(985, 13.23362922668457), (309, 3.9212913513183594), (310, 3.807558536529541)]
+min =  293.07ms  max =  303.82ms  mean =  294.23ms, median =  294.05ms
+Creating model: EMO_1M
+[(985, 10.011185646057129), (309, 4.270287036895752), (310, 3.913449764251709)]
+min =  169.41ms  max =  182.71ms  mean =  170.85ms, median =  170.63ms
+Creating model: EMO_2M
+[(985, 9.367953300476074), (309, 3.2598671913146973), (308, 3.008145570755005)]
+min =  233.46ms  max =  248.34ms  mean =  235.70ms, median =  235.38ms
+Creating model: EMO_5M
+[(985, 9.141464233398438), (883, 2.9905529022216797), (308, 2.4543867111206055)]
+min =  367.23ms  max =  380.19ms  mean =  369.89ms, median =  369.65ms
+Creating model: EMO_6M
+[2023-07-16 17:28:44,722] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+   function: 'forward' (/home/loongson/work/EdgeTransformerPerf/emo.py:173)
+   reasons:  ___guarded_code.valid
+to diagnose recompilation issues, see https://pytorch.org/docs/master/dynamo/troubleshooting.html.
+[2023-07-16 17:28:54,433] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+   function: '<graph break in _apply_recipe>' (/home/loongson/miniforge3/envs/py3.8/lib/python3.8/site-packages/einops/einops.py:235)
+   reasons:  len(___stack0[0]) == 2
+to diagnose recompilation issues, see https://pytorch.org/docs/master/dynamo/troubleshooting.html.
+[(985, 9.39677619934082), (883, 2.2409346103668213), (309, 2.0838582515716553)]
+[2023-07-16 17:29:06,058] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+   function: 'forward' (/home/loongson/work/EdgeTransformerPerf/emo.py:105)
+   reasons:  ___check_obj_id(self, 281470403040784)
+to diagnose recompilation issues, see https://pytorch.org/docs/master/dynamo/troubleshooting.html.
+min =  363.08ms  max = 9506.26ms  mean =  751.23ms, median =  364.97ms
+Creating model: edgenext_xx_small
+[(985, 10.885461807250977), (309, 4.954110622406006), (310, 4.63860559463501)]
+min =   82.11ms  max =   84.37ms  mean =   82.62ms, median =   82.55ms
+Creating model: edgenext_x_small
+[(985, 9.799910545349121), (309, 4.595181941986084), (308, 3.8170084953308105)]
+min =  159.36ms  max =  163.87ms  mean =  160.43ms, median =  160.42ms
+Creating model: edgenext_small
+[(985, 12.15630054473877), (309, 4.532576084136963), (308, 4.049805641174316)]
+min =  270.98ms  max =  292.69ms  mean =  274.83ms, median =  273.74ms
+Creating model: mobilevitv2_050
+[(985, 8.349016189575195), (309, 2.5841331481933594), (584, 2.3194339275360107)]
+min =  113.79ms  max =  126.84ms  mean =  115.01ms, median =  114.60ms
+Creating model: mobilevitv2_075
+[(985, 8.164342880249023), (309, 2.387441873550415), (308, 1.858494520187378)]
+min =  192.68ms  max =  195.42ms  mean =  193.75ms, median =  193.72ms
+Creating model: mobilevitv2_100
+[(985, 8.236350059509277), (557, 2.224104881286621), (309, 1.8535453081130981)]
+min =  279.83ms  max =  282.26ms  mean =  280.95ms, median =  280.89ms
+Creating model: mobilevitv2_125
+[(985, 8.27274227142334), (309, 2.013662338256836), (883, 1.3231309652328491)]
+min =  387.23ms  max =  391.10ms  mean =  389.23ms, median =  389.28ms
+Creating model: mobilevitv2_150
+[(985, 9.097098350524902), (308, 2.224853277206421), (301, 2.1440515518188477)]
+min =  502.43ms  max =  507.16ms  mean =  504.22ms, median =  503.91ms
+Creating model: mobilevitv2_175
+[(985, 8.880804061889648), (494, 2.080718994140625), (968, 1.885861873626709)]
+min =  638.83ms  max =  674.50ms  mean =  644.24ms, median =  641.08ms
+Creating model: mobilevitv2_200
+[(985, 8.54810905456543), (309, 2.226928234100342), (883, 2.213779926300049)]
+min =  782.54ms  max =  787.21ms  mean =  784.09ms, median =  783.98ms
+Creating model: mobilevit_xx_small
+[(985, 11.448776245117188), (946, 6.141322612762451), (883, 6.119368076324463)]
+min =  103.48ms  max =  109.30ms  mean =  104.43ms, median =  104.38ms
+Creating model: mobilevit_x_small
+[(985, 11.413055419921875), (723, 7.128034591674805), (470, 5.874290466308594)]
+min =  230.22ms  max =  234.88ms  mean =  231.31ms, median =  231.11ms
+Creating model: mobilevit_small
+[(985, 12.880533218383789), (605, 6.013975143432617), (838, 5.907942295074463)]
+min =  328.14ms  max =  333.79ms  mean =  329.87ms, median =  329.69ms
+Creating model: LeViT_128S
+[(985, 11.427821159362793), (308, 3.451136350631714), (309, 3.3197598457336426)]
+min =   42.75ms  max =   45.00ms  mean =   43.04ms, median =   42.99ms
+Creating model: LeViT_128
+[(985, 11.089762687683105), (309, 3.4090380668640137), (113, 3.385418176651001)]
+min =   56.47ms  max =   58.36ms  mean =   56.82ms, median =   56.79ms
+Creating model: LeViT_192
+[(985, 11.594852447509766), (308, 3.1863527297973633), (644, 3.1779212951660156)]
+min =   73.68ms  max =   82.31ms  mean =   74.22ms, median =   74.04ms
+Creating model: LeViT_256
+[(985, 11.363819122314453), (108, 3.3411948680877686), (310, 2.9294915199279785)]
+min =  115.14ms  max =  118.43ms  mean =  115.61ms, median =  115.55ms
+Creating model: resnet50
+[(985, 7.443351745605469), (113, -5.051445960998535), (310, -5.506587028503418)]
+min =  341.60ms  max =  350.50ms  mean =  343.40ms, median =  342.98ms
+Creating model: mobilenetv3_large_100
+[(985, 9.5927095413208), (308, 2.3542752265930176), (310, 2.3370487689971924)]
+min =  118.25ms  max =  134.60ms  mean =  120.23ms, median =  119.51ms
+Creating model: tf_efficientnetv2_b0
+[(985, 9.554756164550781), (309, 2.3783438205718994), (108, 2.2891335487365723)]
+min =  262.46ms  max =  278.33ms  mean =  264.83ms, median =  264.44ms
+Creating model: tf_efficientnetv2_b1
+[(985, 9.484580039978027), (861, 2.2585251331329346), (309, 2.1344895362854004)]
+min =  357.25ms  max =  361.89ms  mean =  359.63ms, median =  359.65ms
+Creating model: tf_efficientnetv2_b2
+[(985, 9.816821098327637), (883, 2.518671751022339), (113, 2.0461432933807373)]
+min =  435.29ms  max =  442.63ms  mean =  437.25ms, median =  437.06ms
+Creating model: tf_efficientnetv2_b3
+[(985, 9.089397430419922), (955, 2.892822027206421), (947, 2.1881442070007324)]
+min =  667.72ms  max =  675.55ms  mean =  671.27ms, median =  671.13ms

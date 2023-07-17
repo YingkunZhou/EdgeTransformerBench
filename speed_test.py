@@ -95,25 +95,32 @@ def get_args_parser():
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--fuse', action='store_true', default=False)
-    parser.add_argument('--usi_eval', action='store_true', default=False)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
-    parser.add_argument('--only-test', default='zzz', type=str, help='only test a certain model series')
+    parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
     # Dataset parameters
+    parser.add_argument('--validation', action='store_true', default=False)
     parser.add_argument('--data-path', default='imagenet-div50', type=str, help='dataset path')
     parser.add_argument('--num_workers', default=2, type=int)
     # Benchmark parameters
     parser.set_defaults(cpu=True)
     parser.add_argument('--no-cpu', action='store_false', dest='cpu')
     parser.add_argument('--cuda', action='store_true', default=False)
+    parser.add_argument('--use-eager', action='store_true', default=False)
+    parser.add_argument('--use-script', action='store_true', default=False)
+    parser.add_argument('--use-trace', action='store_true', default=False)
+    parser.add_argument('--use-compile', action='store_true', default=False)
     parser.add_argument('--use_amp', action='store_true', default=False,
                         help="Use PyTorch's AMP (Automatic Mixed Precision) or not") #TODO: much slower?
+    parser.add_argument('--backend', default='inductor', type=str, help='pytorch compile backend')
+
     return parser
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('EdgeTransformerPerf evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
 
+    torch.backends.cudnn.benchmark = True # TODO:?
     device_list = []
     if args.cpu: device_list.append('cpu')
     if args.cuda: device_list.append('cuda:0')
@@ -177,7 +184,7 @@ if __name__ == '__main__':
             ('tf_efficientnetv2_b2' , 260, True, ""),
             ('tf_efficientnetv2_b3' , 300, True, ""),
         ]:
-            if args.only_test not in name:
+            if args.only_test and args.only_test not in name:
                 continue
 
             args.usi_eval = False
@@ -213,15 +220,23 @@ if __name__ == '__main__':
 
             model.to(device)
             model.eval()
-            inputs = torch.randn(args.batch_size, 3, resolution,
-                             resolution, device=device)
-            trace_model = torch.jit.trace(model, inputs)
 
-            if False:
-                # load test image
-                inputs = load_image(args).to(device)
-                benchmarking(trace_model, inputs)
-            else:
+            if args.use_script:
+                script_model = torch.jit.script(model)
+            if args.use_trace:
+                inputs = torch.randn(
+                    1, #args.batch_size, TODO: here we only support single batch size benchmarking
+                    3, resolution,
+                    resolution, device=device
+                )
+                trace_model = torch.jit.trace(model, inputs)
+            if args.use_compile:
+                import torch._dynamo as dynamo
+                # dynamo.config.verbose=True
+                # dynamo.config.suppress_errors = True
+                compile_model = torch.compile(model, backend=args.backend)
+
+            if args.validation:
                 dataset_val = build_dataset(args=args)
                 sampler_val = torch.utils.data.SequentialSampler(dataset_val)
                 data_loader_val = torch.utils.data.DataLoader(
@@ -231,6 +246,25 @@ if __name__ == '__main__':
                     num_workers=args.num_workers,
                     drop_last=False
                 )
+                args.len_dataset_val = len(dataset_val)
 
-                test_stats = evaluate(data_loader_val, model, device, args)
-                print(f"Accuracy on {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
+                if args.use_eager:
+                    evaluate(data_loader_val, model, device, args)
+                if args.use_script:
+                    evaluate(data_loader_val, script_model, device, args)
+                if args.use_trace:
+                    evaluate(data_loader_val, trace_model, device, args)
+                if args.use_compile:
+                    evaluate(data_loader_val, compile_model, device, args)
+            else:
+                # load test image
+                inputs = load_image(args=args).to(device)
+
+                if args.use_eager:
+                    benchmarking(model, inputs)
+                if args.use_script:
+                    benchmarking(script_model, inputs)
+                if args.use_trace:
+                    benchmarking(trace_model, inputs)
+                if args.use_compile:
+                    benchmarking(compile_model, inputs)
