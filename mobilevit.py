@@ -767,19 +767,19 @@ class MobileViT(nn.Module):
         return x
 
 @register_model
-def mobilevit_xx_small(coreml=False, **kwargs):
+def mobilevit_xx_small(coreml=True, **kwargs):
     config = get_config("xx_small")
     model = MobileViT(model_cfg=config, coreml=coreml, **kwargs)
     return model
 
 @register_model
-def mobilevit_x_small(coreml=False, **kwargs):
+def mobilevit_x_small(coreml=True, **kwargs):
     config = get_config("x_small")
     model = MobileViT(model_cfg=config, coreml=coreml, **kwargs)
     return model
 
 @register_model
-def mobilevit_small(coreml=False, **kwargs):
+def mobilevit_small(coreml=True, **kwargs):
     config = get_config("small")
     model = MobileViT(model_cfg=config, coreml=coreml, **kwargs)
     return model

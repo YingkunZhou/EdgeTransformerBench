@@ -315,6 +315,10 @@ class MobileViTBlockv2(nn.Module):
     def folding_coreml(self, patches: Tensor, output_size: Tuple[int, int]) -> Tensor:
         # col2im is not supported on coreml, so tracing fails
         # We hack folding function via pixel_shuffle to enable coreml tracing
+        # col2im is also not supported on onnx:
+        # Exporting the operator 'aten::col2im' to ONNX opset version 14 is not supported.
+        # Support for this operator was added in version 18, try exporting with this version. ?!
+        # https://github.com/onnx/onnx/pull/3948
         batch_size, in_dim, patch_size, n_patches = patches.shape
 
         n_patches_h = output_size[0] // self.patch_h
@@ -514,43 +518,43 @@ class MobileViTv2(nn.Module):
         return x
 
 @register_model
-def mobilevitv2_050(coreml=False, **kwargs):
+def mobilevitv2_050(coreml=True, **kwargs):
     config = get_config("0.50")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m
 
 @register_model
-def mobilevitv2_075(coreml=False, **kwargs):
+def mobilevitv2_075(coreml=True, **kwargs):
     config = get_config("0.75")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m
 
 @register_model
-def mobilevitv2_100(coreml=False, **kwargs):
+def mobilevitv2_100(coreml=True, **kwargs):
     config = get_config("1.00")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m
 
 @register_model
-def mobilevitv2_125(coreml=False, **kwargs):
+def mobilevitv2_125(coreml=True, **kwargs):
     config = get_config("1.25")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m
 
 @register_model
-def mobilevitv2_150(coreml=False, **kwargs):
+def mobilevitv2_150(coreml=True, **kwargs):
     config = get_config("1.50")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m
 
 @register_model
-def mobilevitv2_175(coreml=False, **kwargs):
+def mobilevitv2_175(coreml=True, **kwargs):
     config = get_config("1.75")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m
 
 @register_model
-def mobilevitv2_200(coreml=False, **kwargs):
+def mobilevitv2_200(coreml=True, **kwargs):
     config = get_config("2.00")
     m = MobileViTv2(model_cfg=config, coreml=coreml, **kwargs)
     return m

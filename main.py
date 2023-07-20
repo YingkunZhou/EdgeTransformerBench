@@ -177,7 +177,7 @@ class MetricLogger(object):
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
-        'LeViT training and evaluation script', add_help=False)
+        'EdgeTransformerPerf evaluation script', add_help=False)
     parser.add_argument('--batch-size', default=64, type=int)
 
     # Model parameters
@@ -251,14 +251,9 @@ def get_transform(args):
     return transforms.Compose(t)
 
 def build_dataset(args):
-
     root = os.path.join(args.data_path)
     loader = pil_loader_BGR if "mobilevit_" in args.model else pil_loader_RGB
-    dataset = datasets.ImageFolder(root, transform=get_transform(args), loader=loader)
-
-    args.subset_div = 50000//len(dataset)
-
-    return dataset
+    return datasets.ImageFolder(root, transform=get_transform(args), loader=loader)
 
 @torch.no_grad()
 def evaluate(data_loader, model, device, args):
@@ -270,10 +265,11 @@ def evaluate(data_loader, model, device, args):
     # switch to evaluation mode
     model.eval()
 
+    dataset_scale = 50000//args.len_dataset_val
     for images, target in metric_logger.log_every(data_loader, 50, header):
         batch_size = images.shape[0]
         non_blocking = batch_size > 1
-        target = target * args.subset_div + 15 if args.subset_div == 50 else 0
+        target = target * dataset_scale + (15 if dataset_scale == 50 else 0)
 
         images = images.to(device, non_blocking=non_blocking)
         target = target.to(device, non_blocking=non_blocking)
@@ -305,7 +301,10 @@ def main(args):
     device = torch.device(args.device)
 
     print(f"Creating model: {args.model}")
-    model = create_model(args.model, pretrained=args.extern)
+    model = create_model(
+        args.model,
+        pretrained=args.extern,
+    )
     args.usi_eval = False
     if not args.extern:
         # load model weights
@@ -349,7 +348,7 @@ def main(args):
     if args.batch_size == 1:
         args.num_workers = 1
 
-    dataset_val = build_dataset(args=args)
+    dataset_val = build_dataset(args)
 
     # summarize the final args
     print(args)

@@ -1,0 +1,108 @@
+commit:
+    time: Tue Jul 18 14:24:51 2023
+    id: 9ba5cdbaa481550f86c53826c83bc094eafc2594
+build:
+    ./build.sh --config Release --build_shared_lib --parallel --skip_tests --use_cuda --cuda_home /usr/local/cuda --cudnn_home /usr/local/cuda --use_tensorrt --tensorrt_home /usr/local/cuda --build_wheel
+$ python onnxruntime_perf.py --no-IOBinding
+nb processors 12
+model name      : ARMv8 Processor rev 1 (v8l)
+Using 1 cpu thread
+Creating onnx runtime session: efficientformerv2_s0
+[(985, 11.767032623291016), (644, 4.848296165466309), (108, 3.9257211685180664)]
+min =   65.47ms  max =   67.70ms  mean =   66.73ms, median =   66.81ms
+Creating onnx runtime session: efficientformerv2_s1
+[(985, 13.112436294555664), (89, 4.162658214569092), (984, 4.0775251388549805)]
+min =  100.59ms  max =  103.27ms  mean =  102.48ms, median =  102.71ms
+Creating onnx runtime session: efficientformerv2_s2
+[(985, 12.485475540161133), (22, 3.6932291984558105), (309, 3.692002296447754)]
+min =  171.09ms  max =  178.62ms  mean =  174.21ms, median =  174.28ms
+Creating onnx runtime session: SwiftFormer_XS
+[(985, 11.914161682128906), (883, 5.0017313957214355), (310, 4.622918128967285)]
+min =   70.09ms  max =   73.67ms  mean =   71.61ms, median =   71.69ms
+Creating onnx runtime session: SwiftFormer_S
+[(985, 12.52847671508789), (89, 4.3341875076293945), (720, 4.178122043609619)]
+min =  102.18ms  max =  107.21ms  mean =  104.33ms, median =  104.48ms
+Creating onnx runtime session: SwiftFormer_L1
+[(985, 13.233634948730469), (309, 3.921290874481201), (310, 3.807558536529541)]
+min =  153.82ms  max =  157.94ms  mean =  157.27ms, median =  157.53ms
+Creating onnx runtime session: EMO_1M
+[(985, 10.011185646057129), (309, 4.270286560058594), (310, 3.913450241088867)]
+min =   48.15ms  max =   52.63ms  mean =   49.49ms, median =   49.58ms
+Creating onnx runtime session: EMO_2M
+[(985, 9.36795425415039), (309, 3.2598676681518555), (308, 3.0081472396850586)]
+min =   71.65ms  max =   76.78ms  mean =   73.64ms, median =   73.75ms
+Creating onnx runtime session: EMO_5M
+[(985, 9.141463279724121), (883, 2.990553379058838), (308, 2.4543874263763428)]
+min =  124.12ms  max =  128.06ms  mean =  126.99ms, median =  127.18ms
+Creating onnx runtime session: EMO_6M
+[(985, 9.396777153015137), (883, 2.240934133529663), (309, 2.083860158920288)]
+min =  130.59ms  max =  139.09ms  mean =  133.87ms, median =  134.01ms
+Creating onnx runtime session: edgenext_xx_small
+[(985, 10.88546371459961), (309, 4.954110622406006), (310, 4.638607025146484)]
+min =   39.10ms  max =   40.28ms  mean =   39.93ms, median =   40.01ms
+Creating onnx runtime session: edgenext_x_small
+[(985, 9.799910545349121), (309, 4.595180988311768), (308, 3.8170089721679688)]
+min =   74.70ms  max =  127.66ms  mean =   76.57ms, median =   76.22ms
+Creating onnx runtime session: edgenext_small
+[(985, 12.156296730041504), (309, 4.5325775146484375), (308, 4.049806594848633)]
+min =  138.97ms  max =  142.86ms  mean =  142.07ms, median =  142.32ms
+Creating onnx runtime session: mobilevitv2_050
+[(985, 8.349034309387207), (309, 2.5841317176818848), (584, 2.3194077014923096)]
+min =   54.44ms  max =   58.48ms  mean =   56.08ms, median =   56.13ms
+Creating onnx runtime session: mobilevitv2_075
+[(985, 8.164345741271973), (309, 2.3874449729919434), (308, 1.8584978580474854)]
+min =  101.83ms  max =  105.94ms  mean =  104.83ms, median =  105.03ms
+Creating onnx runtime session: mobilevitv2_100
+[(985, 8.23635482788086), (557, 2.2240962982177734), (309, 1.8535709381103516)]
+min =  163.26ms  max =  175.47ms  mean =  168.59ms, median =  168.68ms
+Creating onnx runtime session: mobilevitv2_125
+[(985, 8.272744178771973), (309, 2.013664484024048), (883, 1.3231403827667236)]
+min =  240.89ms  max =  257.70ms  mean =  248.50ms, median =  248.21ms
+Creating onnx runtime session: mobilevitv2_150
+[(985, 9.09708023071289), (308, 2.2248499393463135), (301, 2.144042730331421)]
+min =  333.60ms  max =  346.70ms  mean =  341.20ms, median =  341.84ms
+Creating onnx runtime session: mobilevitv2_175
+[(985, 8.88078498840332), (494, 2.0807034969329834), (968, 1.8858610391616821)]
+min =  443.06ms  max =  456.98ms  mean =  452.13ms, median =  453.00ms
+Creating onnx runtime session: mobilevitv2_200
+[(985, 8.548133850097656), (309, 2.2269647121429443), (883, 2.213731527328491)]
+min =  562.04ms  max =  576.29ms  mean =  571.47ms, median =  572.74ms
+Creating onnx runtime session: mobilevit_xx_small
+[(985, 11.448770523071289), (946, 6.141323089599609), (883, 6.119369029998779)]
+min =   51.77ms  max =   59.02ms  mean =   53.03ms, median =   53.05ms
+Creating onnx runtime session: mobilevit_x_small
+[(985, 11.413058280944824), (723, 7.128035545349121), (470, 5.874290943145752)]
+min =  119.17ms  max =  125.15ms  mean =  122.86ms, median =  123.01ms
+Creating onnx runtime session: mobilevit_small
+[(985, 12.880529403686523), (605, 6.013974666595459), (838, 5.907942295074463)]
+min =  190.83ms  max =  202.26ms  mean =  197.20ms, median =  197.52ms
+Creating onnx runtime session: LeViT_128S
+[(985, 11.427824020385742), (308, 3.451136589050293), (309, 3.3197643756866455)]
+min =   28.88ms  max =   38.52ms  mean =   30.84ms, median =   30.98ms
+Creating onnx runtime session: LeViT_128
+[(985, 11.089765548706055), (309, 3.409036874771118), (113, 3.385416269302368)]
+min =   38.63ms  max =   41.61ms  mean =   40.96ms, median =   41.19ms
+Creating onnx runtime session: LeViT_192
+[(985, 11.594854354858398), (308, 3.186353921890259), (644, 3.1779255867004395)]
+min =   56.46ms  max =   64.97ms  mean =   59.35ms, median =   59.41ms
+Creating onnx runtime session: LeViT_256
+[(985, 11.36382007598877), (108, 3.3411946296691895), (310, 2.9294910430908203)]
+min =   90.98ms  max =   99.32ms  mean =   95.79ms, median =   96.33ms
+Creating onnx runtime session: resnet50
+[(985, 7.443355560302734), (113, -5.0514445304870605), (310, -5.506588459014893)]
+min =  283.19ms  max =  291.85ms  mean =  290.21ms, median =  290.79ms
+Creating onnx runtime session: mobilenetv3_large_100
+[(985, 9.5927095413208), (308, 2.3542754650115967), (310, 2.337049961090088)]
+min =   28.30ms  max =   29.85ms  mean =   29.38ms, median =   29.50ms
+Creating onnx runtime session: tf_efficientnetv2_b0
+[(985, 9.554756164550781), (309, 2.378344774246216), (108, 2.289132833480835)]
+min =   71.80ms  max =   81.00ms  mean =   73.96ms, median =   73.89ms
+Creating onnx runtime session: tf_efficientnetv2_b1
+[(985, 9.484579086303711), (861, 2.2585253715515137), (309, 2.1344892978668213)]
+min =  110.83ms  max =  115.76ms  mean =  113.10ms, median =  113.24ms
+Creating onnx runtime session: tf_efficientnetv2_b2
+[(985, 9.81682014465332), (883, 2.5186715126037598), (113, 2.046142339706421)]
+min =  156.66ms  max =  164.29ms  mean =  159.89ms, median =  159.99ms
+Creating onnx runtime session: tf_efficientnetv2_b3
+[(985, 9.089397430419922), (955, 2.892822027206421), (947, 2.188145160675049)]
+min =  266.16ms  max =  272.54ms  mean =  270.98ms, median =  271.26ms

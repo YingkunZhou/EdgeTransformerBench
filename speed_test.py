@@ -6,11 +6,9 @@ https://github.com/facebookresearch/LeViT/blob/main/speed_test.py
 import argparse
 import os
 import torch
-from torchvision import transforms
 import time
 import numpy as np
 from PIL import Image
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from timm.models import create_model
 from main import get_transform, build_dataset, evaluate
 
@@ -90,7 +88,7 @@ def load_image(args):
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
-        'LeViT evaluation and speed test script', add_help=False)
+        'EdgeTransformerPerf evaluation and benchmark script', add_help=False)
     parser.add_argument('--batch-size', default=1, type=int)
     # Model parameters
     parser.set_defaults(pretrained=True)
@@ -237,7 +235,7 @@ if __name__ == '__main__':
                 compile_model = torch.compile(model, backend=args.backend)
 
             if args.validation:
-                dataset_val = build_dataset(args=args)
+                dataset_val = build_dataset(args)
                 sampler_val = torch.utils.data.SequentialSampler(dataset_val)
                 data_loader_val = torch.utils.data.DataLoader(
                     dataset_val,
