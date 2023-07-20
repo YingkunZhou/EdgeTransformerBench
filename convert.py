@@ -23,6 +23,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser(
         'EdgeTransformerPerf evaluation and benchmark script', add_help=False)
     parser.add_argument('--batch-size', default=1, type=int)
+    parser.add_argument('--opset-version', default=None, type=int)
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--fuse', action='store_true', default=False)
@@ -36,47 +37,50 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('EdgeTransformerPerf evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
 
-    for name, resolution, extern, weight in [
-        ('efficientformerv2_s0', 224, False, "eformer_s0_450.pth"),
-        ('efficientformerv2_s1', 224, False, "eformer_s1_450.pth"),
-        ('efficientformerv2_s2', 224, False, "eformer_s2_450.pth"),
+    # BackendIsNotSupposedToImplementIt: Unsqueeze version 13 is not implemented.
+    # https://github.com/onnx/onnx-tensorflow/issues/997
+    opv = args.opset_version
+    for name, resolution, extern, opset_version, weight in [
+        ('efficientformerv2_s0', 224, False, None, "eformer_s0_450.pth"),
+        ('efficientformerv2_s1', 224, False, None, "eformer_s1_450.pth"),
+        ('efficientformerv2_s2', 224, False, None, "eformer_s2_450.pth"),
 
-        ('SwiftFormer_XS', 224, False, "SwiftFormer_XS_ckpt.pth"),
-        ('SwiftFormer_S' , 224, False, "SwiftFormer_S_ckpt.pth"),
-        ('SwiftFormer_L1', 224, False, "SwiftFormer_L1_ckpt.pth"),
+        ('SwiftFormer_XS', 224, False, opv, "SwiftFormer_XS_ckpt.pth"),
+        ('SwiftFormer_S' , 224, False, opv, "SwiftFormer_S_ckpt.pth"),
+        ('SwiftFormer_L1', 224, False, opv, "SwiftFormer_L1_ckpt.pth"),
 
-        ('EMO_1M', 224, False, "EMO_1M.pth"),
-        ('EMO_2M', 224, False, "EMO_2M.pth"),
-        ('EMO_5M', 224, False, "EMO_5M.pth"),
-        ('EMO_6M', 224, False, "EMO_6M.pth"),
+        ('EMO_1M', 224, False, opv, "EMO_1M.pth"),
+        ('EMO_2M', 224, False, opv, "EMO_2M.pth"),
+        ('EMO_5M', 224, False, opv, "EMO_5M.pth"),
+        ('EMO_6M', 224, False, opv, "EMO_6M.pth"),
 
-        ('edgenext_xx_small', 256, False, "edgenext_xx_small.pth"),
-        ('edgenext_x_small' , 256, False, "edgenext_x_small.pth"),
-        ('edgenext_small'   , 256, False, "edgenext_small_usi.pth"),
+        ('edgenext_xx_small', 256, False, opv, "edgenext_xx_small.pth"),
+        ('edgenext_x_small' , 256, False, opv, "edgenext_x_small.pth"),
+        ('edgenext_small'   , 256, False, opv, "edgenext_small_usi.pth"),
 
-        ('mobilevitv2_050', 256, False, "mobilevitv2-0.5.pt"),
-        ('mobilevitv2_075', 256, False, "mobilevitv2-0.75.pt"),
-        ('mobilevitv2_100', 256, False, "mobilevitv2-1.0.pt"),
-        ('mobilevitv2_125', 256, False, "mobilevitv2-1.25.pt"),
-        ('mobilevitv2_150', 256, False, "mobilevitv2-1.5.pt"),
-        ('mobilevitv2_175', 256, False, "mobilevitv2-1.75.pt"),
-        ('mobilevitv2_200', 256, False, "mobilevitv2-2.0.pt"),
+        ('mobilevitv2_050', 256, False, None, "mobilevitv2-0.5.pt"),
+        ('mobilevitv2_075', 256, False, None, "mobilevitv2-0.75.pt"),
+        ('mobilevitv2_100', 256, False, None, "mobilevitv2-1.0.pt"),
+        ('mobilevitv2_125', 256, False, None, "mobilevitv2-1.25.pt"),
+        ('mobilevitv2_150', 256, False, None, "mobilevitv2-1.5.pt"),
+        ('mobilevitv2_175', 256, False, None, "mobilevitv2-1.75.pt"),
+        ('mobilevitv2_200', 256, False, None, "mobilevitv2-2.0.pt"),
 
-        ('mobilevit_xx_small', 256, False, "mobilevit_xxs.pt"),
-        ('mobilevit_x_small' , 256, False, "mobilevit_xs.pt"),
-        ('mobilevit_small'   , 256, False, "mobilevit_s.pt"),
+        ('mobilevit_xx_small', 256, False, opv, "mobilevit_xxs.pt"),
+        ('mobilevit_x_small' , 256, False, opv, "mobilevit_xs.pt"),
+        ('mobilevit_small'   , 256, False, opv, "mobilevit_s.pt"),
 
-        ('LeViT_128S', 224, False, "LeViT-128S.pth"),
-        ('LeViT_128' , 224, False, "LeViT-128.pth"),
-        ('LeViT_192' , 224, False, "LeViT-192.pth"),
-        ('LeViT_256' , 224, False, "LeViT-256.pth"),
+        ('LeViT_128S', 224, False, None, "LeViT-128S.pth"),
+        ('LeViT_128' , 224, False, None, "LeViT-128.pth"),
+        ('LeViT_192' , 224, False, None, "LeViT-192.pth"),
+        ('LeViT_256' , 224, False, None, "LeViT-256.pth"),
 
-        ('resnet50', 224, True, ""),
-        ('mobilenetv3_large_100', 224, True, ""),
-        ('tf_efficientnetv2_b0' , 224, True, ""),
-        ('tf_efficientnetv2_b1' , 240, True, ""),
-        ('tf_efficientnetv2_b2' , 260, True, ""),
-        ('tf_efficientnetv2_b3' , 300, True, ""),
+        ('resnet50', 224, True, None, ""),
+        ('mobilenetv3_large_100', 224, True, None, ""),
+        ('tf_efficientnetv2_b0' , 224, True, opv, ""),
+        ('tf_efficientnetv2_b1' , 240, True, opv, ""),
+        ('tf_efficientnetv2_b2' , 260, True, opv, ""),
+        ('tf_efficientnetv2_b3' , 300, True, opv, ""),
     ]:
         if args.only_convert and args.only_convert not in name:
             continue
@@ -112,5 +116,13 @@ if __name__ == '__main__':
             3, resolution, resolution,
         )
 
-        torch.onnx.export(model, inputs, 'onnx/'+name+'.onnx', export_params=True, input_names=['input'], output_names=['output'])
+        torch.onnx.export(
+            model,
+            inputs,
+            'onnx/'+name+'.onnx',
+            export_params=True,
+            input_names=['input'],
+            output_names=['output'],
+            opset_version=opset_version
+        )
 
