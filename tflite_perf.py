@@ -1,7 +1,14 @@
-import tflite_runtime.interpreter as tflite
-from speed_test import load_image
+import os
+import numpy as np
+import torch
 import argparse
 import time
+from speed_test import WARMUP_SEC, TEST_SEC
+from main import build_dataset, MetricLogger
+from timm.utils import accuracy
+from speed_test import load_image
+import tflite_runtime.interpreter as tflite
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
@@ -20,45 +27,141 @@ def get_args_parser():
 
     return parser
 
-if __name__ == '__main__':
-    parser = get_args_parser()
-    args = parser.parse_args()
-    args.usi_eval = False
-    args.input_size = 256
-    args.model = 'mobilevit_xx_small'
-    # Load the TFLite model and allocate tensors
-    interpreter = tflite.Interpreter(model_path=args.model+".tflite", num_threads=1)
-    interpreter.allocate_tensors()
+def benchmarking_tflite(interpreter, image, args):
     # Get input and output tensors
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    # Test the model on random input data
-    interpreter.set_tensor(input_details[0]['index'], load_image(args))
 
-    warmup_iterations = 10
-    test_iterations = 100
+    interpreter.set_tensor(input_details[0]['index'], image)
 
-    for i in range(warmup_iterations):
+    # warmup
+    start = time.perf_counter()
+    while time.perf_counter() - start < WARMUP_SEC:
         interpreter.invoke()
-
-    time_min = 1e5
-    time_avg = 0
-    time_max = 0
-
-    for i in range(test_iterations):
-        start_time = time.perf_counter()
-
-        interpreter.invoke()
-
-        end_time = time.perf_counter()
-        exec_time = (end_time - start_time) * 1000.0
-        time_min = exec_time if exec_time < time_min else time_min
-        time_max = exec_time if exec_time > time_max else time_max
-        time_avg += exec_time
-
-    time_avg /= test_iterations
-    print("min = {:7.2f}  max = {:7.2f}  avg = {:7.2f}".format(time_min, time_max, time_avg))
 
     # get_tensor() returns a copy of the tensor data
     # use tensor() in order to get a pointer to the tensor
-    output_data = interpreter.get_tensor(output_details[0]['index'])
+    output = interpreter.get_tensor(output_details[0]['index'])
+    val, idx = torch.Tensor(output).topk(3)
+    print(list(zip(idx[0].tolist(), val[0].tolist())))
+
+    time_list = []
+    while sum(time_list) < TEST_SEC:
+        start = time.perf_counter()
+        interpreter.invoke()
+        time_list.append(time.perf_counter() - start)
+
+    time_max = max(time_list) * 1000
+    time_min = min(time_list) * 1000
+    time_mean   = np.mean(time_list)   * 1000
+    time_median = np.median(time_list) * 1000
+    print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
+
+def evaluate(data_loader, interpreter, args):
+    criterion = torch.nn.CrossEntropyLoss()
+
+    metric_logger = MetricLogger(delimiter="  ")
+    header = 'Test:'
+
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    dataset_scale = 50000//args.len_dataset_val
+    print(dataset_scale)
+    for images, target in metric_logger.log_every(data_loader, 50, header):
+        target = target * dataset_scale + (15 if dataset_scale == 50 else 0)
+
+        interpreter.set_tensor(input_details[0]['index'], images)
+        interpreter.invoke()
+        output = interpreter.get_tensor(output_details[0]['index'])
+        output = torch.Tensor(output)
+
+        loss = criterion(output, target)
+        acc1, acc5 = accuracy(output, target, topk=(1, 5))
+        metric_logger.update(loss=loss.item())
+
+        batch_size = images.shape[0]
+        metric_logger.meters['acc1'].update(acc1.item(), n=batch_size)
+        metric_logger.meters['acc5'].update(acc5.item(), n=batch_size)
+
+    # gather the stats from all processes
+    metric_logger.synchronize_between_processes()
+    print('* Acc@1 {top1.global_avg:.3f} Acc@5 {top5.global_avg:.3f} loss {losses.global_avg:.3f}'
+          .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))
+    print(output.mean().item(), output.std().item())
+
+    test_stats = {k: meter.global_avg for k, meter in metric_logger.meters.items()}
+    print(f"Accuracy on {args.len_dataset_val} test images: {test_stats['acc1']:.1f}%")
+
+if __name__ == '__main__':
+    parser = get_args_parser()
+    args = parser.parse_args()
+
+    for name, resolution, usi_eval, weight in [
+        ('efficientformerv2_s0', 224, False, "eformer_s0_450.pth"),
+        ('efficientformerv2_s1', 224, False, "eformer_s1_450.pth"),
+        ('efficientformerv2_s2', 224, False, "eformer_s2_450.pth"),
+
+        ('SwiftFormer_XS', 224, False, "SwiftFormer_XS_ckpt.pth"),
+        ('SwiftFormer_S' , 224, False, "SwiftFormer_S_ckpt.pth"),
+        ('SwiftFormer_L1', 224, False, "SwiftFormer_L1_ckpt.pth"),
+
+        # ('EMO_1M', 224, False, "EMO_1M.pth"),
+        # ('EMO_2M', 224, False, "EMO_2M.pth"),
+        # ('EMO_5M', 224, False, "EMO_5M.pth"),
+        # ('EMO_6M', 224, False, "EMO_6M.pth"),
+
+        ('edgenext_xx_small', 256, False, "edgenext_xx_small.pth"),
+        ('edgenext_x_small' , 256, False, "edgenext_x_small.pth"),
+        ('edgenext_small'   , 256, True, "edgenext_small_usi.pth"),
+
+        ('mobilevitv2_050', 256, False, "mobilevitv2-0.5.pt"),
+        ('mobilevitv2_075', 256, False, "mobilevitv2-0.75.pt"),
+        ('mobilevitv2_100', 256, False, "mobilevitv2-1.0.pt"),
+        ('mobilevitv2_125', 256, False, "mobilevitv2-1.25.pt"),
+        ('mobilevitv2_150', 256, False, "mobilevitv2-1.5.pt"),
+        ('mobilevitv2_175', 256, False, "mobilevitv2-1.75.pt"),
+        ('mobilevitv2_200', 256, False, "mobilevitv2-2.0.pt"),
+
+        ('mobilevit_xx_small', 256, False, "mobilevit_xxs.pt"),
+        ('mobilevit_x_small' , 256, False, "mobilevit_xs.pt"),
+        ('mobilevit_small'   , 256, False, "mobilevit_s.pt"),
+
+        ('LeViT_128S', 224, False, "LeViT-128S.pth"),
+        ('LeViT_128' , 224, False, "LeViT-128.pth"),
+        ('LeViT_192' , 224, False, "LeViT-192.pth"),
+        ('LeViT_256' , 224, False, "LeViT-256.pth"),
+
+        ('resnet50', 224, False, ""),
+        ('mobilenetv3_large_100', 224, False, ""),
+        ('tf_efficientnetv2_b0' , 224, False, ""),
+        ('tf_efficientnetv2_b1' , 240, False, ""),
+        ('tf_efficientnetv2_b2' , 260, False, ""),
+        ('tf_efficientnetv2_b3' , 300, False, ""),
+    ]:
+        if args.only_test and args.only_test not in name:
+            continue
+
+        print(f"Creating tflite runtime interpreter: {name}")
+        # Load the TFLite model and allocate tensors
+        interpreter = tflite.Interpreter(model_path="tflite/%s.tflite" % name, num_threads=1) # TODO: num_threads doesn't work?
+        interpreter.allocate_tensors()
+
+        args.model = name
+        args.input_size = resolution
+        args.usi_eval = usi_eval
+
+        if args.validation:
+            dataset_val = build_dataset(args)
+            sampler_val = torch.utils.data.SequentialSampler(dataset_val)
+            data_loader_val = torch.utils.data.DataLoader(
+                dataset_val,
+                sampler=sampler_val,
+                batch_size=args.batch_size,
+                num_workers=args.num_workers,
+                drop_last=False
+            )
+            args.len_dataset_val = len(dataset_val)
+            evaluate(data_loader_val, interpreter, args)
+        else:
+            benchmarking_tflite(interpreter, load_image(args), args)

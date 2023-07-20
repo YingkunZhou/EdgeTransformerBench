@@ -1,0 +1,95 @@
+commit:
+    data: Sun May 21 15:02:37 2023 -0700
+    id: 388d952114e59a1aeda440ed4737b29f8b7c6e8a
+build:
+    CUSTOM_BAZEL_FLAGS=--define=tflite_pip_with_flex=true tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh
+
+$ taskset -c 4 python tflite_perf.py 2>warning.log
+# TODO: without taskset -c 4 will still use multiple thread for several models e.g. efficientformerv2; but why?
+Creating tflite runtime interpreter: efficientformerv2_s0
+[(985, 11.76702880859375), (644, 4.848298072814941), (108, 3.9257187843322754)]
+min =   20.89ms  max =   21.05ms  mean =   20.93ms, median =   20.92ms
+Creating tflite runtime interpreter: efficientformerv2_s1
+[(985, 13.112422943115234), (89, 4.162662982940674), (984, 4.077540397644043)]
+min =   32.57ms  max =   33.36ms  mean =   32.64ms, median =   32.63ms
+Creating tflite runtime interpreter: efficientformerv2_s2
+[(985, 12.485466003417969), (22, 3.6932380199432373), (309, 3.6919970512390137)]
+min =   57.62ms  max =   57.96ms  mean =   57.68ms, median =   57.67ms
+Creating tflite runtime interpreter: SwiftFormer_XS
+[(985, 11.914169311523438), (883, 5.001737117767334), (310, 4.622923851013184)]
+min =   24.92ms  max =   25.64ms  mean =   24.96ms, median =   24.96ms
+Creating tflite runtime interpreter: SwiftFormer_S
+[(985, 12.528474807739258), (89, 4.3341851234436035), (720, 4.178123474121094)]
+min =   37.78ms  max =   37.99ms  mean =   37.84ms, median =   37.84ms
+Creating tflite runtime interpreter: SwiftFormer_L1
+[(985, 13.233631134033203), (309, 3.921286106109619), (310, 3.8075547218322754)]
+min =   58.87ms  max =   59.15ms  mean =   58.91ms, median =   58.90ms
+Creating tflite runtime interpreter: edgenext_xx_small
+[(985, 10.885459899902344), (309, 4.954111099243164), (310, 4.638606071472168)]
+min =   16.73ms  max =   17.03ms  mean =   16.85ms, median =   16.84ms
+Creating tflite runtime interpreter: edgenext_x_small
+[(985, 9.799909591674805), (309, 4.595183372497559), (308, 3.817009449005127)]
+min =   32.66ms  max =   32.85ms  mean =   32.76ms, median =   32.76ms
+Creating tflite runtime interpreter: edgenext_small
+[(985, 12.15629768371582), (309, 4.532575607299805), (308, 4.049804210662842)]
+min =   64.92ms  max =   65.18ms  mean =   64.97ms, median =   64.96ms
+Creating tflite runtime interpreter: mobilevitv2_050
+[(985, 8.349028587341309), (309, 2.584151268005371), (584, 2.3194289207458496)]
+min =   25.43ms  max =   25.55ms  mean =   25.47ms, median =   25.46ms
+Creating tflite runtime interpreter: mobilevitv2_075
+[(985, 8.164346694946289), (309, 2.3874573707580566), (308, 1.8585069179534912)]
+min =   47.00ms  max =   47.26ms  mean =   47.05ms, median =   47.04ms
+Creating tflite runtime interpreter: mobilevitv2_100
+[(985, 8.23635196685791), (557, 2.2241201400756836), (309, 1.853590726852417)]
+min =   76.40ms  max =   76.66ms  mean =   76.45ms, median =   76.44ms
+Creating tflite runtime interpreter: mobilevitv2_125
+[(985, 8.272756576538086), (309, 2.013660430908203), (883, 1.3231319189071655)]
+min =  112.06ms  max =  112.38ms  mean =  112.11ms, median =  112.10ms
+Creating tflite runtime interpreter: mobilevitv2_150
+[(985, 9.097273826599121), (308, 2.224818229675293), (301, 2.1440136432647705)]
+min =  154.78ms  max =  155.66ms  mean =  154.86ms, median =  154.83ms
+Creating tflite runtime interpreter: mobilevitv2_175
+[(985, 8.880794525146484), (494, 2.0805702209472656), (968, 1.8860042095184326)]
+min =  204.13ms  max =  204.48ms  mean =  204.23ms, median =  204.20ms
+Creating tflite runtime interpreter: mobilevitv2_200
+[(985, 8.548283576965332), (309, 2.2269468307495117), (883, 2.2140283584594727)]
+min =  260.91ms  max =  261.57ms  mean =  261.03ms, median =  261.01ms
+Creating tflite runtime interpreter: mobilevit_xx_small
+[(985, 11.448774337768555), (946, 6.14132833480835), (883, 6.119372367858887)]
+min =   22.47ms  max =   22.62ms  mean =   22.53ms, median =   22.53ms
+Creating tflite runtime interpreter: mobilevit_x_small
+[(985, 11.413055419921875), (723, 7.128035068511963), (470, 5.874288558959961)]
+min =   52.14ms  max =   52.48ms  mean =   52.22ms, median =   52.21ms
+Creating tflite runtime interpreter: mobilevit_small
+[(985, 12.880531311035156), (605, 6.013972282409668), (838, 5.907935619354248)]
+min =   85.54ms  max =   85.81ms  mean =   85.62ms, median =   85.61ms
+Creating tflite runtime interpreter: LeViT_128S
+[(985, 11.427816390991211), (308, 3.451131582260132), (309, 3.3197617530822754)]
+min =   11.45ms  max =   11.56ms  mean =   11.47ms, median =   11.47ms
+Creating tflite runtime interpreter: LeViT_128
+[(985, 11.089765548706055), (309, 3.4090280532836914), (113, 3.3854141235351562)]
+min =   15.29ms  max =   15.50ms  mean =   15.33ms, median =   15.33ms
+Creating tflite runtime interpreter: LeViT_192
+[(985, 11.594852447509766), (308, 3.1863560676574707), (644, 3.177924156188965)]
+min =   22.87ms  max =   23.00ms  mean =   22.90ms, median =   22.90ms
+Creating tflite runtime interpreter: LeViT_256
+[(985, 11.363821029663086), (108, 3.341200113296509), (310, 2.929499864578247)]
+min =   38.06ms  max =   38.31ms  mean =   38.09ms, median =   38.08ms
+Creating tflite runtime interpreter: resnet50
+[(985, 7.443346977233887), (113, -5.0514421463012695), (310, -5.506591796875)]
+min =  124.51ms  max =  124.62ms  mean =  124.54ms, median =  124.53ms
+Creating tflite runtime interpreter: mobilenetv3_large_100
+[(985, 9.592710494995117), (308, 2.354275941848755), (310, 2.3370492458343506)]
+min =   10.58ms  max =   10.71ms  mean =   10.60ms, median =   10.60ms
+Creating tflite runtime interpreter: tf_efficientnetv2_b0
+[(985, 9.55475902557373), (309, 2.378344774246216), (108, 2.289133071899414)]
+min =   27.72ms  max =   28.29ms  mean =   27.80ms, median =   27.80ms
+Creating tflite runtime interpreter: tf_efficientnetv2_b1
+[(985, 9.484579086303711), (861, 2.258524179458618), (309, 2.1344895362854004)]
+min =   43.14ms  max =   43.42ms  mean =   43.25ms, median =   43.24ms
+Creating tflite runtime interpreter: tf_efficientnetv2_b2
+[(985, 9.816822052001953), (883, 2.518671751022339), (113, 2.046142816543579)]
+min =   60.28ms  max =   61.44ms  mean =   60.37ms, median =   60.36ms
+Creating tflite runtime interpreter: tf_efficientnetv2_b3
+[(985, 9.089396476745605), (955, 2.892822742462158), (947, 2.1881468296051025)]
+min =  101.91ms  max =  102.36ms  mean =  101.98ms, median =  101.97ms

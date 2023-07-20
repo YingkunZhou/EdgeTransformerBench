@@ -31,3 +31,5 @@ onnx-tf convert -i "tf_efficientnetv2_b0.onnx" -o "tf_efficientnetv2_b0.pb"
 onnx-tf convert -i "tf_efficientnetv2_b1.onnx" -o "tf_efficientnetv2_b1.pb"
 onnx-tf convert -i "tf_efficientnetv2_b2.onnx" -o "tf_efficientnetv2_b2.pb"
 onnx-tf convert -i "tf_efficientnetv2_b3.onnx" -o "tf_efficientnetv2_b3.pb"
+
+onnxsim EMO_1M.onnx EMO_1M.onnx

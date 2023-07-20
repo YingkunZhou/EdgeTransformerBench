@@ -36,3 +36,5 @@ imagenet*
 weights
 onnx
 .vscode
+warning.log
+tflite/

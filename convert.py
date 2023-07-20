@@ -21,7 +21,7 @@ torch.autograd.set_grad_enabled(False)
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
-        'EdgeTransformerPerf evaluation and benchmark script', add_help=False)
+        'EdgeTransformerPerf model format conversion script', add_help=False)
     parser.add_argument('--batch-size', default=1, type=int)
     parser.add_argument('--opset-version', default=None, type=int)
     # Model parameters

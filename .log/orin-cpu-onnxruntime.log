@@ -1,8 +1,9 @@
 commit:
-    time: Tue Jul 18 14:24:51 2023
+    data: Tue Jul 18 14:24:51 2023 +0800
     id: 9ba5cdbaa481550f86c53826c83bc094eafc2594
 build:
     ./build.sh --config Release --build_shared_lib --parallel --skip_tests --use_cuda --cuda_home /usr/local/cuda --cudnn_home /usr/local/cuda --use_tensorrt --tensorrt_home /usr/local/cuda --build_wheel
+
 $ python onnxruntime_perf.py --no-IOBinding
 nb processors 12
 model name      : ARMv8 Processor rev 1 (v8l)
