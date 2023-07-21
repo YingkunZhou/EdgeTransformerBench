@@ -20,8 +20,6 @@ def get_args_parser():
     parser.add_argument('--num_workers', default=2, type=int)
     # Benchmark parameters
     parser.set_defaults(cpu=True)
-    parser.add_argument('--no-cpu', action='store_false', dest='cpu')
-    parser.add_argument('--cuda', action='store_true', default=False)
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
 
     return parser
