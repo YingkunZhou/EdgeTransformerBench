@@ -11,8 +11,7 @@ import time
 import numpy as np
 import torch
 import argparse
-from speed_test import load_image
-from speed_test import WARMUP_SEC, TEST_SEC
+from pytorch_perf import load_imag, WARMUP_SEC, TEST_SEC
 from main import build_dataset, MetricLogger
 from timm.utils import accuracy
 
