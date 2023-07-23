@@ -10,7 +10,7 @@ import time
 import numpy as np
 from PIL import Image
 from timm.models import create_model
-from main import get_transform, build_dataset, evaluate
+from main import get_transform, build_dataset, evaluate, pil_loader_BGR, pil_loader_RGB
 
 import levit
 import levit_c
@@ -80,7 +80,9 @@ def benchmarking_cuda(model, inputs):
 
 def load_image(args):
     data_transform = get_transform(args)
-    image = Image.open('daisy.jpg')
+    image = pil_loader_BGR('daisy.jpg') if "mobilevit_" in args.model \
+        else pil_loader_RGB('daisy.jpg')
+
     # [N, C, H, W]
     image = data_transform(image)
     # expand batch dimension
