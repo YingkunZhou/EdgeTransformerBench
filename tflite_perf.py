@@ -94,47 +94,47 @@ if __name__ == '__main__':
     parser = get_args_parser()
     args = parser.parse_args()
 
-    for name, resolution, usi_eval, weight in [
-        ('efficientformerv2_s0', 224, False, "eformer_s0_450.pth"),
-        ('efficientformerv2_s1', 224, False, "eformer_s1_450.pth"),
-        ('efficientformerv2_s2', 224, False, "eformer_s2_450.pth"),
+    for name, resolution, usi_eval in [
+        ('efficientformerv2_s0', 224, False),
+        ('efficientformerv2_s1', 224, False),
+        ('efficientformerv2_s2', 224, False),
 
-        ('SwiftFormer_XS', 224, False, "SwiftFormer_XS_ckpt.pth"),
-        ('SwiftFormer_S' , 224, False, "SwiftFormer_S_ckpt.pth"),
-        ('SwiftFormer_L1', 224, False, "SwiftFormer_L1_ckpt.pth"),
+        ('SwiftFormer_XS', 224, False),
+        ('SwiftFormer_S' , 224, False),
+        ('SwiftFormer_L1', 224, False),
 
-        # ('EMO_1M', 224, False, "EMO_1M.pth"),
-        # ('EMO_2M', 224, False, "EMO_2M.pth"),
-        # ('EMO_5M', 224, False, "EMO_5M.pth"),
-        # ('EMO_6M', 224, False, "EMO_6M.pth"),
+        # ('EMO_1M', 224, False),
+        # ('EMO_2M', 224, False),
+        # ('EMO_5M', 224, False),
+        # ('EMO_6M', 224, False),
 
-        ('edgenext_xx_small', 256, False, "edgenext_xx_small.pth"),
-        ('edgenext_x_small' , 256, False, "edgenext_x_small.pth"),
-        ('edgenext_small'   , 256, True, "edgenext_small_usi.pth"),
+        ('edgenext_xx_small', 256, False),
+        ('edgenext_x_small' , 256, False),
+        ('edgenext_small'   , 256, True),
 
-        ('mobilevitv2_050', 256, False, "mobilevitv2-0.5.pt"),
-        ('mobilevitv2_075', 256, False, "mobilevitv2-0.75.pt"),
-        ('mobilevitv2_100', 256, False, "mobilevitv2-1.0.pt"),
-        ('mobilevitv2_125', 256, False, "mobilevitv2-1.25.pt"),
-        ('mobilevitv2_150', 256, False, "mobilevitv2-1.5.pt"),
-        ('mobilevitv2_175', 256, False, "mobilevitv2-1.75.pt"),
-        ('mobilevitv2_200', 256, False, "mobilevitv2-2.0.pt"),
+        ('mobilevitv2_050', 256, False),
+        ('mobilevitv2_075', 256, False),
+        ('mobilevitv2_100', 256, False),
+        ('mobilevitv2_125', 256, False),
+        ('mobilevitv2_150', 256, False),
+        ('mobilevitv2_175', 256, False),
+        ('mobilevitv2_200', 256, False),
 
-        ('mobilevit_xx_small', 256, False, "mobilevit_xxs.pt"),
-        ('mobilevit_x_small' , 256, False, "mobilevit_xs.pt"),
-        ('mobilevit_small'   , 256, False, "mobilevit_s.pt"),
+        ('mobilevit_xx_small', 256, False),
+        ('mobilevit_x_small' , 256, False),
+        ('mobilevit_small'   , 256, False),
 
-        ('LeViT_128S', 224, False, "LeViT-128S.pth"),
-        ('LeViT_128' , 224, False, "LeViT-128.pth"),
-        ('LeViT_192' , 224, False, "LeViT-192.pth"),
-        ('LeViT_256' , 224, False, "LeViT-256.pth"),
+        ('LeViT_128S', 224, False),
+        ('LeViT_128' , 224, False),
+        ('LeViT_192' , 224, False),
+        ('LeViT_256' , 224, False),
 
-        ('resnet50', 224, False, ""),
-        ('mobilenetv3_large_100', 224, False, ""),
-        ('tf_efficientnetv2_b0' , 224, False, ""),
-        ('tf_efficientnetv2_b1' , 240, False, ""),
-        ('tf_efficientnetv2_b2' , 260, False, ""),
-        ('tf_efficientnetv2_b3' , 300, False, ""),
+        ('resnet50', 224, False),
+        ('mobilenetv3_large_100', 224, False),
+        ('tf_efficientnetv2_b0' , 224, False),
+        ('tf_efficientnetv2_b1' , 240, False),
+        ('tf_efficientnetv2_b2' , 260, False),
+        ('tf_efficientnetv2_b3' , 300, False),
     ]:
         if args.only_test and args.only_test not in name:
             continue
