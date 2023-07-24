@@ -134,7 +134,7 @@ void pre_process(cv::Mat& img, std::string model, int input_size) {
 
 void load_image(
     std::string img_path,
-    std::vector<float> &input_tensor,
+    float *input_tensor,
     std::string model,
     int input_size,
     int batch_size)
@@ -149,13 +149,13 @@ void load_image(
     for (int64_t i = 0; i < batch_size; ++i)
     {
         std::copy(img.begin<float>(), img.end<float>(),
-        input_tensor.begin() + i * 3 * input_size * input_size);
+        input_tensor + i * 3 * input_size * input_size);
     }
 }
 
 void scores_topk(
     std::vector<std::pair<float, int>> &vec,
-    const std::vector<float> &scores, const int topk)
+    const float *scores, const int topk)
 {
     vec.resize(NUM_CLASSES);
     for (int i = 0; i < NUM_CLASSES; i++) {
@@ -167,7 +167,7 @@ void scores_topk(
 }
 
 bool acck(
-    const std::vector<float> &scores,
+    const float *scores,
     const int topk,
     const int index,
     bool &acc1)
@@ -186,7 +186,7 @@ bool acck(
     return false;
 }
 
-void print_topk(const std::vector<float> &scores, const int topk) {
+void print_topk(const float *scores, const int topk) {
     std::vector<std::pair<float, int>> vec;
     scores_topk(vec, scores, topk);
     // print topk and score

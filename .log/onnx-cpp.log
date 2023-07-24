@@ -1,99 +1,110 @@
+export OPENCV_LIB=$HOME/miniforge3/envs/py3.8/lib
+export OPENCV_INC=$HOME/miniforge3/envs/py3.8/include/opencv4
+export ONNX_LIB=$HOME/work/onnxruntime/build/Linux/Release
+export ONNX_INC=$HOME/work/onnxruntime/include/onnxruntime/core/session
+
+g++ -O3 onnxruntime_perf.cpp utils.cpp -std=c++17 \
+    -I${ONNX_INC} -I${OPENCV_INC} -L${ONNX_LIB} -L${OPENCV_LIB} \
+    -lonnxruntime -lopencv_imgproc -lopencv_imgcodecs -lopencv_core -lopencv_dnn
+
+export LD_LIBRARY_PATH=$ONNX_LIB:$OPENCV_LIB
+$ ./a.out
 Creating onnx runtime session: efficientformerv2_s0
 (index: 985,  score: 11.719767), (index: 644,  score: 4.952431), (index: 309,  score: 3.830808),
-min =   65.14ms max =   65.14ms mean =  66.28ms median =        66.40ms
+min =   65.17ms max =   73.01ms mean =  66.43ms median =        66.44ms
 Creating onnx runtime session: efficientformerv2_s1
 (index: 985,  score: 13.296133), (index: 984,  score: 4.359020), (index: 308,  score: 4.301716),
-min =   99.85ms max =   99.85ms mean =  101.88ms        median =        102.01ms
+min =   100.12ms        max =   122.00ms        mean =  101.96ms        median =        102.02ms
 Creating onnx runtime session: efficientformerv2_s2
 (index: 985,  score: 12.611958), (index: 22,  score: 3.942092), (index: 309,  score: 3.607203),
-min =   170.88ms        max =   170.88ms        mean =  174.51ms        median =        174.41ms
+min =   170.87ms        max =   184.51ms        mean =  174.42ms        median =        174.68ms
 Creating onnx runtime session: SwiftFormer_XS
 (index: 985,  score: 11.778867), (index: 883,  score: 4.877999), (index: 309,  score: 4.723837),
-min =   70.22ms max =   70.22ms mean =  71.60ms median =        71.73ms
+min =   70.35ms max =   77.90ms mean =  71.86ms median =        71.97ms
 Creating onnx runtime session: SwiftFormer_S
 (index: 985,  score: 13.011803), (index: 720,  score: 4.258770), (index: 89,  score: 4.246981),
-min =   102.42ms        max =   102.42ms        mean =  104.34ms        median =        104.62ms
+min =   102.10ms        max =   107.48ms        mean =  104.18ms        median =        104.47ms
 Creating onnx runtime session: SwiftFormer_L1
 (index: 985,  score: 13.598301), (index: 310,  score: 4.220460), (index: 309,  score: 3.997334),
-min =   153.53ms        max =   153.53ms        mean =  156.81ms        median =        157.21ms
+min =   153.77ms        max =   163.41ms        mean =  157.28ms        median =        157.53ms
 Creating onnx runtime session: EMO_1M
 (index: 985,  score: 9.828012), (index: 309,  score: 4.373262), (index: 310,  score: 3.882343),
-min =   48.39ms max =   48.39ms mean =  49.69ms median =        49.86ms
+min =   48.35ms max =   58.75ms mean =  49.77ms median =        49.84ms
 Creating onnx runtime session: EMO_2M
 (index: 985,  score: 9.481141), (index: 309,  score: 3.384672), (index: 308,  score: 3.217615),
-min =   71.62ms max =   71.62ms mean =  73.34ms median =        73.52ms
+min =   71.45ms max =   76.29ms mean =  73.14ms median =        73.37ms
 Creating onnx runtime session: EMO_5M
 (index: 985,  score: 9.178064), (index: 883,  score: 2.809453), (index: 872,  score: 2.547741),
-min =   124.33ms        max =   124.33ms        mean =  127.40ms        median =        127.70ms
+min =   123.56ms        max =   130.51ms        mean =  126.45ms        median =        126.87ms
 Creating onnx runtime session: EMO_6M
 (index: 985,  score: 9.278949), (index: 309,  score: 2.281438), (index: 308,  score: 2.274741),
-min =   131.04ms        max =   131.04ms        mean =  133.93ms        median =        134.29ms
+min =   130.78ms        max =   134.50ms        mean =  133.59ms        median =        133.96ms
 Creating onnx runtime session: edgenext_xx_small
-(index: 985,  score: 10.714103), (index: 309,  score: 5.171100), (index: 310,  score: 4.885791),
-min =   38.49ms max =   38.49ms mean =  39.22ms median =        39.35ms
+(index: 985,  score: 10.566200), (index: 309,  score: 5.252447), (index: 310,  score: 4.913682),
+min =   38.31ms max =   45.76ms mean =  39.07ms median =        39.16ms
 Creating onnx runtime session: edgenext_x_small
-(index: 985,  score: 9.679733), (index: 309,  score: 4.387672), (index: 308,  score: 3.581414),
-min =   73.65ms max =   73.65ms mean =  75.02ms median =        75.26ms
+(index: 985,  score: 9.699076), (index: 309,  score: 4.416986), (index: 308,  score: 3.542242),
+min =   73.29ms max =   84.96ms mean =  74.73ms median =        74.75ms
 Creating onnx runtime session: edgenext_small
-(index: 985,  score: 11.931863), (index: 309,  score: 4.232567), (index: 308,  score: 3.922095),
-min =   139.06ms        max =   139.06ms        mean =  142.59ms        median =        142.84ms
+(index: 985,  score: 12.120754), (index: 309,  score: 4.450460), (index: 308,  score: 3.965275),
+min =   138.88ms        max =   145.97ms        mean =  142.03ms        median =        142.28ms
 Creating onnx runtime session: mobilevitv2_050
-(index: 574,  score: 5.518103), (index: 328,  score: 4.212260), (index: 807,  score: 3.665093),
-min =   54.48ms max =   54.48ms mean =  56.01ms median =        56.23ms
+(index: 985,  score: 8.422073), (index: 309,  score: 2.646713), (index: 89,  score: 2.451627),
+min =   54.24ms max =   67.60ms mean =  55.92ms median =        56.02ms
 Creating onnx runtime session: mobilevitv2_075
-(index: 650,  score: 4.474273), (index: 599,  score: 4.128252), (index: 904,  score: 3.981459),
-min =   101.92ms        max =   101.92ms        mean =  104.72ms        median =        105.08ms
+(index: 985,  score: 8.273191), (index: 309,  score: 2.701597), (index: 308,  score: 2.121585),
+min =   102.40ms        max =   109.87ms        mean =  105.69ms        median =        106.06ms
 Creating onnx runtime session: mobilevitv2_100
-(index: 754,  score: 5.206136), (index: 721,  score: 4.771911), (index: 879,  score: 4.649057),
-min =   163.68ms        max =   163.68ms        mean =  169.17ms        median =        169.91ms
+(index: 985,  score: 8.247743), (index: 557,  score: 2.303307), (index: 309,  score: 2.097626),
+min =   164.00ms        max =   183.75ms        mean =  170.12ms        median =        170.23ms
 Creating onnx runtime session: mobilevitv2_125
-(index: 828,  score: 6.832219), (index: 152,  score: 5.568693), (index: 879,  score: 5.470349),
-min =   239.58ms        max =   239.58ms        mean =  246.66ms        median =        247.71ms
+(index: 985,  score: 8.463388), (index: 309,  score: 2.074116), (index: 113,  score: 1.424460),
+min =   241.44ms        max =   262.21ms        mean =  248.84ms        median =        249.44ms
 Creating onnx runtime session: mobilevitv2_150
-(index: 640,  score: 8.338889), (index: 206,  score: 8.333182), (index: 185,  score: 8.233325),
-min =   329.50ms        max =   329.50ms        mean =  340.28ms        median =        341.79ms
+(index: 985,  score: 9.049292), (index: 308,  score: 2.281558), (index: 301,  score: 2.256317),
+min =   332.02ms        max =   347.26ms        mean =  343.00ms        median =        344.62ms
 Creating onnx runtime session: mobilevitv2_175
-(index: 909,  score: 4.325237), (index: 696,  score: 3.367895), (index: 174,  score: 3.355113),
-min =   434.91ms        max =   434.91ms        mean =  448.49ms        median =        450.54ms
+(index: 985,  score: 8.913000), (index: 494,  score: 2.101966), (index: 309,  score: 1.875023),
+min =   435.69ms        max =   452.85ms        mean =  449.05ms        median =        451.15ms
 Creating onnx runtime session: mobilevitv2_200
-(index: 883,  score: 4.352438), (index: 998,  score: 4.274081), (index: 599,  score: 4.239015),
-min =   552.68ms        max =   552.68ms        mean =  569.98ms        median =        573.35ms
+(index: 985,  score: 8.586865), (index: 309,  score: 2.236358), (index: 308,  score: 2.192370),
+min =   552.98ms        max =   581.60ms        mean =  571.81ms        median =        573.91ms
 Creating onnx runtime session: mobilevit_xx_small
-(index: 401,  score: 1599.713379), (index: 852,  score: 1507.872559), (index: 605,  score: 853.899292),
-min =   51.46ms max =   51.46ms mean =  52.60ms median =        52.68ms
+(index: 985,  score: 12.435407), (index: 309,  score: 6.497381), (index: 308,  score: 6.236409),
+min =   51.81ms max =   57.59ms mean =  52.93ms median =        53.03ms
 Creating onnx runtime session: mobilevit_x_small
-(index: 745,  score: 406.180847), (index: 818,  score: 319.620880), (index: 67,  score: 269.103210),
-min =   119.07ms        max =   119.07ms        mean =  122.88ms        median =        123.00ms
+(index: 985,  score: 13.047872), (index: 89,  score: 6.821308), (index: 309,  score: 5.869901),
+min =   118.91ms        max =   128.01ms        mean =  122.41ms        median =        122.80ms
 Creating onnx runtime session: mobilevit_small
-(index: 149,  score: 448.024750), (index: 463,  score: 369.440918), (index: 653,  score: 344.686279),
-min =   191.59ms        max =   191.59ms        mean =  198.41ms        median =        198.98ms
+(index: 985,  score: 10.445730), (index: 309,  score: 3.723473), (index: 838,  score: 3.721801),
+min =   191.33ms        max =   199.55ms        mean =  197.08ms        median =        197.75ms
 Creating onnx runtime session: LeViT_128S
 (index: 985,  score: 11.709347), (index: 308,  score: 3.568017), (index: 309,  score: 3.375862),
-min =   28.89ms max =   28.89ms mean =  30.62ms median =        31.01ms
+min =   28.60ms max =   30.98ms mean =  30.40ms median =        30.72ms
 Creating onnx runtime session: LeViT_128
 (index: 985,  score: 11.346712), (index: 309,  score: 3.408516), (index: 113,  score: 3.297330),
-min =   38.65ms max =   38.65ms mean =  40.97ms median =        41.35ms
+min =   38.36ms max =   44.67ms mean =  40.51ms median =        40.85ms
 Creating onnx runtime session: LeViT_192
 (index: 985,  score: 11.811455), (index: 324,  score: 3.397026), (index: 326,  score: 3.303874),
-min =   56.38ms max =   56.38ms mean =  58.91ms median =        59.43ms
+min =   56.22ms max =   62.35ms mean =  58.80ms median =        59.17ms
 Creating onnx runtime session: LeViT_256
 (index: 985,  score: 11.188837), (index: 108,  score: 3.035193), (index: 309,  score: 2.935854),
-min =   90.74ms max =   90.74ms mean =  95.13ms median =        95.91ms
+min =   90.78ms max =   98.86ms mean =  95.22ms median =        96.04ms
 Creating onnx runtime session: resnet50
-(index: 985,  score: 7.298137), (index: 113,  score: -5.060980), (index: 308,  score: -5.323441),
-min =   281.57ms        max =   281.57ms        mean =  289.10ms        median =        290.20ms
+(index: 985,  score: 7.986878), (index: 113,  score: -5.246381), (index: 310,  score: -5.445832),
+min =   281.66ms        max =   296.24ms        mean =  289.94ms        median =        290.60ms
 Creating onnx runtime session: mobilenetv3_large_100
 (index: 985,  score: 9.726584), (index: 310,  score: 2.717168), (index: 308,  score: 2.388680),
-min =   28.26ms max =   28.26ms mean =  29.25ms median =        29.42ms
+min =   28.27ms max =   33.60ms mean =  29.33ms median =        29.48ms
 Creating onnx runtime session: tf_efficientnetv2_b0
 (index: 985,  score: 9.723095), (index: 309,  score: 2.591569), (index: 310,  score: 2.396124),
-min =   71.53ms max =   71.53ms mean =  73.12ms median =        73.33ms
+min =   71.59ms max =   77.39ms mean =  73.31ms median =        73.45ms
 Creating onnx runtime session: tf_efficientnetv2_b1
 (index: 985,  score: 9.679443), (index: 309,  score: 2.280348), (index: 310,  score: 2.222226),
-min =   110.63ms        max =   110.63ms        mean =  112.55ms        median =        112.78ms
+min =   111.04ms        max =   126.55ms        mean =  113.38ms        median =        113.34ms
 Creating onnx runtime session: tf_efficientnetv2_b2
 (index: 985,  score: 10.022326), (index: 883,  score: 2.626490), (index: 309,  score: 2.173486),
-min =   156.19ms        max =   156.19ms        mean =  158.76ms        median =        159.24ms
+min =   156.36ms        max =   165.88ms        mean =  159.38ms        median =        159.63ms
 Creating onnx runtime session: tf_efficientnetv2_b3
-(index: 783,  score: 15.549971), (index: 753,  score: 15.111201), (index: 485,  score: 14.313738),
-min =   264.88ms        max =   264.88ms        mean =  269.71ms        median =        270.33ms
+(index: 985,  score: 9.175263), (index: 955,  score: 2.853511), (index: 310,  score: 2.227037),
+min =   265.27ms        max =   276.49ms        mean =  270.00ms        median =        270.47ms

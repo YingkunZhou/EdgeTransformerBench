@@ -52,14 +52,14 @@ void evaluate(
     std::vector<std::filesystem::path> classes = traverse_class(args.data_path);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            load_image(image.path(), input_tensor, args.model, args.input_size, args.batch_size);
+            load_image(image.path(), input_tensor.data(), args.model, args.input_size, args.batch_size);
             session.Run(Ort::RunOptions{nullptr},
                         args.input_name.data(), args.input.data() , 1 /*Number of inputs*/,
                         args.output_name.data(),args.output.data(), 1 /*Number of outputs*/
                         );
             num_predict++;
             bool acc1 = false;
-            num_acc5 += acck(output_tensor, 5, class_index*scale+offset, acc1);
+            num_acc5 += acck(output_tensor.data(), 5, class_index*scale+offset, acc1);
             num_acc1 += acc1;
         }
         class_index++;
@@ -75,7 +75,7 @@ void benchmark(
     std::vector<float> &output_tensor)
 {
     // Measure latency
-    load_image("daisy.jpg", input_tensor, args.model, args.input_size, args.batch_size);
+    load_image("daisy.jpg", input_tensor.data(), args.model, args.input_size, args.batch_size);
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
@@ -88,7 +88,7 @@ void benchmark(
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    print_topk(output_tensor, 3);
+    print_topk(output_tensor.data(), 3);
 
     std::vector<double> time_list = {};
     while (std::reduce(time_list.begin(), time_list.end()) < TEST_SEC) {
@@ -111,7 +111,7 @@ void benchmark(
     double time_median = time_list[time_list.size() / 2] * 1000;
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_min << "ms\tmean =\t" << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
+    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t" << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
 }
 
 int main(int argc, char* argv[])

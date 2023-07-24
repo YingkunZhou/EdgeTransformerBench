@@ -10,7 +10,7 @@ const int NUM_CLASSES = 1000;
 
 void load_image(
     std::string img_path,
-    std::vector<float> &input_tensor,
+    float *input_tensor,
     std::string model,
     int input_size,
     int batch_size
@@ -18,16 +18,16 @@ void load_image(
 
 void scores_topk(
     std::vector<std::pair<float, int>> &vec,
-    const std::vector<float> &scores, const int topk);
+    const float *scores, const int topk);
 
 bool acck(
-    const std::vector<float> &scores,
+    const float *scores,
     const int topk,
     const int index,
     bool &acc1
 );
 
-void print_topk(const std::vector<float> &scores, const int topk);
+void print_topk(const float *scores, const int topk);
 
 std::vector<std::filesystem::path>
 traverse_class(std::string imagenet_path);
