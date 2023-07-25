@@ -91,7 +91,7 @@ void benchmark(
     print_topk(output_tensor.data(), 3);
 
     std::vector<double> time_list = {};
-    while (std::reduce(time_list.begin(), time_list.end()) < TEST_SEC) {
+    while (std::accumulate(time_list.begin(), time_list.end(), 0) < TEST_SEC) {
         clock_gettime(CLOCK_REALTIME, &start);
         session.Run(Ort::RunOptions{nullptr},
                     args.input_name.data(), args.input.data() , 1 /*Number of inputs*/,
@@ -106,7 +106,7 @@ void benchmark(
 
     double time_max = *std::max_element(time_list.begin(), time_list.end()) * 1000;
     double time_min = *std::min_element(time_list.begin(), time_list.end()) * 1000;
-    double time_mean = std::reduce(time_list.begin(), time_list.end()) * 1000 / time_list.size();
+    double time_mean = std::accumulate(time_list.begin(), time_list.end(), 0) * 1000 / time_list.size();
     std::sort(time_list.begin(), time_list.end());
     double time_median = time_list[time_list.size() / 2] * 1000;
 
