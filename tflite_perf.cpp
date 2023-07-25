@@ -1,3 +1,4 @@
+//https://www.tensorflow.org/lite/guide/inference
 
 #include <iostream>
 #include <numeric>
@@ -45,10 +46,10 @@ void evaluate(
     std::vector<std::filesystem::path> classes = traverse_class(args.data_path);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            auto *input_tensor = interpreter->typed_input_tensor<float>(0);
+            float *input_tensor = interpreter->typed_input_tensor<float>(0);
             load_image(image.path(), input_tensor, args.model, args.input_size, args.batch_size);
             interpreter->Invoke();
-            auto *output_tensor = interpreter->typed_output_tensor<float>(0);
+            float *output_tensor = interpreter->typed_output_tensor<float>(0);
             num_predict++;
             bool acc1 = false;
             num_acc5 += acck(output_tensor, 5, class_index*scale+offset, acc1);
@@ -65,7 +66,7 @@ void benchmark(
     std::unique_ptr<Interpreter> &interpreter)
 {
     // Measure latency
-    auto *input_tensor = interpreter->typed_input_tensor<float>(0);
+    float *input_tensor = interpreter->typed_input_tensor<float>(0);
     load_image("daisy.jpg", input_tensor, args.model, args.input_size, args.batch_size);
 
     struct timespec start, end;
@@ -77,7 +78,7 @@ void benchmark(
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    auto *output_tensor = interpreter->typed_output_tensor<float>(0);
+    float *output_tensor = interpreter->typed_output_tensor<float>(0);
     print_topk(output_tensor, 3);
 
     std::vector<double> time_list = {};
@@ -165,6 +166,9 @@ int main(int argc, char* argv[])
 
     for (const auto & model: test_models) {
         args.model = model.first;
+        if (args.model.find("EMO") != std::string::npos) {
+            continue;
+        }
         if (only_test && args.model.find(only_test) == std::string::npos) {
             continue;
         }
