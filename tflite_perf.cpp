@@ -180,6 +180,7 @@ int main(int argc, char* argv[])
         model_file.append(args.model);
         model_file.append(".tflite");
 
+        std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
         // create a interpreter
         std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
         InterpreterBuilder builder(*tflite_model, resolver);
