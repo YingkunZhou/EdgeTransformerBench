@@ -37,4 +37,6 @@ weights
 onnx
 .vscode
 warning.log
-tflite/
+tflite
+ncnn
+pt

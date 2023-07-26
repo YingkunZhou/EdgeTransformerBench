@@ -30,6 +30,7 @@ def get_args_parser():
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
+    parser.add_argument('--format', default='onnx', type=str, help='conversion format')
 
     return parser
 
@@ -111,18 +112,25 @@ if __name__ == '__main__':
         if args.fuse:
             levit.replace_batchnorm(model)  # TODO: acc val speed & acc
 
+        # TODO: does onnx export need this?
+        model.eval()
+
         inputs = torch.randn(
             1, #args.batch_size, TODO: here we only support single batch size benchmarking
             3, resolution, resolution,
         )
 
-        torch.onnx.export(
-            model,
-            inputs,
-            'onnx/'+name+'.onnx',
-            export_params=True,
-            input_names=['input'],
-            output_names=['output'],
-            opset_version=opset_version
-        )
+        if args.format == 'onnx':
+            torch.onnx.export(
+                model,
+                inputs,
+                'onnx/'+name+'.onnx',
+                export_params=True,
+                input_names=['input'],
+                output_names=['output'],
+                opset_version=opset_version
+            )
+        elif args.format == 'pt':
+            trace_model = torch.jit.trace(model, inputs)
+            trace_model.save("pt/"+name+'.pt')
 

@@ -209,12 +209,10 @@ int main(int argc, char* argv[])
         }
 
         args.input_size = model.second;
-        std::string model_file = "onnx/";
-        model_file.append(args.model);
-        model_file.append(".onnx");
+        std::string model_file = "onnx/" + args.model + ".onnx";
         // create a session
-        Ort::Session session(env, model_file.c_str(), sessionOptions);
         std::cout << "Creating onnx runtime session: " << args.model << std::endl;
+        Ort::Session session(env, model_file.c_str(), sessionOptions);
         //// input
         Ort::TypeInfo inputTypeInfo = session.GetInputTypeInfo(0);
         auto inputTensorInfo = inputTypeInfo.GetTensorTypeAndShapeInfo();

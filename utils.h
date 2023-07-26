@@ -1,9 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-
 const float IMAGENET_DEFAULT_MEAN[3] = {0.485f, 0.456f, 0.406f};
 const float IMAGENET_DEFAULT_STD[3]  = {0.229f, 0.224f, 0.225f};
 const int NUM_CLASSES = 1000;

@@ -7,11 +7,8 @@
 #include <iomanip>
 #include <filesystem>
 #include <getopt.h>
-#include <tensorflow/lite/interpreter.h>
-#include <tensorflow/lite/kernels/register.h>
+#include <net.h>
 #include "utils.h"
-
-using namespace tflite;
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
@@ -24,8 +21,7 @@ struct {
   std::string data_path;
 } args;
 
-void evaluate(
-    std::unique_ptr<Interpreter> &interpreter)
+void evaluate(ncnn::Net &net, ncnn::Mat &input_tensor)
 {
     int class_index = 0;
     int num_predict = 0;
@@ -42,17 +38,22 @@ void evaluate(
         scale = 50;
         offset = 15;
     }
+    const std::vector<const char*>& input_names = net.input_names();
+    const std::vector<const char*>& output_names = net.output_names();
+    ncnn::Mat output_tensor;
 
     std::vector<std::filesystem::path> classes = traverse_class(args.data_path);
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            float *input_tensor = interpreter->typed_input_tensor<float>(0);
-            load_image(image.path(), input_tensor, args.model, args.input_size, args.batch_size);
-            interpreter->Invoke();
-            float *output_tensor = interpreter->typed_output_tensor<float>(0);
+            load_image(image.path(), (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
+            ncnn::Extractor ex = net.create_extractor();
+            ex.input(input_names[0], input_tensor);
+            ex.extract(output_names[0], output_tensor);
             num_predict++;
             bool acc1 = false;
-            num_acc5 += acck(output_tensor, 5, class_index*scale+offset, acc1);
+            num_acc5 += acck((float *)output_tensor.data, 5, class_index*scale+offset, acc1);
             num_acc1 += acc1;
         }
         class_index++;
@@ -60,32 +61,41 @@ void evaluate(
         std::cout << "\tacc1: " << num_acc1*1.f/num_predict;
         std::cout << "\tacc5: " << num_acc5*1.f/num_predict << std::endl;
     }
+    clock_gettime(CLOCK_REALTIME, &end);
+    long long seconds = end.tv_sec - start.tv_sec;
+    long long nanoseconds = end.tv_nsec - start.tv_nsec;
+    double elapse = seconds + nanoseconds * 1e-9;
+    std::cout << "elapse time: " << elapse << std::endl;
 }
 
-void benchmark(
-    std::unique_ptr<Interpreter> &interpreter)
+void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
 {
     // Measure latency
-    float *input_tensor = interpreter->typed_input_tensor<float>(0);
-    load_image("daisy.jpg", input_tensor, args.model, args.input_size, args.batch_size);
+    const std::vector<const char*>& input_names = net.input_names();
+    const std::vector<const char*>& output_names = net.output_names();
+    load_image("daisy.jpg", (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
+    ncnn::Mat output_tensor;
 
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
-
+    /// warmup
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
-        interpreter->Invoke();
+        ncnn::Extractor ex = net.create_extractor();
+        ex.input(input_names[0], input_tensor);
+        ex.extract(output_names[0], output_tensor);
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    float *output_tensor = interpreter->typed_output_tensor<float>(0);
-    print_topk(output_tensor, 3);
-
+    print_topk((float *)output_tensor.data, 3);
+    /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;
     while (time_tot < TEST_SEC) {
         clock_gettime(CLOCK_REALTIME, &start);
-        interpreter->Invoke();
+        ncnn::Extractor ex = net.create_extractor();
+        ex.input(input_names[0], input_tensor);
+        ex.extract(output_names[0], output_tensor);
         clock_gettime(CLOCK_REALTIME, &end);
         long long seconds = end.tv_sec - start.tv_sec;
         long long nanoseconds = end.tv_nsec - start.tv_nsec;
@@ -112,6 +122,7 @@ int main(int argc, char* argv[])
     bool debug = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
+    int num_threads = 1;
 
     static struct option long_options[] =
     {
@@ -120,12 +131,14 @@ int main(int argc, char* argv[])
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
+        {"threads",  required_argument, 0, 't'},
         {"append",  required_argument, 0, 0},
         {0, 0, 0, 0}
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdo", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "vbdot", // TODO
+            long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -154,6 +167,9 @@ int main(int argc, char* argv[])
             case 'g':
                 debug = true;
                 break;
+            case 't':
+                num_threads = atoi(optarg);
+                break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
                 break;
@@ -162,34 +178,33 @@ int main(int argc, char* argv[])
         }
     }
 
-    int num_threads = 1; // TODO
-    ops::builtin::BuiltinOpResolver resolver;
-    std::unique_ptr<Interpreter> interpreter;
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (args.model.find("EMO") != std::string::npos) {
-            continue;
-        }
         if (only_test && args.model.find(only_test) == std::string::npos) {
             continue;
         }
-
+        // TODO
         args.input_size = model.second;
-        std::string model_file = "tflite/" + args.model + ".tflite";
-        // create a interpreter
-        std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
-        std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
-        InterpreterBuilder builder(*tflite_model, resolver);
-        builder.SetNumThreads(num_threads);
-        builder(&interpreter);
-        interpreter->AllocateTensors();
+        char param_file[256];
+        char model_file[256];
+        sprintf(param_file, "ncnn/" "%s.ncnn.param", args.model.c_str());
+        sprintf(model_file, "ncnn/" "%s.ncnn.bin", args.model.c_str());
+        // create a net
+        std::cout << "Creating ncnn net: " << args.model << std::endl;
+        ncnn::Net net;
+        net.opt.use_vulkan_compute = true; //TODO
+        net.opt.num_threads = num_threads;
+        net.load_param(param_file);
+        net.load_model(model_file);
+
+        ncnn::Mat input_tensor = ncnn::Mat(args.input_size, args.input_size, 3);
 
         if (args.validation) {
-            evaluate(interpreter);
+            evaluate(net, input_tensor);
         }
         else {
-            benchmark(interpreter);
+            benchmark(net, input_tensor);
         }
     }
 }
