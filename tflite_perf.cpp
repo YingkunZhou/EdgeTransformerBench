@@ -101,8 +101,8 @@ void benchmark(
     double time_median = time_list[time_list.size() / 2] * 1000;
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t" << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
-}
+    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t";
+    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;}
 
 int main(int argc, char* argv[])
 {
@@ -112,6 +112,7 @@ int main(int argc, char* argv[])
     bool debug = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
+    int num_threads = 1; // TODO
 
     static struct option long_options[] =
     {
@@ -162,7 +163,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    int num_threads = 1; // TODO
+    // TODO
     ops::builtin::BuiltinOpResolver resolver;
     std::unique_ptr<Interpreter> interpreter;
 

@@ -1,12 +1,6 @@
 #ifndef ONNXRUNTIME_PERF_H
 #define ONNXRUNTIME_PERF_H
 
-template <typename T>
-T vectorProduct(const std::vector<T>& v)
-{
-    return accumulate(v.begin(), v.end(), 1, std::multiplies<T>());
-}
-
 /**
  * @brief Operator overloading for printing vectors
  * @tparam T

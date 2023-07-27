@@ -5,6 +5,12 @@ const float IMAGENET_DEFAULT_MEAN[3] = {0.485f, 0.456f, 0.406f};
 const float IMAGENET_DEFAULT_STD[3]  = {0.229f, 0.224f, 0.225f};
 const int NUM_CLASSES = 1000;
 
+template <typename T>
+T vectorProduct(const std::vector<T>& v)
+{
+    return accumulate(v.begin(), v.end(), 1, std::multiplies<T>());
+}
+
 void load_image(
     std::string img_path,
     float *input_tensor,

@@ -1,4 +1,7 @@
-//https://www.tensorflow.org/lite/guide/inference
+/* Reference code:
+   https://github.com/Tencent/TNN/blob/master/doc/cn/user/api.md
+   https://github.com/Tencent/TNN/blob/master/examples/base/tnn_sdk_sample.cc
+*/
 
 #include <iostream>
 #include <numeric>
@@ -7,8 +10,32 @@
 #include <iomanip>
 #include <filesystem>
 #include <getopt.h>
-#include <net.h>
+#include <fstream>
+
+#include <tnn/core/common.h>
+#include <tnn/core/instance.h>
+#include <tnn/core/macro.h>
+#include <tnn/core/tnn.h>
 #include "utils.h"
+
+// Helper functions
+std::string fdLoadFile(std::string path) {
+    std::ifstream file(path);
+    if (file.is_open()) {
+        file.seekg(0, file.end);
+        int size      = file.tellg();
+        char* content = new char[size];
+        file.seekg(0, file.beg);
+        file.read(content, size);
+        std::string fileContent;
+        fileContent.assign(content, size);
+        delete[] content;
+        file.close();
+        return fileContent;
+    }
+
+    return "";
+}
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
@@ -18,10 +45,15 @@ struct {
   bool validation;
   int input_size;
   int batch_size;
+  bool debug;
   std::string data_path;
+  std::vector<int> input_dims;
 } args;
 
-void evaluate(ncnn::Net &net, ncnn::Mat &input_tensor)
+void evaluate(
+    tnn::TNN &net,
+    std::shared_ptr<tnn::Instance> &instance,
+    std::vector<float> &input)
 {
     int class_index = 0;
     int num_predict = 0;
@@ -38,22 +70,23 @@ void evaluate(ncnn::Net &net, ncnn::Mat &input_tensor)
         scale = 50;
         offset = 15;
     }
-    const std::vector<const char*>& input_names = net.input_names();
-    const std::vector<const char*>& output_names = net.output_names();
-    ncnn::Mat output_tensor;
+
+    std::shared_ptr<tnn::Mat> output_tensor = nullptr;
+    tnn::Status status;
 
     std::vector<std::filesystem::path> classes = traverse_class(args.data_path);
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            load_image(image.path(), (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
-            ncnn::Extractor ex = net.create_extractor();
-            ex.input(input_names[0], input_tensor);
-            ex.extract(output_names[0], output_tensor);
+            load_image(image.path(), input.data(), args.model, args.input_size, args.batch_size);
+            auto input_tensor = std::make_shared<tnn::Mat>(tnn::DEVICE_NAIVE, tnn::NCHW_FLOAT, args.input_dims, input.data());
+            status = instance->SetInputMat(input_tensor, tnn::MatConvertParam());
+            status = instance->Forward();
+            status = instance->GetOutputMat(output_tensor);
             num_predict++;
             bool acc1 = false;
-            num_acc5 += acck((float *)output_tensor.data, 5, class_index*scale+offset, acc1);
+            num_acc5 += acck((float *)output_tensor->GetData(), 5, class_index*scale+offset, acc1);
             num_acc1 += acc1;
         }
         class_index++;
@@ -68,35 +101,35 @@ void evaluate(ncnn::Net &net, ncnn::Mat &input_tensor)
     std::cout << "elapse time: " << elapse << std::endl;
 }
 
-void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
+void benchmark(
+    tnn::TNN &net,
+    std::shared_ptr<tnn::Instance> &instance,
+    std::vector<float> &input)
 {
     // Measure latency
-    const std::vector<const char*>& input_names = net.input_names();
-    const std::vector<const char*>& output_names = net.output_names();
-    // https://zhuanlan.zhihu.com/p/578501922
-    load_image("daisy.jpg", (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
-    ncnn::Mat output_tensor;
+    load_image("daisy.jpg", input.data(), args.model, args.input_size, args.batch_size);
+    auto input_tensor = std::make_shared<tnn::Mat>(tnn::DEVICE_NAIVE, tnn::NCHW_FLOAT, args.input_dims, input.data());
+
+    auto status = instance->SetInputMat(input_tensor, tnn::MatConvertParam());
 
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
-        ncnn::Extractor ex = net.create_extractor();
-        ex.input(input_names[0], input_tensor);
-        ex.extract(output_names[0], output_tensor);
+        status = instance->Forward();
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    print_topk((float *)output_tensor.data, 3);
+    std::shared_ptr<tnn::Mat> output_tensor = nullptr;
+    status = instance->GetOutputMat(output_tensor);
+    print_topk((float *)output_tensor->GetData(), 3);
     /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;
     while (time_tot < TEST_SEC) {
         clock_gettime(CLOCK_REALTIME, &start);
-        ncnn::Extractor ex = net.create_extractor();
-        ex.input(input_names[0], input_tensor);
-        ex.extract(output_names[0], output_tensor);
+        status = instance->Forward();
         clock_gettime(CLOCK_REALTIME, &end);
         long long seconds = end.tv_sec - start.tv_sec;
         long long nanoseconds = end.tv_nsec - start.tv_nsec;
@@ -113,14 +146,15 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
 
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t";
-    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;}
+    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
+}
 
 int main(int argc, char* argv[])
 {
     args.data_path = "imagenet-div50";
     args.validation = false;
     args.batch_size = 1;
-    bool debug = false;
+    args.debug = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -166,7 +200,7 @@ int main(int argc, char* argv[])
                 only_test = optarg;
                 break;
             case 'g':
-                debug = true;
+                args.debug = true;
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -179,33 +213,50 @@ int main(int argc, char* argv[])
         }
     }
 
+        // TODO: Set the cpu affinity.
+        // usually, -dl 0-3 for little core, -dl 4-7 for big core
+        // only works when -dl flags were set. benchmark script not set -dl flags
+        // SetCpuAffinity();
 
     for (const auto & model: test_models) {
         args.model = model.first;
         if (only_test && args.model.find(only_test) == std::string::npos) {
             continue;
         }
-        // TODO
+
         args.input_size = model.second;
-        char param_file[256];
-        char model_file[256];
-        sprintf(param_file, "ncnn/" "%s.ncnn.param", args.model.c_str());
-        sprintf(model_file, "ncnn/" "%s.ncnn.bin", args.model.c_str());
-        // create a net
-        std::cout << "Creating ncnn net: " << args.model << std::endl;
-        ncnn::Net net;
-        net.opt.use_vulkan_compute = true; //TODO
-        net.opt.num_threads = num_threads;
-        net.load_param(param_file);
-        net.load_model(model_file);
 
-        ncnn::Mat input_tensor = ncnn::Mat(args.input_size, args.input_size, 3);
+        std::cout << "Creating TNN net: " << args.model << std::endl;
+        tnn::ModelConfig model_config;
+        // model_config.model_type = tnn::MODEL_TYPE_NCNN;
+        model_config.model_type = tnn::MODEL_TYPE_TNN;
+        model_config.params.clear();
+        // TODO: has opt suffix?
+        std::string tnnproto = "tnn/" + args.model + ".opt.tnnproto";
+        std::string tnnmodel = "tnn/" + args.model + ".opt.tnnmodel";
 
+        model_config.params.push_back(fdLoadFile(tnnproto.c_str()));
+        model_config.params.push_back(fdLoadFile(tnnmodel.c_str()));
+        // model_config.params.push_back(model_path_str_) ??
+        tnn::TNN net;
+        auto status = net.Init(model_config);
+
+        tnn::NetworkConfig network_config;
+        network_config.device_type = tnn::DEVICE_ARM;
+        // TODO: network_config.{library_path, precision, cache_path, network_type}
+        args.input_dims = {1, 3/*image_channel*/, args.input_size, args.input_size};
+        tnn::InputShapesMap input_shapes = {{"input", args.input_dims}};
+        std::shared_ptr<tnn::Instance> instance = net.CreateInst(network_config, status, input_shapes);
+        // TODO: num_threads <= 4 in orin doesn't work?!
+        instance->SetCpuNumThreads(num_threads);
+
+        size_t inputTensorSize  = vectorProduct(args.input_dims);
+        std::vector<float> input_tensor(inputTensorSize);
         if (args.validation) {
-            evaluate(net, input_tensor);
+            evaluate(net, instance, input_tensor);
         }
         else {
-            benchmark(net, input_tensor);
+            benchmark(net, instance, input_tensor);
         }
     }
 }
