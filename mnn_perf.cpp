@@ -1,7 +1,7 @@
 /* Reference code:
-   https://github.com/Tencent/TNN/blob/master/doc/cn/user/api.md
-   https://github.com/Tencent/TNN/blob/master/examples/base/tnn_sdk_sample.cc
-   https://github.com/Tencent/TNN/blob/master/test/test.cc
+   https://github.com/alibaba/MNN/blob/master/benchmark/benchmark.cpp
+   https://github.com/alibaba/MNN/blob/master/demo/exec/pictureRecognition.cpp
+   https://www.yuque.com/mnn/en/create_session
 */
 
 #include <iostream>
@@ -13,30 +13,9 @@
 #include <getopt.h>
 #include <fstream>
 
-#include <tnn/core/common.h>
-#include <tnn/core/instance.h>
-#include <tnn/core/macro.h>
-#include <tnn/core/tnn.h>
+#include <MNN/Interpreter.hpp>
 #include "utils.h"
 
-// Helper functions
-std::string fdLoadFile(std::string path) {
-    std::ifstream file(path);
-    if (file.is_open()) {
-        file.seekg(0, file.end);
-        int size      = file.tellg();
-        char* content = new char[size];
-        file.seekg(0, file.beg);
-        file.read(content, size);
-        std::string fileContent;
-        fileContent.assign(content, size);
-        delete[] content;
-        file.close();
-        return fileContent;
-    }
-
-    return "";
-}
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
@@ -48,13 +27,12 @@ struct {
   int batch_size;
   bool debug;
   std::string data_path;
-  std::vector<int> input_dims;
 } args;
 
 void evaluate(
-    tnn::TNN &net,
-    std::shared_ptr<tnn::Instance> &instance,
-    std::vector<float> &input)
+    std::shared_ptr<MNN::Interpreter> &net,
+    MNN::Session *session,
+    MNN::Tensor *input_tensor)
 {
     int class_index = 0;
     int num_predict = 0;
@@ -72,23 +50,28 @@ void evaluate(
         offset = 15;
     }
 
-    std::shared_ptr<tnn::Mat> output_tensor = nullptr;
-    tnn::Status status;
+    MNN::Tensor* input = net->getSessionInput(session, NULL);
 
     std::vector<std::filesystem::path> classes = traverse_class(args.data_path);
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            load_image(image.path(), input.data(), args.model, args.input_size, args.batch_size);
-            auto input_tensor = std::make_shared<tnn::Mat>(tnn::DEVICE_NAIVE, tnn::NCHW_FLOAT, args.input_dims, input.data());
-            status = instance->SetInputMat(input_tensor, tnn::MatConvertParam());
-            status = instance->Forward();
-            status = instance->GetOutputMat(output_tensor);
+            load_image(image.path(), input_tensor->host<float>(), args.model, args.input_size, args.batch_size);
+            input->copyFromHostTensor(input_tensor);
+            net->runSession(session);
+            MNN::Tensor* output = net->getSessionOutput(session, NULL);
+            auto dimType = output->getDimensionType();
+            if (output->getType().code != halide_type_float) {
+                dimType = MNN::Tensor::TENSORFLOW;
+            }
+            auto output_tensor = new MNN::Tensor(output, dimType);
+            output->copyToHostTensor(output_tensor);
             num_predict++;
             bool acc1 = false;
-            num_acc5 += acck((float *)output_tensor->GetData(), 5, class_index*scale+offset, acc1);
+            num_acc5 += acck(output_tensor->host<float>(), 5, class_index*scale+offset, acc1);
             num_acc1 += acc1;
+            delete output_tensor;
         }
         class_index++;
         std::cout << "Done [" << class_index << "/" << classes.size() << "]";
@@ -103,33 +86,44 @@ void evaluate(
 }
 
 void benchmark(
-    tnn::TNN &net,
-    std::shared_ptr<tnn::Instance> &instance,
-    std::vector<float> &input)
+    std::shared_ptr<MNN::Interpreter> &net,
+    MNN::Session *session,
+    MNN::Tensor *input_tensor)
 {
+    auto input = net->getSessionInput(session, NULL);
+    auto output = net->getSessionOutput(session, NULL);
+
     // Measure latency
-    load_image("daisy.jpg", input.data(), args.model, args.input_size, args.batch_size);
-    auto input_tensor = std::make_shared<tnn::Mat>(tnn::DEVICE_NAIVE, tnn::NCHW_FLOAT, args.input_dims, input.data());
-    auto status = instance->SetInputMat(input_tensor, tnn::MatConvertParam());
+    load_image("daisy.jpg", input_tensor->host<float>(), args.model, args.input_size, args.batch_size);
 
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
-        status = instance->Forward();
+        // TODO: runSession will overwirte the value in input_tensor!!!
+        input->copyFromHostTensor(input_tensor);
+        net->runSession(session);
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    std::shared_ptr<tnn::Mat> output_tensor = nullptr;
-    status = instance->GetOutputMat(output_tensor);
-    print_topk((float *)output_tensor->GetData(), 3);
+    auto dimType = output->getDimensionType();
+    if (output->getType().code != halide_type_float) {
+        dimType = MNN::Tensor::TENSORFLOW;
+    }
+
+    auto output_tensor = new MNN::Tensor(output, dimType);
+    output->copyToHostTensor(output_tensor);
+    print_topk(output_tensor->host<float>(), 3);
+    delete output_tensor;
+
     /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;
     while (time_tot < TEST_SEC) {
         clock_gettime(CLOCK_REALTIME, &start);
-        status = instance->Forward();
+        input->copyFromHostTensor(input_tensor);
+        net->runSession(session);
         clock_gettime(CLOCK_REALTIME, &end);
         long long seconds = end.tv_sec - start.tv_sec;
         long long nanoseconds = end.tv_nsec - start.tv_nsec;
@@ -213,10 +207,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    // TODO: Set the cpu affinity.
-    // usually, -dl 0-3 for little core, -dl 4-7 for big core
-    // only works when -dl flags were set. benchmark script not set -dl flags
-    // SetCpuAffinity();
+
+    int forward = MNN_FORWARD_CPU;
+    int precision = 2;
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -226,37 +219,55 @@ int main(int argc, char* argv[])
 
         args.input_size = model.second;
 
-        std::cout << "Creating TNN net: " << args.model << std::endl;
-        tnn::ModelConfig model_config;
-        // model_config.model_type = tnn::MODEL_TYPE_NCNN;
-        model_config.model_type = tnn::MODEL_TYPE_TNN;
-        model_config.params.clear();
-        // TODO: has opt suffix?
-        std::string tnnproto = "tnn/" + args.model + ".opt.tnnproto";
-        std::string tnnmodel = "tnn/" + args.model + ".opt.tnnmodel";
+        std::cout << "Creating MNN Interpreter: " << args.model << std::endl;
+        std::string model_file = "mnn/" + args.model + ".mnn";
+        //std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
+        std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()));
+#if 1
+        net->setCacheFile(".cachefile");
+        net->setSessionMode(MNN::Interpreter::Session_Backend_Auto);
+        net->setSessionHint(MNN::Interpreter::MAX_TUNING_NUMBER, 5);
+#else
+        net->setSessionMode(MNN::Interpreter::Session_Release);
+#endif
 
-        model_config.params.push_back(fdLoadFile(tnnproto.c_str()));
-        model_config.params.push_back(fdLoadFile(tnnmodel.c_str()));
-        // model_config.params.push_back(model_path_str_) ??
-        tnn::TNN net;
-        auto status = net.Init(model_config);
+        MNN::ScheduleConfig config;
+#if 1
+        config.type  = MNN_FORWARD_AUTO;
+#else
+        config.type = static_cast<MNNForwardType>(forward);
+        config.numThread = num_threads;
+        MNN::BackendConfig backendConfig;
+        backendConfig.precision = (MNN::BackendConfig::PrecisionMode) precision;
+        backendConfig.power = MNN::BackendConfig::Power_High;
+        config.backendConfig = &backendConfig;
+#endif
+        auto session = net->createSession(config);
 
-        tnn::NetworkConfig network_config;
-        network_config.device_type = tnn::DEVICE_ARM;
-        // TODO: network_config.{library_path, precision, cache_path, network_type}
-        args.input_dims = {1, 3/*image_channel*/, args.input_size, args.input_size};
-        tnn::InputShapesMap input_shapes = {{"input", args.input_dims}};
-        std::shared_ptr<tnn::Instance> instance = net.CreateInst(network_config, status, input_shapes);
-        // TODO: num_threads <= 4 in orin doesn't work?!
-        instance->SetCpuNumThreads(num_threads);
+        if (args.debug) {
+            float memoryUsage = 0.0f;
+            float flops = 0.0f;
+            int backendType[2]; // TODO: 2?
+            net->getSessionInfo(session, MNN::Interpreter::MEMORY, &memoryUsage);
+            net->getSessionInfo(session, MNN::Interpreter::FLOPS, &flops);
+            net->getSessionInfo(session, MNN::Interpreter::BACKENDS, backendType);
+            MNN_PRINT("Session Info: memory use %f MB, flops is %f M, backendType is %d, batch size = %d\n", memoryUsage, flops, backendType[0], args.batch_size);
+        }
 
-        size_t inputTensorSize  = vectorProduct(args.input_dims);
-        std::vector<float> input_tensor(inputTensorSize);
+        auto input = net->getSessionInput(session, NULL);
+        //auto shape = input->shape();
+        //shape[0] = args.batch_size; //e.g. Set Batch Size
+        //std::vector<int> shape{1, 3, 224, 224}; //or
+        //net->resizeTensor(input, shape);
+        //net->resizeSession(session);
+        net->releaseModel(); //TODO: ?
+
+        auto input_tensor = new MNN::Tensor(input, MNN::Tensor::CAFFE);
         if (args.validation) {
-            evaluate(net, instance, input_tensor);
+            evaluate(net, session, input_tensor);
         }
         else {
-            benchmark(net, instance, input_tensor);
+            benchmark(net, session, input_tensor);
         }
     }
 }
