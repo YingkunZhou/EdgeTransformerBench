@@ -1,4 +1,8 @@
-//https://www.tensorflow.org/lite/guide/inference
+/* Reference code:
+   https://github.com/Tencent/TNN/blob/master/doc/cn/user/api.md
+   https://github.com/Tencent/TNN/blob/master/examples/base/tnn_sdk_sample.cc
+   https://github.com/Tencent/TNN/blob/master/test/test.cc
+*/
 
 #include <iostream>
 #include <numeric>
@@ -7,12 +11,10 @@
 #include <iomanip>
 #include <filesystem>
 #include <getopt.h>
+#include <fstream>
 
-#include <tensorflow/lite/interpreter.h>
-#include <tensorflow/lite/kernels/register.h>
+#include <paddle_api.h>
 #include "utils.h"
-
-using namespace tflite;
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
@@ -22,11 +24,14 @@ struct {
   bool validation;
   int input_size;
   int batch_size;
+  bool debug;
   std::string data_path;
+  std::vector<int> input_dims;
 } args;
 
 void evaluate(
-    std::unique_ptr<Interpreter> &interpreter)
+    std::shared_ptr<paddle::lite_api::PaddlePredictor> &predictor,
+    std::unique_ptr<paddle::lite_api::Tensor> &input_tensor)
 {
     int class_index = 0;
     int num_predict = 0;
@@ -49,13 +54,12 @@ void evaluate(
     clock_gettime(CLOCK_REALTIME, &start);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            float *input_tensor = interpreter->typed_input_tensor<float>(0);
-            load_image(image.path(), input_tensor, args.model, args.input_size, args.batch_size);
-            interpreter->Invoke();
-            float *output_tensor = interpreter->typed_output_tensor<float>(0);
+            load_image(image.path(), input_tensor->mutable_data<float>(), args.model, args.input_size, args.batch_size);
+            predictor->Run();
+            std::unique_ptr<const paddle::lite_api::Tensor> output_tensor(std::move(predictor->GetOutput(0)));
             num_predict++;
             bool acc1 = false;
-            num_acc5 += acck(output_tensor, 5, class_index*scale+offset, acc1);
+            num_acc5 += acck(output_tensor->data<float>(), 5, class_index*scale+offset, acc1);
             num_acc1 += acc1;
         }
         class_index++;
@@ -71,29 +75,29 @@ void evaluate(
 }
 
 void benchmark(
-    std::unique_ptr<Interpreter> &interpreter)
+    std::shared_ptr<paddle::lite_api::PaddlePredictor> &predictor,
+    std::unique_ptr<paddle::lite_api::Tensor> &input_tensor)
 {
     // Measure latency
-    float *input_tensor = interpreter->typed_input_tensor<float>(0);
-    load_image("daisy.jpg", input_tensor, args.model, args.input_size, args.batch_size);
+    load_image("daisy.jpg", input_tensor->mutable_data<float>(), args.model, args.input_size, args.batch_size);
 
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
-
+    /// warmup
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
-        interpreter->Invoke();
+        predictor->Run();
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    float *output_tensor = interpreter->typed_output_tensor<float>(0);
-    print_topk(output_tensor, 3);
-
+    std::unique_ptr<const paddle::lite_api::Tensor> output_tensor(std::move(predictor->GetOutput(0)));
+    print_topk(output_tensor->data<float>(), 3);
+    /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;
     while (time_tot < TEST_SEC) {
         clock_gettime(CLOCK_REALTIME, &start);
-        interpreter->Invoke();
+        predictor->Run();
         clock_gettime(CLOCK_REALTIME, &end);
         long long seconds = end.tv_sec - start.tv_sec;
         long long nanoseconds = end.tv_nsec - start.tv_nsec;
@@ -110,17 +114,18 @@ void benchmark(
 
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t";
-    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;}
+    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
+}
 
 int main(int argc, char* argv[])
 {
     args.data_path = "imagenet-div50";
     args.validation = false;
     args.batch_size = 1;
-    bool debug = false;
+    args.debug = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
-    int num_threads = 1; // TODO
+    int num_threads = 1;
 
     static struct option long_options[] =
     {
@@ -129,12 +134,14 @@ int main(int argc, char* argv[])
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
+        {"threads",  required_argument, 0, 't'},
         {"append",  required_argument, 0, 0},
         {0, 0, 0, 0}
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdo", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "vbdot", // TODO
+            long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -161,7 +168,10 @@ int main(int argc, char* argv[])
                 only_test = optarg;
                 break;
             case 'g':
-                debug = true;
+                args.debug = true;
+                break;
+            case 't':
+                num_threads = atoi(optarg);
                 break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
@@ -170,35 +180,39 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
-
-    // TODO
-    ops::builtin::BuiltinOpResolver resolver;
-    std::unique_ptr<Interpreter> interpreter;
+    // TODO:
+    int power_mode = 0;
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (args.model.find("EMO") != std::string::npos) {
-            continue;
-        }
         if (only_test && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
         args.input_size = model.second;
-        std::string model_file = "tflite/" + args.model + ".tflite";
-        // create a interpreter
-        std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
-        std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
-        InterpreterBuilder builder(*tflite_model, resolver);
-        builder.SetNumThreads(num_threads);
-        builder(&interpreter);
-        interpreter->AllocateTensors();
+
+        std::cout << "Creating PaddlePredictor: " << args.model << std::endl;
+        std::string model_file = "nb/" + args.model + ".nb";
+
+        paddle::lite_api::MobileConfig config;
+        // 1. Set MobileConfig
+        config.set_model_from_file(model_file);
+        config.set_threads(num_threads);
+        config.set_power_mode(static_cast<paddle::lite_api::PowerMode>(power_mode));
+
+        // 2. Create PaddlePredictor by MobileConfig
+        std::shared_ptr<paddle::lite_api::PaddlePredictor> predictor =
+            paddle::lite_api::CreatePaddlePredictor<paddle::lite_api::MobileConfig>(config);
+
+        // 3. Prepare input data from image
+        std::unique_ptr<paddle::lite_api::Tensor> input_tensor(std::move(predictor->GetInput(0)));
+        input_tensor->Resize({1, 3, args.input_size, args.input_size});
 
         if (args.validation) {
-            evaluate(interpreter);
+            evaluate(predictor, input_tensor);
         }
         else {
-            benchmark(interpreter);
+            benchmark(predictor, input_tensor);
         }
     }
 }

@@ -1,6 +1,5 @@
 // https://github.com/microsoft/onnxruntime/blob/v1.8.2/csharp/test/Microsoft.ML.OnnxRuntime.EndToEndTests.Capi/CXX_Api_Sample.cpp
 // https://github.com/microsoft/onnxruntime/blob/v1.8.2/include/onnxruntime/core/session/onnxruntime_cxx_api.h
-#include <onnxruntime_cxx_api.h>
 
 #include <iostream>
 #include <numeric>
@@ -9,6 +8,9 @@
 #include <iomanip>
 #include <filesystem>
 #include <getopt.h>
+#include <algorithm>
+
+#include <onnxruntime_cxx_api.h>
 #include "onnxruntime_perf.h"
 #include "utils.h"
 

@@ -11,7 +11,6 @@
 #include <iomanip>
 #include <filesystem>
 #include <getopt.h>
-#include <fstream>
 
 #include <MNN/Interpreter.hpp>
 #include "utils.h"
@@ -209,6 +208,7 @@ int main(int argc, char* argv[])
 
 
     int forward = MNN_FORWARD_CPU;
+    // int forward = MNN_FORWARD_AUTO
     int precision = 2;
 
     for (const auto & model: test_models) {
@@ -223,25 +223,23 @@ int main(int argc, char* argv[])
         std::string model_file = "mnn/" + args.model + ".mnn";
         //std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
         std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()));
-#if 1
-        net->setCacheFile(".cachefile");
+#if 0
+        // TODO !
+        //net->setCacheFile(".cachefile");
         net->setSessionMode(MNN::Interpreter::Session_Backend_Auto);
-        net->setSessionHint(MNN::Interpreter::MAX_TUNING_NUMBER, 5);
+        net->setSessionHint(MNN::Interpreter::MAX_TUNING_NUMBER, 10);
 #else
         net->setSessionMode(MNN::Interpreter::Session_Release);
 #endif
 
         MNN::ScheduleConfig config;
-#if 1
-        config.type  = MNN_FORWARD_AUTO;
-#else
         config.type = static_cast<MNNForwardType>(forward);
         config.numThread = num_threads;
         MNN::BackendConfig backendConfig;
         backendConfig.precision = (MNN::BackendConfig::PrecisionMode) precision;
         backendConfig.power = MNN::BackendConfig::Power_High;
         config.backendConfig = &backendConfig;
-#endif
+
         auto session = net->createSession(config);
 
         if (args.debug) {

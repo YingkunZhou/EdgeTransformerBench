@@ -1,0 +1,21 @@
+# orin
+$ bash demo.sh 2>warning.log
+Creating ncnn net: efficientformerv2_s1
+(index: 985,  score: 13.187500), (index: 308,  score: 4.398438), (index: 984,  score: 4.390625),
+min =   155.54ms        max =   157.07ms        mean =  156.62ms        median =        156.68ms
+Creating TNN net: efficientformerv2_s1
+(index: 985,  score: 13.267979), (index: 984,  score: 4.345343), (index: 308,  score: 4.289362),
+min =   77.20ms max =   83.67ms mean =  79.04ms median =        79.12ms
+Creating MNN Interpreter: efficientformerv2_s1
+The device support i8sdot:1, support fp16:1, support i8mm: 0
+(index: 985,  score: 13.267048), (index: 984,  score: 4.345686), (index: 308,  score: 4.289115),
+min =   60.85ms max =   65.61ms mean =  62.01ms median =        62.08ms
+Creating tflite runtime interpreter: efficientformerv2_s1
+(index: 985,  score: 13.296132), (index: 984,  score: 4.359022), (index: 308,  score: 4.301730),
+min =   85.25ms max =   92.41ms mean =  90.50ms median =        90.83ms
+Creating onnx runtime session: efficientformerv2_s1
+(index: 985,  score: 13.296133), (index: 984,  score: 4.359020), (index: 308,  score: 4.301716),
+min =   100.24ms        max =   108.76ms        mean =  102.30ms        median =        102.17ms
+Creating PaddlePredictor: efficientformerv2_s1
+(index: 985,  score: 13.485670), (index: 984,  score: 4.418849), (index: 308,  score: 4.411823),
+min =   86.06ms max =   89.00ms mean =  88.27ms median =        88.39ms
