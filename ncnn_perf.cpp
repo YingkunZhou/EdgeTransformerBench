@@ -1,4 +1,7 @@
-//https://www.tensorflow.org/lite/guide/inference
+/* Reference code:
+   https://github.com/Tencent/ncnn/blob/master/examples/shufflenetv2.cpp
+   https://github.com/Tencent/ncnn/blob/master/benchmark/benchncnn.cpp
+*/
 
 #include <iostream>
 #include <numeric>
@@ -8,10 +11,21 @@
 #include <filesystem>
 #include <getopt.h>
 #include <net.h>
+#include <cpu.h>
+#include <gpu.h>
 #include "utils.h"
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
+
+static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
+static ncnn::PoolAllocator g_workspace_pool_allocator;
+
+#if NCNN_VULKAN
+static ncnn::VulkanDevice* g_vkdev = 0;
+static ncnn::VkAllocator* g_blob_vkallocator = 0;
+static ncnn::VkAllocator* g_staging_vkallocator = 0;
+#endif // NCNN_VULKAN
 
 struct {
   std::string model;
@@ -121,6 +135,7 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     bool debug = false;
+    bool use_gpu = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -129,6 +144,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"use_gpu", no_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -168,6 +184,9 @@ int main(int argc, char* argv[])
             case 'g':
                 debug = true;
                 break;
+            case 'u':
+                use_gpu = true;
+                break;
             case 't':
                 num_threads = atoi(optarg);
                 break;
@@ -179,6 +198,22 @@ int main(int argc, char* argv[])
         }
     }
 
+    g_blob_pool_allocator.set_size_compare_ratio(0.f);
+    g_workspace_pool_allocator.set_size_compare_ratio(0.f);
+#if NCNN_VULKAN
+    if (use_gpu)
+    {
+        int gpu_device = 0; //TODO
+        g_vkdev = ncnn::get_gpu_device(gpu_device);
+        g_blob_vkallocator = new ncnn::VkBlobAllocator(g_vkdev);
+        g_staging_vkallocator = new ncnn::VkStagingAllocator(g_vkdev);
+    }
+#endif // NCNN_VULKAN
+
+    int powersave = 2; //TODO
+    ncnn::set_cpu_powersave(powersave);
+    ncnn::set_omp_dynamic(0);
+    ncnn::set_omp_num_threads(num_threads);
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -187,6 +222,18 @@ int main(int argc, char* argv[])
         }
         // TODO
         args.input_size = model.second;
+
+        g_blob_pool_allocator.clear();
+        g_workspace_pool_allocator.clear();
+
+#if NCNN_VULKAN
+        if (use_gpu)
+        {
+            g_blob_vkallocator->clear();
+            g_staging_vkallocator->clear();
+        }
+#endif // NCNN_VULKAN
+
         char param_file[256];
         char model_file[256];
         sprintf(param_file, "ncnn/" "%s.ncnn.param", args.model.c_str());
@@ -195,7 +242,12 @@ int main(int argc, char* argv[])
         std::cout << "Creating ncnn net: " << args.model << std::endl;
         ncnn::Net net;
         net.opt.use_vulkan_compute = true; //TODO
-        net.opt.num_threads = num_threads;
+#if NCNN_VULKAN
+        if (use_gpu)
+        {
+            net.set_vulkan_device(g_vkdev);
+        }
+#endif // NCNN_VULKAN
         net.load_param(param_file);
         net.load_model(model_file);
 
@@ -208,4 +260,10 @@ int main(int argc, char* argv[])
             benchmark(net, input_tensor);
         }
     }
+
+#if NCNN_VULKAN
+    delete g_blob_vkallocator;
+    delete g_staging_vkallocator;
+    ncnn::destroy_gpu_instance();
+#endif // NCNN_VULKAN
 }
