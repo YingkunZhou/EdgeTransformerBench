@@ -22,6 +22,7 @@ static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
 static ncnn::PoolAllocator g_workspace_pool_allocator;
 
 #if NCNN_VULKAN
+// for -D NCNN_VULKAN=ON built ncnn
 static ncnn::VulkanDevice* g_vkdev = 0;
 static ncnn::VkAllocator* g_blob_vkallocator = 0;
 static ncnn::VkAllocator* g_staging_vkallocator = 0;
@@ -144,7 +145,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
-        {"use_gpu", no_argument, 0, 'u'},
+        {"use-gpu", no_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -213,7 +214,8 @@ int main(int argc, char* argv[])
     int powersave = 2; //TODO
     ncnn::set_cpu_powersave(powersave);
     ncnn::set_omp_dynamic(0);
-    ncnn::set_omp_num_threads(num_threads);
+    // TODO: doesn't work?
+    // ncnn::set_omp_num_threads(num_threads);
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -241,10 +243,11 @@ int main(int argc, char* argv[])
         // create a net
         std::cout << "Creating ncnn net: " << args.model << std::endl;
         ncnn::Net net;
-        net.opt.use_vulkan_compute = true; //TODO
+        net.opt.num_threads = num_threads;
 #if NCNN_VULKAN
         if (use_gpu)
         {
+            net.opt.use_vulkan_compute = true; //TODO
             net.set_vulkan_device(g_vkdev);
         }
 #endif // NCNN_VULKAN
@@ -262,8 +265,11 @@ int main(int argc, char* argv[])
     }
 
 #if NCNN_VULKAN
-    delete g_blob_vkallocator;
-    delete g_staging_vkallocator;
-    ncnn::destroy_gpu_instance();
+    if (use_gpu)
+    {
+        delete g_blob_vkallocator;
+        delete g_staging_vkallocator;
+        ncnn::destroy_gpu_instance();
+    }
 #endif // NCNN_VULKAN
 }
