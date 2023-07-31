@@ -60,11 +60,7 @@ void evaluate(
             input->copyFromHostTensor(input_tensor);
             net->runSession(session);
             MNN::Tensor* output = net->getSessionOutput(session, NULL);
-            auto dimType = output->getDimensionType();
-            if (output->getType().code != halide_type_float) {
-                dimType = MNN::Tensor::TENSORFLOW;
-            }
-            auto output_tensor = new MNN::Tensor(output, dimType);
+            auto output_tensor = new MNN::Tensor(output, MNN::Tensor::CAFFE);
             output->copyToHostTensor(output_tensor);
             num_predict++;
             bool acc1 = false;
@@ -100,18 +96,14 @@ void benchmark(
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
-        // TODO: runSession will overwirte the value in input_tensor!!!
+        // runSession will overwirte the value in input_tensor!!!
+        // https://www.yuque.com/mnn/cn/create_session#KtfMk
         input->copyFromHostTensor(input_tensor);
         net->runSession(session);
         clock_gettime(CLOCK_REALTIME, &end);
     }
 
-    auto dimType = output->getDimensionType();
-    if (output->getType().code != halide_type_float) {
-        dimType = MNN::Tensor::TENSORFLOW;
-    }
-
-    auto output_tensor = new MNN::Tensor(output, dimType);
+    auto output_tensor = new MNN::Tensor(output, MNN::Tensor::CAFFE);
     output->copyToHostTensor(output_tensor);
     print_topk(output_tensor->host<float>(), 3);
     delete output_tensor;
@@ -120,8 +112,8 @@ void benchmark(
     std::vector<double> time_list = {};
     double time_tot = 0;
     while (time_tot < TEST_SEC) {
-        clock_gettime(CLOCK_REALTIME, &start);
         input->copyFromHostTensor(input_tensor);
+        clock_gettime(CLOCK_REALTIME, &start);
         net->runSession(session);
         clock_gettime(CLOCK_REALTIME, &end);
         long long seconds = end.tv_sec - start.tv_sec;
@@ -148,6 +140,7 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     args.debug = false;
+    int forward = MNN_FORWARD_CPU;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -156,6 +149,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"vulkan",  no_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -165,7 +159,7 @@ int main(int argc, char* argv[])
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdot", // TODO
+    while ((c = getopt_long(argc, argv, "vgubdot", // TODO
             long_options, &option_index)) != -1)
     {
         switch (c)
@@ -195,6 +189,9 @@ int main(int argc, char* argv[])
             case 'g':
                 args.debug = true;
                 break;
+            case 'u':
+                forward = MNN_FORWARD_VULKAN;
+                break;
             case 't':
                 num_threads = atoi(optarg);
                 break;
@@ -206,9 +203,6 @@ int main(int argc, char* argv[])
         }
     }
 
-
-    int forward = MNN_FORWARD_CPU;
-    // int forward = MNN_FORWARD_AUTO
     int precision = 2;
 
     for (const auto & model: test_models) {
@@ -224,7 +218,7 @@ int main(int argc, char* argv[])
         //std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
         std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()));
 #if 0
-        // TODO !
+        // https://www.yuque.com/mnn/cn/create_session#KtfMk
         //net->setCacheFile(".cachefile");
         net->setSessionMode(MNN::Interpreter::Session_Backend_Auto);
         net->setSessionHint(MNN::Interpreter::MAX_TUNING_NUMBER, 10);
