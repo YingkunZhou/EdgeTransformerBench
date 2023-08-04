@@ -1,7 +1,5 @@
 /* Reference code:
-   https://github.com/Tencent/TNN/blob/master/doc/cn/user/api.md
-   https://github.com/Tencent/TNN/blob/master/examples/base/tnn_sdk_sample.cc
-   https://github.com/Tencent/TNN/blob/master/test/test.cc
+
 */
 
 #include <iostream>

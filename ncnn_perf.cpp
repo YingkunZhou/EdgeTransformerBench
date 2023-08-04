@@ -96,14 +96,22 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
+#ifndef DEBUG
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
+#endif
         ncnn::Extractor ex = net.create_extractor();
         ex.input(input_names[0], input_tensor);
         ex.extract(output_names[0], output_tensor);
+#ifndef DEBUG
         clock_gettime(CLOCK_REALTIME, &end);
     }
+#endif
 
     print_topk((float *)output_tensor.data, 3);
+#ifdef DEBUG
+    return;
+#endif
+
     /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;
@@ -136,7 +144,7 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     bool debug = false;
-    bool use_gpu = false;
+    bool use_vulkan = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -145,7 +153,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
-        {"use-gpu", no_argument, 0, 'u'},
+        {"vulkan", no_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -186,7 +194,7 @@ int main(int argc, char* argv[])
                 debug = true;
                 break;
             case 'u':
-                use_gpu = true;
+                use_vulkan = true;
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -202,7 +210,7 @@ int main(int argc, char* argv[])
     g_blob_pool_allocator.set_size_compare_ratio(0.f);
     g_workspace_pool_allocator.set_size_compare_ratio(0.f);
 #if NCNN_VULKAN
-    if (use_gpu)
+    if (use_vulkan)
     {
         int gpu_device = 0; //TODO
         g_vkdev = ncnn::get_gpu_device(gpu_device);
@@ -229,7 +237,7 @@ int main(int argc, char* argv[])
         g_workspace_pool_allocator.clear();
 
 #if NCNN_VULKAN
-        if (use_gpu)
+        if (use_vulkan)
         {
             g_blob_vkallocator->clear();
             g_staging_vkallocator->clear();
@@ -245,7 +253,7 @@ int main(int argc, char* argv[])
         ncnn::Net net;
         net.opt.num_threads = num_threads;
 #if NCNN_VULKAN
-        if (use_gpu)
+        if (use_vulkan)
         {
             net.opt.use_vulkan_compute = true; //TODO
             net.set_vulkan_device(g_vkdev);
@@ -265,7 +273,7 @@ int main(int argc, char* argv[])
     }
 
 #if NCNN_VULKAN
-    if (use_gpu)
+    if (use_vulkan)
     {
         delete g_blob_vkallocator;
         delete g_staging_vkallocator;

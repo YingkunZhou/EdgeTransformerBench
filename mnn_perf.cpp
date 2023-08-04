@@ -95,18 +95,25 @@ void benchmark(
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
+#ifndef DEBUG
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
+#endif
         // runSession will overwirte the value in input_tensor!!!
         // https://www.yuque.com/mnn/cn/create_session#KtfMk
         input->copyFromHostTensor(input_tensor);
         net->runSession(session);
+#ifndef DEBUG
         clock_gettime(CLOCK_REALTIME, &end);
     }
+#endif
 
     auto output_tensor = new MNN::Tensor(output, MNN::Tensor::CAFFE);
     output->copyToHostTensor(output_tensor);
     print_topk(output_tensor->host<float>(), 3);
     delete output_tensor;
+#ifdef DEBUG
+    return;
+#endif
 
     /// testup
     std::vector<double> time_list = {};
