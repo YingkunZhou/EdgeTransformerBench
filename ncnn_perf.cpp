@@ -89,26 +89,36 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
     const std::vector<const char*>& input_names = net.input_names();
     const std::vector<const char*>& output_names = net.output_names();
     // https://zhuanlan.zhihu.com/p/578501922
+#if !defined(DEBUG)
     load_image("daisy.jpg", (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
+#else
+    for (int i = 0; i < args.batch_size*3*args.input_size*args.input_size; i++)
+        ((float *)input_tensor.data)[i] = 1;
+#endif
+
     ncnn::Mat output_tensor;
 
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
-#ifndef DEBUG
+#if !defined(DEBUG) || !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
 #endif
         ncnn::Extractor ex = net.create_extractor();
         ex.input(input_names[0], input_tensor);
         ex.extract(output_names[0], output_tensor);
-#ifndef DEBUG
+#if !defined(DEBUG) || !defined(TEST)
         clock_gettime(CLOCK_REALTIME, &end);
     }
 #endif
 
+#if defined(DEBUG)
+    std::cout << ((float *)output_tensor.data)[0] << " " << ((float *)output_tensor.data)[1] << std::endl;
+    return;
+#endif
     print_topk((float *)output_tensor.data, 3);
-#ifdef DEBUG
+#if defined(TEST)
     return;
 #endif
 
@@ -153,7 +163,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
-        {"vulkan", no_argument, 0, 'u'},
+        {"backend", required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -194,7 +204,8 @@ int main(int argc, char* argv[])
                 debug = true;
                 break;
             case 'u':
-                use_vulkan = true;
+                if (optarg[0] == 'v')
+                    use_vulkan = true;
                 break;
             case 't':
                 num_threads = atoi(optarg);

@@ -13,6 +13,7 @@
 
 
 std::vector<std::pair<std::string, int>> test_models = {
+    {"debug", 4},
     {"efficientformerv2_s0", 224},
     {"efficientformerv2_s1", 224},
     {"efficientformerv2_s2", 224},

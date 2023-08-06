@@ -89,29 +89,38 @@ void benchmark(
     auto output = net->getSessionOutput(session, NULL);
 
     // Measure latency
+#if !defined(DEBUG)
     load_image("daisy.jpg", input_tensor->host<float>(), args.model, args.input_size, args.batch_size);
+#else
+    for (int i = 0; i < args.batch_size*3*args.input_size*args.input_size; i++)
+        input_tensor->host<float>()[i] = 1;
+#endif
 
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
-#ifndef DEBUG
+#if !defined(DEBUG) || !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
 #endif
         // runSession will overwirte the value in input_tensor!!!
         // https://www.yuque.com/mnn/cn/create_session#KtfMk
         input->copyFromHostTensor(input_tensor);
         net->runSession(session);
-#ifndef DEBUG
+#if !defined(DEBUG) || !defined(TEST)
         clock_gettime(CLOCK_REALTIME, &end);
     }
 #endif
 
     auto output_tensor = new MNN::Tensor(output, MNN::Tensor::CAFFE);
     output->copyToHostTensor(output_tensor);
+#if defined(DEBUG)
+    std::cout << output_tensor->host<float>()[0] << " " << output_tensor->host<float>()[1] << std::endl;
+    return;
+#endif
     print_topk(output_tensor->host<float>(), 3);
     delete output_tensor;
-#ifdef DEBUG
+#if defined(TEST)
     return;
 #endif
 
@@ -156,7 +165,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
-        {"vulkan",  no_argument, 0, 'u'},
+        {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -197,7 +206,12 @@ int main(int argc, char* argv[])
                 args.debug = true;
                 break;
             case 'u':
-                forward = MNN_FORWARD_VULKAN;
+                if (optarg[0] == 'v')
+                    forward = MNN_FORWARD_VULKAN;
+                else if (optarg[0] == 'o')
+                    forward = MNN_FORWARD_OPENCL;
+                else if (optarg[0] == 'c')
+                    forward = MNN_FORWARD_CUDA;
                 break;
             case 't':
                 num_threads = atoi(optarg);
