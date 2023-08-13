@@ -92,7 +92,7 @@ void benchmark(
 #if !defined(DEBUG)
     load_image("daisy.jpg", input_tensor->host<float>(), args.model, args.input_size, args.batch_size);
 #else
-    for (int i = 0; i < args.batch_size*3*args.input_size*args.input_size; i++)
+    for (int i = 0; i < args.batch_size*32*args.input_size*args.input_size; i++)
         input_tensor->host<float>()[i] = 1;
 #endif
 
@@ -100,14 +100,15 @@ void benchmark(
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
-#if !defined(DEBUG) || !defined(TEST)
+#if !defined(DEBUG) && !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
 #endif
         // runSession will overwirte the value in input_tensor!!!
         // https://www.yuque.com/mnn/cn/create_session#KtfMk
         input->copyFromHostTensor(input_tensor);
+        // https://www.yuque.com/mnn/cn/run_session#cy08Z ?
         net->runSession(session);
-#if !defined(DEBUG) || !defined(TEST)
+#if !defined(DEBUG) && !defined(TEST)
         clock_gettime(CLOCK_REALTIME, &end);
     }
 #endif
@@ -115,7 +116,10 @@ void benchmark(
     auto output_tensor = new MNN::Tensor(output, MNN::Tensor::CAFFE);
     output->copyToHostTensor(output_tensor);
 #if defined(DEBUG)
-    std::cout << output_tensor->host<float>()[0] << " " << output_tensor->host<float>()[1] << std::endl;
+    size_t len = output_tensor->size() / 4;
+    std::cout << "[len: " << len << "] ";
+    std::cout << "(0: " << output_tensor->host<float>()[0] << ") (1: " << output_tensor->host<float>()[1] << ") ";
+    std::cout << "(-2:" << output_tensor->host<float>()[len-2] << ") (-1:" << output_tensor->host<float>()[len-1] << ")" << std::endl;
     return;
 #endif
     print_topk(output_tensor->host<float>(), 3);
@@ -125,18 +129,21 @@ void benchmark(
 #endif
 
     /// testup
+    struct timespec begin;
     std::vector<double> time_list = {};
     double time_tot = 0;
+    double elapse;
     while (time_tot < TEST_SEC) {
-        input->copyFromHostTensor(input_tensor);
         clock_gettime(CLOCK_REALTIME, &start);
+        input->copyFromHostTensor(input_tensor);
+        clock_gettime(CLOCK_REALTIME, &begin);
+        // net->runSessionWithCallBack(session, NULL, NULL, true);
         net->runSession(session);
         clock_gettime(CLOCK_REALTIME, &end);
-        long long seconds = end.tv_sec - start.tv_sec;
-        long long nanoseconds = end.tv_nsec - start.tv_nsec;
-        double elapse = seconds + nanoseconds * 1e-9;
-        time_list.push_back(elapse);
+        elapse = end.tv_sec - start.tv_sec + (end.tv_nsec - start.tv_nsec) * 1e-9;
         time_tot += elapse;
+        elapse = end.tv_sec - begin.tv_sec + (end.tv_nsec - begin.tv_nsec) * 1e-9;
+        time_list.push_back(elapse);
     }
 
     double time_max = *std::max_element(time_list.begin(), time_list.end()) * 1000;
@@ -146,8 +153,11 @@ void benchmark(
     double time_median = time_list[time_list.size() / 2] * 1000;
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t";
-    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
+    std::cout << "[" << time_list.size() << " iters]";
+    std::cout << " min ="   << std::setw(7) << time_min  << "ms";
+    std::cout << " max ="   << std::setw(7) << time_max  << "ms";
+    std::cout << " median ="<< std::setw(7) << time_median<< "ms";
+    std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -244,6 +254,7 @@ int main(int argc, char* argv[])
         net->setSessionMode(MNN::Interpreter::Session_Backend_Auto);
         net->setSessionHint(MNN::Interpreter::MAX_TUNING_NUMBER, 10);
 #else
+        // net->setSessionMode(MNN::Interpreter::Session_Debug);
         net->setSessionMode(MNN::Interpreter::Session_Release);
 #endif
 

@@ -30,7 +30,7 @@ def get_args_parser():
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
-    parser.add_argument('--format', default='onnx', type=str, help='conversion format')
+    parser.add_argument('--format', default='', type=str, help='conversion format')
 
     return parser
 
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             3, resolution, resolution,
         )
 
-        if args.format == 'onnx':
+        if not args.format or args.format == 'onnx':
             torch.onnx.export(
                 model,
                 inputs,
@@ -130,7 +130,7 @@ if __name__ == '__main__':
                 output_names=['output'],
                 opset_version=opset_version
             )
-        elif args.format == 'pt':
+        if not args.format or args.format == 'pt':
             trace_model = torch.jit.trace(model, inputs)
             trace_model.save("pt/"+name+'.pt')
 

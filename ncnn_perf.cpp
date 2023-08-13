@@ -17,6 +17,7 @@
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
+const int DEBUG_C = 32;
 
 static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
 static ncnn::PoolAllocator g_workspace_pool_allocator;
@@ -92,7 +93,7 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
 #if !defined(DEBUG)
     load_image("daisy.jpg", (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
 #else
-    for (int i = 0; i < args.batch_size*3*args.input_size*args.input_size; i++)
+    for (int i = 0; i < args.batch_size*DEBUG_C*args.input_size*args.input_size; i++)
         ((float *)input_tensor.data)[i] = 1;
 #endif
 
@@ -102,19 +103,21 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
-#if !defined(DEBUG) || !defined(TEST)
+#if !defined(DEBUG) && !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
 #endif
         ncnn::Extractor ex = net.create_extractor();
         ex.input(input_names[0], input_tensor);
         ex.extract(output_names[0], output_tensor);
-#if !defined(DEBUG) || !defined(TEST)
+#if !defined(DEBUG) && !defined(TEST)
         clock_gettime(CLOCK_REALTIME, &end);
     }
 #endif
 
 #if defined(DEBUG)
-    std::cout << ((float *)output_tensor.data)[0] << " " << ((float *)output_tensor.data)[1] << std::endl;
+    for (int i=0; i<DEBUG_C; i++)
+    std::cout << " " << ((float *)output_tensor.data)[i];
+    std::cout << std::endl;
     return;
 #endif
     print_topk((float *)output_tensor.data, 3);
@@ -145,8 +148,12 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
     double time_median = time_list[time_list.size() / 2] * 1000;
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t";
-    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;}
+    std::cout << "[" << time_list.size() << " iters]";
+    std::cout << " min ="   << std::setw(7) << time_min  << "ms";
+    std::cout << " max ="   << std::setw(7) << time_max  << "ms";
+    std::cout << " median ="<< std::setw(7) << time_median<< "ms";
+    std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
+}
 
 int main(int argc, char* argv[])
 {
@@ -273,8 +280,11 @@ int main(int argc, char* argv[])
         net.load_param(param_file);
         net.load_model(model_file);
 
+#if defined(DEBUG)
+        ncnn::Mat input_tensor = ncnn::Mat(args.input_size, args.input_size, DEBUG_C);
+#else
         ncnn::Mat input_tensor = ncnn::Mat(args.input_size, args.input_size, 3);
-
+#endif
         if (args.validation) {
             evaluate(net, input_tensor);
         }
