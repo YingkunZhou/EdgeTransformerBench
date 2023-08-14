@@ -17,7 +17,9 @@
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
-const int DEBUG_C = 32;
+#if !defined(DEBUG_C)
+#define DEBUG_C 3
+#endif
 
 static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
 static ncnn::PoolAllocator g_workspace_pool_allocator;
@@ -115,9 +117,10 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
 #endif
 
 #if defined(DEBUG)
-    for (int i=0; i<DEBUG_C; i++)
-    std::cout << " " << ((float *)output_tensor.data)[i];
-    std::cout << std::endl;
+    size_t len = output_tensor.total();
+    std::cout << "[len: " << len << "] ";
+    std::cout << "(0: " << ((float *)output_tensor.data)[0] << ") (1: " << ((float *)output_tensor.data)[1] << ") ";
+    std::cout << "(-2:" << ((float *)output_tensor.data)[len-2] << ") (-1:" << ((float *)output_tensor.data)[len-1] << ")" << std::endl;
     return;
 #endif
     print_topk((float *)output_tensor.data, 3);

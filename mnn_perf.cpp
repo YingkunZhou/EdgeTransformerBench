@@ -18,6 +18,9 @@
 
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
+#if !defined(DEBUG_C)
+#define DEBUG_C 3
+#endif
 
 struct {
   std::string model;
@@ -92,7 +95,7 @@ void benchmark(
 #if !defined(DEBUG)
     load_image("daisy.jpg", input_tensor->host<float>(), args.model, args.input_size, args.batch_size);
 #else
-    for (int i = 0; i < args.batch_size*32*args.input_size*args.input_size; i++)
+    for (int i = 0; i < args.batch_size*DEBUG_C*args.input_size*args.input_size; i++)
         input_tensor->host<float>()[i] = 1;
 #endif
 
