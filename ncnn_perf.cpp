@@ -284,6 +284,7 @@ int main(int argc, char* argv[])
         net.load_model(model_file);
 
 #if defined(DEBUG)
+        std::cout << "input_size: " << args.input_size << " channels: " << DEBUG_C << std::endl;
         ncnn::Mat input_tensor = ncnn::Mat(args.input_size, args.input_size, DEBUG_C);
 #else
         ncnn::Mat input_tensor = ncnn::Mat(args.input_size, args.input_size, 3);

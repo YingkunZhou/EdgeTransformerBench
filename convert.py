@@ -31,6 +31,7 @@ def get_args_parser():
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     parser.add_argument('--format', default='', type=str, help='conversion format')
+    parser.add_argument('--debug', default=None, type=str, help='e,g --debug 32,4')
 
     return parser
 
@@ -115,8 +116,14 @@ if __name__ == '__main__':
         # TODO: does onnx export need this?
         model.eval()
 
-        channels = 3
-        # resolution = 16
+        if args.debug:
+            name = 'debug'
+            c,r = args.debug.split(',')
+            channels = int(c)
+            resolution = int(r)
+            print(channels, resolution)
+        else:
+            channels = 32
         inputs = torch.randn(
             1, #args.batch_size, TODO: here we only support single batch size benchmarking
             channels, resolution, resolution,

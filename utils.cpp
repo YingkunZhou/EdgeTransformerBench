@@ -13,7 +13,9 @@
 
 
 std::vector<std::pair<std::string, int>> test_models = {
+#if defined(DEBUG)
     {"debug", 4},
+#endif
     {"efficientformerv2_s0", 224},
     {"efficientformerv2_s1", 224},
     {"efficientformerv2_s2", 224},
