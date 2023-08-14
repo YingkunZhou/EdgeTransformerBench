@@ -115,9 +115,11 @@ if __name__ == '__main__':
         # TODO: does onnx export need this?
         model.eval()
 
+        channels = 3
+        # resolution = 16
         inputs = torch.randn(
             1, #args.batch_size, TODO: here we only support single batch size benchmarking
-            3, resolution, resolution,
+            channels, resolution, resolution,
         )
 
         if not args.format or args.format == 'onnx':
