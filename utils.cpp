@@ -14,7 +14,7 @@
 
 std::vector<std::pair<std::string, int>> test_models = {
 #if defined(DEBUG)
-    {"debug", 4},
+    {"debug", 1},
 #endif
     {"efficientformerv2_s0", 224},
     {"efficientformerv2_s1", 224},

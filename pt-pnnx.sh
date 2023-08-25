@@ -27,6 +27,7 @@
 ./pnnx mobilevitv2_200.pt inputshape=[1,3,256,256]
 
 # (index: 999,  score: -nan), (index: 998,  score: -nan), (index: 997,  score: -nan),
+# Panvk (index: 387,  score: 7.382812), (index: 282,  score: 6.496094), (index: 292,  score: 6.316406),
 ./pnnx mobilevit_xx_small.pt inputshape=[1,3,256,256]
 ./pnnx mobilevit_x_small.pt  inputshape=[1,3,256,256]
 ./pnnx mobilevit_small.pt    inputshape=[1,3,256,256]

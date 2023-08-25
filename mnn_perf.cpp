@@ -227,6 +227,8 @@ int main(int argc, char* argv[])
                     forward = MNN_FORWARD_VULKAN;
                 else if (optarg[0] == 'o')
                     forward = MNN_FORWARD_OPENCL;
+                else if (optarg[0] == 'g')
+                    forward = MNN_FORWARD_OPENGL;
                 else if (optarg[0] == 'c')
                     forward = MNN_FORWARD_CUDA;
                 break;

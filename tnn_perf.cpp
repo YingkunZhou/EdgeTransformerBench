@@ -116,14 +116,21 @@ void benchmark(
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
+#if !defined(DEBUG) && !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
+#endif
         status = instance->Forward();
         clock_gettime(CLOCK_REALTIME, &end);
+#if !defined(DEBUG) && !defined(TEST)
     }
+#endif
 
     std::shared_ptr<tnn::Mat> output_tensor = nullptr;
     status = instance->GetOutputMat(output_tensor);
     print_topk((float *)output_tensor->GetData(), 3);
+#if defined(TEST)
+    return;
+#endif
     /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;

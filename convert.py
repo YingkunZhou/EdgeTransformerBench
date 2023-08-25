@@ -116,14 +116,16 @@ if __name__ == '__main__':
         # TODO: does onnx export need this?
         model.eval()
 
+        channels = 3
         if args.debug:
             name = 'debug'
-            c,r = args.debug.split(',')
-            channels = int(c)
-            resolution = int(r)
+            shapes = args.debug.split(',')
+            if len(shapes) > 0 and shapes[0] != '':
+                channels = int(shapes[0])
+                if len(shapes) > 1:
+                    resolution = int(shapes[1])
             print(channels, resolution)
-        else:
-            channels = 32
+
         inputs = torch.randn(
             1, #args.batch_size, TODO: here we only support single batch size benchmarking
             channels, resolution, resolution,
