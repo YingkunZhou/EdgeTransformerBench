@@ -93,7 +93,7 @@ void benchmark(
     load_image("daisy.jpg", input_tensor->host<float>(), args.model, args.input_size, args.batch_size);
 #else
     for (int i = 0; i < input_tensor->size() / 4; i++)
-        input_tensor->host<float>()[i] = i;
+        input_tensor->host<float>()[i] = 1;
 #endif
 
     struct timespec start, end;
