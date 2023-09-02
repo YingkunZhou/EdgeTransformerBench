@@ -162,6 +162,7 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     args.debug = false;
+    tnn::DeviceType backend = tnn::DEVICE_ARM;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -170,6 +171,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -179,7 +181,7 @@ int main(int argc, char* argv[])
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdot", // TODO
+    while ((c = getopt_long(argc, argv, "vgubdot", // TODO
             long_options, &option_index)) != -1)
     {
         switch (c)
@@ -208,6 +210,10 @@ int main(int argc, char* argv[])
                 break;
             case 'g':
                 args.debug = true;
+                break;
+            case 'u':
+                if (optarg[0] == 'o')
+                    backend = tnn::DEVICE_OPENCL;
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -249,7 +255,8 @@ int main(int argc, char* argv[])
         auto status = net.Init(model_config);
 
         tnn::NetworkConfig network_config;
-        network_config.device_type = tnn::DEVICE_ARM;
+        network_config.device_type = backend;
+
         // TODO: network_config.{library_path, precision, cache_path, network_type}
         args.input_dims = {1, 3/*image_channel*/, args.input_size, args.input_size};
         tnn::InputShapesMap input_shapes = {{"input", args.input_dims}};

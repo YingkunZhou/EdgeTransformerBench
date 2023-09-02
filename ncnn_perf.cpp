@@ -95,7 +95,7 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
 #if !defined(DEBUG)
     load_image("daisy.jpg", (float *)input_tensor.data, args.model, args.input_size, args.batch_size);
 #else
-    for (int i = 0; i < args.batch_size*DEBUG_C*args.input_size*args.input_size; i++)
+    for (int i = 0; i < input_tensor.total(); i++)
         ((float *)input_tensor.data)[i] = 1;
 #endif
 

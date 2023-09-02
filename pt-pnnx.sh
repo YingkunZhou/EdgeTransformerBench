@@ -1,46 +1,53 @@
-./pnnx efficientformerv2_s0.pt inputshape=[1,3,224,224]
-./pnnx efficientformerv2_s1.pt inputshape=[1,3,224,224]
-./pnnx efficientformerv2_s2.pt inputshape=[1,3,224,224]
+pt_ncnn()
+{
+    MODEL=$2
+    SHAPE=$1
+    ./pnnx $MODEL.pt inputshape=$SHAPE
+}
+
+pt_ncnn [1,3,224,224] efficientformerv2_s0
+pt_ncnn [1,3,224,224] efficientformerv2_s1
+pt_ncnn [1,3,224,224] efficientformerv2_s2
 
 # layer load_model 35 normalize_16 failed
-./pnnx SwiftFormer_XS.pt inputshape=[1,3,224,224]
-./pnnx SwiftFormer_S.pt  inputshape=[1,3,224,224]
-./pnnx SwiftFormer_L1.pt inputshape=[1,3,224,224]
+#pt_ncnn [1,3,224,224] SwiftFormer_XS
+#pt_ncnn [1,3,224,224] SwiftFormer_S
+#pt_ncnn [1,3,224,224] SwiftFormer_L1
 
 # [1]    720797 segmentation fault (core dumped)  ./ncnn_perf --only-test EMO_1M
-./pnnx EMO_1M.pt inputshape=[1,3,224,224]
-./pnnx EMO_2M.pt inputshape=[1,3,224,224]
-./pnnx EMO_5M.pt inputshape=[1,3,224,224]
-./pnnx EMO_6M.pt inputshape=[1,3,224,224]
+#pt_ncnn [1,3,224,224] EMO_1M
+#pt_ncnn [1,3,224,224] EMO_2M
+#pt_ncnn [1,3,224,224] EMO_5M
+#pt_ncnn [1,3,224,224] EMO_6M
 
 # layer load_model 74 normalize_30 failed
-./pnnx edgenext_xx_small.pt inputshape=[1,3,256,256]
-./pnnx edgenext_x_small.pt  inputshape=[1,3,256,256]
-./pnnx edgenext_small.pt    inputshape=[1,3,256,256]
+#pt_ncnn [1,3,256,256] edgenext_xx_small
+#pt_ncnn [1,3,256,256] edgenext_x_small
+#pt_ncnn [1,3,256,256] edgenext_small
 
-./pnnx mobilevitv2_050.pt inputshape=[1,3,256,256]
-./pnnx mobilevitv2_075.pt inputshape=[1,3,256,256]
-./pnnx mobilevitv2_100.pt inputshape=[1,3,256,256]
-./pnnx mobilevitv2_125.pt inputshape=[1,3,256,256]
-./pnnx mobilevitv2_150.pt inputshape=[1,3,256,256]
-./pnnx mobilevitv2_175.pt inputshape=[1,3,256,256]
-./pnnx mobilevitv2_200.pt inputshape=[1,3,256,256]
+pt_ncnn [1,3,256,256] mobilevitv2_050
+pt_ncnn [1,3,256,256] mobilevitv2_075
+pt_ncnn [1,3,256,256] mobilevitv2_100
+pt_ncnn [1,3,256,256] mobilevitv2_125
+pt_ncnn [1,3,256,256] mobilevitv2_150
+pt_ncnn [1,3,256,256] mobilevitv2_175
+pt_ncnn [1,3,256,256] mobilevitv2_200
 
 # (index: 999,  score: -nan), (index: 998,  score: -nan), (index: 997,  score: -nan),
 # Panvk (index: 387,  score: 7.382812), (index: 282,  score: 6.496094), (index: 292,  score: 6.316406),
-./pnnx mobilevit_xx_small.pt inputshape=[1,3,256,256]
-./pnnx mobilevit_x_small.pt  inputshape=[1,3,256,256]
-./pnnx mobilevit_small.pt    inputshape=[1,3,256,256]
+pt_ncnn [1,3,256,256] mobilevit_xx_small
+pt_ncnn [1,3,256,256] mobilevit_x_small
+pt_ncnn [1,3,256,256] mobilevit_small
 
 # layer torch.flatten not exists or registered
-./pnnx LeViT_128S.pt inputshape=[1,3,224,224]
-./pnnx LeViT_128.pt  inputshape=[1,3,224,224]
-./pnnx LeViT_192.pt  inputshape=[1,3,224,224]
-./pnnx LeViT_256.pt  inputshape=[1,3,224,224]
+#pt_ncnn [1,3,224,224] LeViT_128S
+#pt_ncnn [1,3,224,224] LeViT_128
+#pt_ncnn [1,3,224,224] LeViT_192
+#pt_ncnn [1,3,224,224] LeViT_256
 
-./pnnx resnet50.pt inputshape=[1,3,224,224]
-./pnnx mobilenetv3_large_100.pt inputshape=[1,3,224,224]
-./pnnx tf_efficientnetv2_b0.pt  inputshape=[1,3,224,224]
-./pnnx tf_efficientnetv2_b1.pt  inputshape=[1,3,240,240]
-./pnnx tf_efficientnetv2_b2.pt  inputshape=[1,3,260,260]
-./pnnx tf_efficientnetv2_b3.pt  inputshape=[1,3,300,300]
+pt_ncnn [1,3,224,224] resnet50
+pt_ncnn [1,3,224,224] mobilenetv3_large_100
+pt_ncnn [1,3,224,224] tf_efficientnetv2_b0
+pt_ncnn [1,3,240,240] tf_efficientnetv2_b1
+pt_ncnn [1,3,260,260] tf_efficientnetv2_b2
+pt_ncnn [1,3,300,300] tf_efficientnetv2_b3
