@@ -1,5 +1,6 @@
 /* Reference code:
-
+   https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/lite/demo/cxx/mobile_classify/mobile_classify.cc
+   https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/lite/demo/cxx/mobile_light/mobilenetv1_light_api.cc
 */
 
 #include <iostream>
@@ -121,6 +122,7 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     args.debug = false;
+    bool use_opencl = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -129,6 +131,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
@@ -138,7 +141,7 @@ int main(int argc, char* argv[])
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdot", // TODO
+    while ((c = getopt_long(argc, argv, "vgubdot", // TODO
             long_options, &option_index)) != -1)
     {
         switch (c)
@@ -168,6 +171,10 @@ int main(int argc, char* argv[])
             case 'g':
                 args.debug = true;
                 break;
+            case 'u':
+                if (optarg[0] == 'o')
+                    use_opencl = true;
+                break;
             case 't':
                 num_threads = atoi(optarg);
                 break;
@@ -195,6 +202,56 @@ int main(int argc, char* argv[])
         paddle::lite_api::MobileConfig config;
         // 1. Set MobileConfig
         config.set_model_from_file(model_file);
+
+        if (use_opencl) {
+            // NOTE: Use android gpu with opencl, you should ensure:
+            //  first, [compile **cpu+opencl** paddlelite
+            //    lib](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/demo_guides/opencl.md);
+            //  second, [convert and use opencl nb
+            //    model](https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/user_guides/opt/opt_bin.md).
+
+            bool is_opencl_backend_valid =
+                ::paddle::lite_api::IsOpenCLBackendValid(/*check_fp16_valid = false*/);
+            std::cout << "is_opencl_backend_valid:"
+                        << (is_opencl_backend_valid ? "true" : "false") << std::endl;
+            if (is_opencl_backend_valid) {
+                // Set opencl kernel binary.
+                // Large addtitional prepare time is cost due to algorithm selecting and
+                // building kernel from source code.
+                // Prepare time can be reduced dramitically after building algorithm file
+                // and OpenCL kernel binary on the first running.
+                // The 1st running time will be a bit longer due to the compiling time if
+                // you don't call `set_opencl_binary_path_name` explicitly.
+                // So call `set_opencl_binary_path_name` explicitly is strongly
+                // recommended.
+
+                // Make sure you have write permission of the binary path.
+                // We strongly recommend each model has a unique binary name.
+                const std::string bin_path = "pdlite/";
+                const std::string bin_name = args.model + "_kernel.bin";
+                config.set_opencl_binary_path_name(bin_path, bin_name);
+
+                // opencl tune option
+                // CL_TUNE_NONE: 0
+                // CL_TUNE_RAPID: 1
+                // CL_TUNE_NORMAL: 2
+                // CL_TUNE_EXHAUSTIVE: 3
+                const std::string tuned_path = "pdlite/";
+                const std::string tuned_name = args.model + "_tuned.bin";
+                config.set_opencl_tune(paddle::lite_api::CL_TUNE_NORMAL, tuned_path, tuned_name);
+
+                // opencl precision option
+                // CL_PRECISION_AUTO: 0, first fp16 if valid, default
+                // CL_PRECISION_FP32: 1, force fp32
+                // CL_PRECISION_FP16: 2, force fp16
+                config.set_opencl_precision(paddle::lite_api::CL_PRECISION_FP16);
+            } else {
+                std::cout << "*** nb model will be running on cpu. ***" << std::endl;
+                // you can give backup cpu nb model instead
+                // config.set_model_from_file(cpu_nb_model_dir);
+            }
+        }
+
         config.set_threads(num_threads);
         config.set_power_mode(static_cast<paddle::lite_api::PowerMode>(power_mode));
 
