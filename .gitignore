@@ -47,9 +47,9 @@ mnn/
 pdlite/
 tnn/
 
-mnn_perf
-ncnn_perf
-tflite_perf
-tnn_perf
-paddlelite_perf
-onnxruntime_perf
+mnn-perf*
+ncnn-perf*
+tflite-perf*
+tnn-perf*
+paddlelite-perf*
+onnxruntime-perf*
