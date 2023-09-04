@@ -152,8 +152,11 @@ void benchmark(
     double time_median = time_list[time_list.size() / 2] * 1000;
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "min =\t" << time_min << "ms\tmax =\t" << time_max << "ms\tmean =\t";
-    std::cout << time_mean << "ms\tmedian =\t" << time_median << "ms" << std::endl;
+    std::cout << "[" << time_list.size() << " iters]";
+    std::cout << " min ="   << std::setw(7) << time_min  << "ms";
+    std::cout << " max ="   << std::setw(7) << time_max  << "ms";
+    std::cout << " median ="<< std::setw(7) << time_median<< "ms";
+    std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
 }
 
 int main(int argc, char* argv[])
