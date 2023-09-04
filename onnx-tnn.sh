@@ -17,11 +17,13 @@ onnx_tnn SwiftFormer_XS
 onnx_tnn SwiftFormer_S
 onnx_tnn SwiftFormer_L1
 
+#D/tnn: get_node_attr_ai [File tools/onnx2tnn/src/core/onnx_utiliE/tnn: TNNWriteProto [File tools/onnx2tnn/src/core/onnx2tnn.cc][Line 326] error::op convert failed onnx:Mod
+#Segmentation fault (core dumped)
 # Converter ONNX to TNN model failed!
-onnx_tnn EMO_1M
-onnx_tnn EMO_2M
-onnx_tnn EMO_5M
-onnx_tnn EMO_6M
+#onnx_tnn EMO_1M
+#onnx_tnn EMO_2M
+#onnx_tnn EMO_5M
+#onnx_tnn EMO_6M
 
 #E/tnn: RawBuffer2ArmBlob [File source/tnn/device/arm/acc/arm_layer_acc.cc][Line 135] RawBuffer2ArmBlob:: unsupported buffer and blob data type: 3, 0
 #E/tnn: InitLayers [File source/tnn/core/default_network.cc][Line 321] Error Init layer /stages.1/stages.1.1/xca/Expand (err: 4096 or 0x1000)

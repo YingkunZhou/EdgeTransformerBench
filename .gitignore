@@ -44,7 +44,7 @@ tflite/
 ncnn/
 pt/
 mnn/
-nb/
+pdlite/
 tnn/
 
 mnn_perf

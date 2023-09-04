@@ -111,7 +111,7 @@ if __name__ == '__main__':
             model.load_state_dict(weights_dict)
 
         if args.fuse:
-            levit.replace_batchnorm(model)  # TODO: acc val speed & acc
+            levit.replace_batchnorm(model)  # TODO: speedup levit
 
         # TODO: does onnx export need this?
         model.eval()
