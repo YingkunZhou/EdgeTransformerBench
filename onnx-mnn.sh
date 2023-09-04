@@ -1,7 +1,7 @@
 onnx_mnn()
 {
     MODEL=$1
-    ~/work/MNN/build/MNNConvert -f ONNX --modelFile ../onnx/$MODEL.onnx --MNNModel $MODEL.mnn --bizCode MNN
+    ~/work/MNN/build/MNNConvert -f ONNX --modelFile onnx/$MODEL.onnx --MNNModel mnn/$MODEL.mnn --bizCode MNN
 }
 
 # Vulkan (index: 985,  score: 9.117188), (index: 309,  score: 4.152344), (index: 644,  score: 4.023438),
