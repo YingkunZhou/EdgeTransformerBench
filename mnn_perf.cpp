@@ -159,7 +159,7 @@ void benchmark(
     std::cout << "[" << time_list.size() << " iters]";
     std::cout << " min ="   << std::setw(7) << forward_min  << "ms";
     std::cout << " max ="   << std::setw(7) << forward_max  << "ms";
-    std::cout << " median ="<< std::setw(7) << forward_median<< "ms";
+    std::cout << " median ="<< std::setw(7) << forward_median<<"ms";
     std::cout << " mean ="  << std::setw(7) << forward_mean << "ms";
     std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
 }
