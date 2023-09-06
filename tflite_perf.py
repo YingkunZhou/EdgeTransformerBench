@@ -26,10 +26,10 @@ def get_args_parser():
 
 def benchmarking_tflite(interpreter, image, args):
     # Get input and output tensors
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+    input_details = interpreter.get_input_details()[0]
+    output_details = interpreter.get_output_details()[0]
 
-    interpreter.set_tensor(input_details[0]['index'], image)
+    interpreter.set_tensor(input_details['index'], image)
 
     # warmup
     start = time.perf_counter()
@@ -38,7 +38,7 @@ def benchmarking_tflite(interpreter, image, args):
 
     # get_tensor() returns a copy of the tensor data
     # use tensor() in order to get a pointer to the tensor
-    output = interpreter.get_tensor(output_details[0]['index'])
+    output = interpreter.get_tensor(output_details['index'])
     val, idx = torch.Tensor(output).topk(3)
     print(list(zip(idx[0].tolist(), val[0].tolist())))
 
@@ -60,17 +60,17 @@ def evaluate(data_loader, interpreter, args):
     metric_logger = MetricLogger(delimiter="  ")
     header = 'Test:'
 
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+    input_details = interpreter.get_input_details()[0]
+    output_details = interpreter.get_output_details()[0]
 
     dataset_scale = 50000//args.len_dataset_val
     print(dataset_scale)
     for images, target in metric_logger.log_every(data_loader, 50, header):
         target = target * dataset_scale + (15 if dataset_scale == 50 else 0)
 
-        interpreter.set_tensor(input_details[0]['index'], images)
+        interpreter.set_tensor(input_details['index'], images)
         interpreter.invoke()
-        output = interpreter.get_tensor(output_details[0]['index'])
+        output = interpreter.get_tensor(output_details['index'])
         output = torch.Tensor(output)
 
         loss = criterion(output, target)
