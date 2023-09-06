@@ -1,33 +1,48 @@
-onnx-tf convert -i "efficientformerv2_s0.onnx" -o "efficientformerv2_s0.pb"
-onnx-tf convert -i "efficientformerv2_s1.onnx" -o "efficientformerv2_s1.pb"
-onnx-tf convert -i "efficientformerv2_s2.onnx" -o "efficientformerv2_s2.pb"
-onnx-tf convert -i "SwiftFormer_XS.onnx" -o "SwiftFormer_XS.pb"
-onnx-tf convert -i "SwiftFormer_S.onnx" -o "SwiftFormer_S.pb"
-onnx-tf convert -i "SwiftFormer_L1.onnx" -o "SwiftFormer_L1.pb"
-onnx-tf convert -i "EMO_1M.onnx" -o "EMO_1M.pb"
-onnx-tf convert -i "EMO_2M.onnx" -o "EMO_2M.pb"
-onnx-tf convert -i "EMO_5M.onnx" -o "EMO_5M.pb"
-onnx-tf convert -i "EMO_6M.onnx" -o "EMO_6M.pb"
-onnx-tf convert -i "edgenext_xx_small.onnx" -o "edgenext_xx_small.pb"
-onnx-tf convert -i "edgenext_x_small.onnx" -o "edgenext_x_small.pb"
-onnx-tf convert -i "edgenext_small.onnx" -o "edgenext_small.pb"
-onnx-tf convert -i "mobilevitv2_050.onnx" -o "mobilevitv2_050.pb"
-onnx-tf convert -i "mobilevitv2_075.onnx" -o "mobilevitv2_075.pb"
-onnx-tf convert -i "mobilevitv2_100.onnx" -o "mobilevitv2_100.pb"
-onnx-tf convert -i "mobilevitv2_125.onnx" -o "mobilevitv2_125.pb"
-onnx-tf convert -i "mobilevitv2_150.onnx" -o "mobilevitv2_150.pb"
-onnx-tf convert -i "mobilevitv2_175.onnx" -o "mobilevitv2_175.pb"
-onnx-tf convert -i "mobilevitv2_200.onnx" -o "mobilevitv2_200.pb"
-onnx-tf convert -i "mobilevit_xx_small.onnx" -o "mobilevit_xx_small.pb"
-onnx-tf convert -i "mobilevit_x_small.onnx" -o "mobilevit_x_small.pb"
-onnx-tf convert -i "mobilevit_small.onnx" -o "mobilevit_small.pb"
-onnx-tf convert -i "LeViT_128S.onnx" -o "LeViT_128S.pb"
-onnx-tf convert -i "LeViT_128.onnx" -o "LeViT_128.pb"
-onnx-tf convert -i "LeViT_192.onnx" -o "LeViT_192.pb"
-onnx-tf convert -i "LeViT_256.onnx" -o "LeViT_256.pb"
-onnx-tf convert -i "resnet50.onnx" -o "resnet50.pb"
-onnx-tf convert -i "mobilenetv3_large_100.onnx" -o "mobilenetv3_large_100.pb"
-onnx-tf convert -i "tf_efficientnetv2_b0.onnx" -o "tf_efficientnetv2_b0.pb"
-onnx-tf convert -i "tf_efficientnetv2_b1.onnx" -o "tf_efficientnetv2_b1.pb"
-onnx-tf convert -i "tf_efficientnetv2_b2.onnx" -o "tf_efficientnetv2_b2.pb"
-onnx-tf convert -i "tf_efficientnetv2_b3.onnx" -o "tf_efficientnetv2_b3.pb"
+onnx_tf()
+{
+    MODEL=$2
+    onnx-tf convert -i onnx/$MODEL.onnx -o tflite/$MODEL.pb
+}
+
+onnx_tf efficientformerv2_s0
+onnx_tf efficientformerv2_s1
+onnx_tf efficientformerv2_s2
+
+onnx_tf SwiftFormer_XS
+onnx_tf SwiftFormer_S
+onnx_tf SwiftFormer_L1
+
+# onnx_tf/handlers/backend/pad.py", line 73:
+# constant_values = tensor_dict[node.inputs[2]] if len(
+#onnx_tf EMO_1M
+#onnx_tf EMO_2M
+#onnx_tf EMO_5M
+#onnx_tf EMO_6M
+
+onnx_tf edgenext_xx_small
+onnx_tf edgenext_x_small
+onnx_tf edgenext_small
+
+onnx_tf mobilevitv2_050
+onnx_tf mobilevitv2_075
+onnx_tf mobilevitv2_100
+onnx_tf mobilevitv2_125
+onnx_tf mobilevitv2_150
+onnx_tf mobilevitv2_175
+onnx_tf mobilevitv2_200
+
+onnx_tf mobilevit_xx_small
+onnx_tf mobilevit_x_small
+onnx_tf mobilevit_small
+
+onnx_tf LeViT_128S
+onnx_tf LeViT_128
+onnx_tf LeViT_192
+onnx_tf LeViT_256
+
+onnx_tf resnet50
+onnx_tf mobilenetv3_large_100
+onnx_tf tf_efficientnetv2_b0
+onnx_tf tf_efficientnetv2_b1
+onnx_tf tf_efficientnetv2_b2
+onnx_tf tf_efficientnetv2_b3
