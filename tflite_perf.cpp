@@ -11,6 +11,7 @@
 #include <tensorflow/lite/interpreter.h>
 #include <tensorflow/lite/kernels/register.h>
 #include <tensorflow/lite/delegates/gpu/delegate.h>
+#include <tensorflow/lite/delegates/nnapi/nnapi_delegate.h>
 #include "utils.h"
 
 using namespace tflite;
