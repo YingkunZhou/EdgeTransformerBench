@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
     for (const auto & model: test_models) {
         args.model = model.first;
         if (args.model.find("EMO") != std::string::npos) {
-            std::cout << "tflite didn't suppot EMO model!" << std::endl;
+            //std::cout << "tflite didn't suppot EMO model!" << std::endl;
             continue;
         }
         if (only_test && args.model.find(only_test) == std::string::npos) {
@@ -215,10 +215,10 @@ int main(int argc, char* argv[])
         TfLiteDelegate* delegate;
         if (backend == 'g') {
             // https://www.tensorflow.org/lite/android/delegates/nnapi?hl=zh-cn
-            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/g3doc/performance/gpu.md
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/README.md
             // NEW: Prepare GPU delegate.
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
+            // GPU 委托序列化
             /*options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;
             options.model_token = kModelToken;*/
