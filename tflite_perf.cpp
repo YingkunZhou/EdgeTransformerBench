@@ -130,7 +130,7 @@ void delete_delegate(char backend) {
         TfLiteGpuDelegateV2Delete(delegate);
     }
     else if (backend == 'n') {
-        TfLiteNnapiDelegateDelete(delegate)
+        TfLiteNnapiDelegateDelete(delegate);
     }
 }
 
@@ -241,6 +241,7 @@ int main(int argc, char* argv[])
             // if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
         }
         else if (backend == 'n') {
+            //TODO: https://discuss.tensorflow.org/t/neural-network-fallback-to-cpu-using-nnapi-on-android/7703
             // https://community.nxp.com/t5/i-MX-Processors/how-to-know-the-imx8m-plus-NPU-acceleration-is-enable-already/m-p/1305328
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/tools/evaluation/utils.cc#L106C42-L106C42
             // https://zenn.dev/iwatake2222/scraps/05e60dd7338294
@@ -250,7 +251,7 @@ int main(int argc, char* argv[])
             // options.allow_fp16 = true;
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.cc
             TfLiteNnapiDelegateOptions options = TfLiteNnapiDelegateOptionsDefault();
-            delegate = TfLiteNnapiDelegateCreate(&options)
+            delegate = TfLiteNnapiDelegateCreate(&options);
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
         }
         else {
@@ -264,6 +265,6 @@ int main(int argc, char* argv[])
             benchmark(interpreter);
         }
 
-        delete_delegate(backend)
+        delete_delegate(backend);
     }
 }
