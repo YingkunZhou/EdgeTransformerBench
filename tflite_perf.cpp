@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
 #if 0
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/cl/testing/delegate_testing.cc
             if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
-            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
 #else
             interpreter_builder.AddDelegate(delegate);
             if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
