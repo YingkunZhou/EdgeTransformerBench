@@ -1,6 +1,6 @@
 onnx_tf()
 {
-    MODEL=$2
+    MODEL=$1
     onnx-tf convert -i onnx/$MODEL.onnx -o tflite/$MODEL.pb
 }
 
