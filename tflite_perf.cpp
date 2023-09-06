@@ -10,6 +10,7 @@
 
 #include <tensorflow/lite/interpreter.h>
 #include <tensorflow/lite/kernels/register.h>
+#include <tensorflow/lite/delegates/gpu/delegate.h>
 #include "utils.h"
 
 using namespace tflite;
@@ -174,7 +175,7 @@ int main(int argc, char* argv[])
                 only_test = optarg;
                 break;
             case 'g':
-                debug = true;
+                args.debug = true;
                 break;
             case 'u':
                 backend = optarg[0];
@@ -212,9 +213,16 @@ int main(int argc, char* argv[])
         InterpreterBuilder builder(*tflite_model, resolver);
         builder.SetNumThreads(num_threads);
         builder(&interpreter);
+        TfLiteDelegate* delegate;
         if (backend == 'g') {
+            // https://www.tensorflow.org/lite/android/delegates/nnapi?hl=zh-cn
+            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/g3doc/performance/gpu.md
             // NEW: Prepare GPU delegate.
-            auto* delegate = TfLiteGpuDelegateV2Create(/*default options=*/nullptr);
+            TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
+            /*options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
+            options.serialization_dir = kTmpDir;
+            options.model_token = kModelToken;*/
+            delegate = TfLiteGpuDelegateV2Create(options);
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
         }
         else {
@@ -226,6 +234,9 @@ int main(int argc, char* argv[])
         }
         else {
             benchmark(interpreter);
+        }
+        if (backend == 'g') {
+            TfLiteGpuDelegateV2Delete(delegate);
         }
     }
 }
