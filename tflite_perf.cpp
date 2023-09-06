@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
             /*options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;
             options.model_token = kModelToken;*/
-            delegate = TfLiteGpuDelegateV2Create(options);
+            delegate = TfLiteGpuDelegateV2Create(&options);
             // if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
             interpreter_builder.AddDelegate(delegate);
             if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
