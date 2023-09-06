@@ -46,3 +46,6 @@ TFLITE_LIB ?= $(HOME)/work/tensorflow/lib
 
 tflite-perf:
 	g++ -O3 -o tflite_perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) -ltensorflowlite -ltensorflowlite_flex $(FLAGS)
+
+tflite-test-perf:
+	g++ -O3 -DTEST -o tflite_perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) -ltensorflowlite -ltensorflowlite_flex $(FLAGS)

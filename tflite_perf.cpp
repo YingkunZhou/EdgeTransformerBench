@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
         interpreter_builder.SetNumThreads(num_threads);
         TfLiteDelegate* delegate;
         if (backend == 'g') {
-            // https://www.tensorflow.org/lite/android/delegates/nnapi?hl=zh-cn
+            // https://www.tensorflow.org/lite/performance/gpu_advanced?hl=zh-cn
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/README.md
             // NEW: Prepare GPU delegate.
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
@@ -223,9 +223,14 @@ int main(int argc, char* argv[])
             options.serialization_dir = kTmpDir;
             options.model_token = kModelToken;*/
             delegate = TfLiteGpuDelegateV2Create(&options);
-            // if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
+#if 0
+            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/cl/testing/delegate_testing.cc
+            if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
+#else
             interpreter_builder.AddDelegate(delegate);
             if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
+#endif
         }
         else {
             if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
