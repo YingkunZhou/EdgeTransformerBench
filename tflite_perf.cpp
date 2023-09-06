@@ -210,22 +210,25 @@ int main(int argc, char* argv[])
         // create a interpreter
         std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
         std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
-        InterpreterBuilder builder(*tflite_model, resolver);
-        builder.SetNumThreads(num_threads);
-        builder(&interpreter);
+        InterpreterBuilder interpreter_builder(*tflite_model, resolver);
+        interpreter_builder.SetNumThreads(num_threads);
         TfLiteDelegate* delegate;
         if (backend == 'g') {
             // https://www.tensorflow.org/lite/android/delegates/nnapi?hl=zh-cn
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/g3doc/performance/gpu.md
+            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/README.md
             // NEW: Prepare GPU delegate.
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
             /*options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;
             options.model_token = kModelToken;*/
             delegate = TfLiteGpuDelegateV2Create(options);
-            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
+            // if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
+            interpreter_builder.AddDelegate(delegate);
+            if (interpreter_builder(&interpreter) != kTfLiteOk) return false;
         }
         else {
+            if (interpreter_builder(&interpreter) != kTfLiteOk) return false;
             interpreter->AllocateTensors();
         }
 
