@@ -225,10 +225,10 @@ int main(int argc, char* argv[])
             delegate = TfLiteGpuDelegateV2Create(options);
             // if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
             interpreter_builder.AddDelegate(delegate);
-            if (interpreter_builder(&interpreter) != kTfLiteOk) return false;
+            if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
         }
         else {
-            if (interpreter_builder(&interpreter) != kTfLiteOk) return false;
+            if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
             interpreter->AllocateTensors();
         }
 
