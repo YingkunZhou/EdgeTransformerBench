@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
         else if (backend == 'n') {
             // https://community.nxp.com/t5/i-MX-Processors/how-to-know-the-imx8m-plus-NPU-acceleration-is-enable-already/m-p/1305328
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/tools/evaluation/utils.cc#L106C42-L106C42
-            delegate = Interpreter::TfLiteDelegatePtr(NnApiDelegate(), [](TfLiteDelegate*) {});
+            delegate = NnApiDelegate();
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
         }
         else {
