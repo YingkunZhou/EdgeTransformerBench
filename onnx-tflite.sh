@@ -2,13 +2,14 @@ onnx_tf()
 {
     MODEL=$1
     onnx-tf convert -i onnx/$MODEL.onnx -o tflite/$MODEL.pb
-    python tf-tflite.py --only-convert=$MODEL
+    python .tf-tflite.py --only-convert=$MODEL
 }
 
 onnx_tf efficientformerv2_s0
 onnx_tf efficientformerv2_s1
 onnx_tf efficientformerv2_s2
 
+# --opset-version 12
 onnx_tf SwiftFormer_XS
 onnx_tf SwiftFormer_S
 onnx_tf SwiftFormer_L1
@@ -36,6 +37,7 @@ onnx_tf mobilevit_xx_small
 onnx_tf mobilevit_x_small
 onnx_tf mobilevit_small
 
+# --fuse
 onnx_tf LeViT_128S
 onnx_tf LeViT_128
 onnx_tf LeViT_192
