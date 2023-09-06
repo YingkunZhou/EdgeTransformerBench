@@ -22,6 +22,7 @@ struct {
   bool validation;
   int input_size;
   int batch_size;
+  bool debug;
   std::string data_path;
 } args;
 
@@ -80,15 +81,20 @@ void benchmark(
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
-
+#if !defined(DEBUG) && !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
+#endif
         interpreter->Invoke();
         clock_gettime(CLOCK_REALTIME, &end);
+#if !defined(DEBUG) && !defined(TEST)
     }
+#endif
 
     float *output_tensor = interpreter->typed_output_tensor<float>(0);
     print_topk(output_tensor, 3);
-
+#if defined(TEST)
+    return;
+#endif
     std::vector<double> time_list = {};
     double time_tot = 0;
     while (time_tot < TEST_SEC) {
@@ -121,24 +127,27 @@ int main(int argc, char* argv[])
     args.data_path = "imagenet-div50";
     args.validation = false;
     args.batch_size = 1;
-    bool debug = false;
+    args.debug = false;
+    char backend = 'c';
     char* arg_long = nullptr;
     char* only_test = nullptr;
-    int num_threads = 1; // TODO
+    int num_threads = 1;
 
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
+        {"threads",  required_argument, 0, 't'},
         {"append",  required_argument, 0, 0},
         {0, 0, 0, 0}
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdo", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "vgubdot", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -167,6 +176,12 @@ int main(int argc, char* argv[])
             case 'g':
                 debug = true;
                 break;
+            case 'u':
+                backend = optarg[0];
+                break;
+            case 't':
+                num_threads = atoi(optarg);
+                break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
                 break;
@@ -182,6 +197,7 @@ int main(int argc, char* argv[])
     for (const auto & model: test_models) {
         args.model = model.first;
         if (args.model.find("EMO") != std::string::npos) {
+            std::cout << "tflite didn't suppot EMO model!" << std::endl;
             continue;
         }
         if (only_test && args.model.find(only_test) == std::string::npos) {
@@ -196,7 +212,14 @@ int main(int argc, char* argv[])
         InterpreterBuilder builder(*tflite_model, resolver);
         builder.SetNumThreads(num_threads);
         builder(&interpreter);
-        interpreter->AllocateTensors();
+        if (backend == 'g') {
+            // NEW: Prepare GPU delegate.
+            auto* delegate = TfLiteGpuDelegateV2Create(/*default options=*/nullptr);
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return false;
+        }
+        else {
+            interpreter->AllocateTensors();
+        }
 
         if (args.validation) {
             evaluate(interpreter);
