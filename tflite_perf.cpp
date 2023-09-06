@@ -212,6 +212,9 @@ int main(int argc, char* argv[])
         std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
         InterpreterBuilder interpreter_builder(*tflite_model, resolver);
         interpreter_builder.SetNumThreads(num_threads);
+#if 1
+        if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
+#endif
         TfLiteDelegate* delegate;
         if (backend == 'g') {
             // https://www.tensorflow.org/lite/performance/gpu_advanced?hl=zh-cn
@@ -223,17 +226,21 @@ int main(int argc, char* argv[])
             options.serialization_dir = kTmpDir;
             options.model_token = kModelToken;*/
             delegate = TfLiteGpuDelegateV2Create(&options);
-#if 0
+#if 1
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/cl/testing/delegate_testing.cc
-            if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
 #else
             interpreter_builder.AddDelegate(delegate);
             if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
 #endif
         }
+        else if (backend == 'n') {
+            // https://community.nxp.com/t5/i-MX-Processors/how-to-know-the-imx8m-plus-NPU-acceleration-is-enable-already/m-p/1305328
+            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/tools/evaluation/utils.cc#L106C42-L106C42
+            delegate = Interpreter::TfLiteDelegatePtr(NnApiDelegate(), [](TfLiteDelegate*) {});
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
+        }
         else {
-            if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
             interpreter->AllocateTensors();
         }
 
