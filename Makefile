@@ -45,11 +45,16 @@ TFLITE_INC ?= $(HOME)/work/tensorflow/include
 TFLITE_LIB ?= $(HOME)/work/tensorflow/lib
 
 tflite-perf:
-	g++ -O3 -o tflite-perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) \
-	-ltensorflowlite -ltensorflowlite_flex -ltensorflowlite_gpu_delegate \
-	-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation
+	#g++ -O3 -o tflite-perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	#-ltensorflowlite_gpu_delegate \
+	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation
+	g++ -O3 -o tflite-perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	-I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include -I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DARMNN
 
-tflite-test-perf:
-	g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) \
-	-ltensorflowlite -ltensorflowlite_flex -ltensorflowlite_gpu_delegate \
-	-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation
+tflite-perf-test:
+	#g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	#-ltensorflowlite_gpu_delegate \
+	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation
+
+	g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	-I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include -I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DARMNN

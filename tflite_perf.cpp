@@ -10,10 +10,21 @@
 
 #include <tensorflow/lite/interpreter.h>
 #include <tensorflow/lite/kernels/register.h>
+#ifdef GPU
 #include <tensorflow/lite/delegates/gpu/delegate.h>
+#endif
+#ifdef NNAPI
 #include <tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.h>
-#include "utils.h"
+#endif
+#ifdef ARMNN
+#include <armnn_delegate.hpp>
+#endif
+#define XNNPACK // always enable
+#ifdef XNNPACK
+#include <tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h>
+#endif
 
+#include "utils.h"
 using namespace tflite;
 
 const int WARMUP_SEC = 5;
@@ -126,12 +137,23 @@ void benchmark(
 
 TfLiteDelegate* delegate;
 void delete_delegate(char backend) {
+#ifdef GPU
     if (backend == 'g') {
         TfLiteGpuDelegateV2Delete(delegate);
     }
-    else if (backend == 'n') {
+    else
+#endif
+#ifdef NNAPI
+    if (backend == 'n') {
         TfLiteNnapiDelegateDelete(delegate);
     }
+    else
+#endif
+#ifdef XNNPACK
+    if (backend == 'x') {
+        TfLiteXNNPackDelegateDelete(delegate);
+    }
+#endif
 }
 
 int main(int argc, char* argv[])
@@ -203,8 +225,7 @@ int main(int argc, char* argv[])
     }
 
     // TODO
-    ops::builtin::BuiltinOpResolver resolver;
-    std::unique_ptr<Interpreter> interpreter;
+
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -221,10 +242,14 @@ int main(int argc, char* argv[])
         // create a interpreter
         std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
         std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
+        ops::builtin::BuiltinOpResolver resolver;
+        // std::unique_ptr<Interpreter> interpreter;
+        auto interpreter = std::make_unique<Interpreter>();
         InterpreterBuilder interpreter_builder(*tflite_model, resolver);
         interpreter_builder.SetNumThreads(num_threads);
-        if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
+        if (interpreter_builder(&interpreter) != kTfLiteOk) return EXIT_FAILURE;
 
+#ifdef GPU
         if (backend == 'g') {
             // https://www.tensorflow.org/lite/performance/gpu_advanced?hl=zh-cn
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/README.md
@@ -236,11 +261,17 @@ int main(int argc, char* argv[])
             options.model_token = kModelToken;*/
             delegate = TfLiteGpuDelegateV2Create(&options);
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/cl/testing/delegate_testing.cc
-            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
+                std::cout << "Failed to ModifyGraphWithDelegate to gpu!" << std::endl;
+                return EXIT_FAILURE;
+            }
             // interpreter_builder.AddDelegate(delegate);
-            // if (interpreter_builder(&interpreter) != kTfLiteOk) return -1;
+            // if (interpreter_builder(&interpreter) != kTfLiteOk) return EXIT_FAILURE;
         }
-        else if (backend == 'n') {
+        else
+#endif
+#ifdef NNAPI
+        if (backend == 'n') {
             //TODO: https://discuss.tensorflow.org/t/neural-network-fallback-to-cpu-using-nnapi-on-android/7703
             // https://community.nxp.com/t5/i-MX-Processors/how-to-know-the-imx8m-plus-NPU-acceleration-is-enable-already/m-p/1305328
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/tools/evaluation/utils.cc#L106C42-L106C42
@@ -252,10 +283,54 @@ int main(int argc, char* argv[])
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.cc
             TfLiteNnapiDelegateOptions options = TfLiteNnapiDelegateOptionsDefault();
             delegate = TfLiteNnapiDelegateCreate(&options);
-            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) return -1;
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
+                std::cout << "Failed to ModifyGraphWithDelegate to nnapi!" << std::endl;
+                return EXIT_FAILURE;
+            }
         }
-        else {
-            interpreter->AllocateTensors();
+        else
+#endif
+#ifdef ARMNN
+        if (backend == 'a') {
+            //https://review.mlplatform.org/plugins/gitiles/ml/armnn/+/3b38eedb3cc8f1c95a9ce62ddfbe926708666e72/delegate/BuildGuideNative.md#delegate-build-guide-introduction
+            // Create the Arm NN Delegate
+            //armnnDelegate::DelegateOptions options = armnnDelegate::TfLiteArmnnDelegateOptionsDefault();
+            //std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
+            //    theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(options), armnnDelegate::TfLiteArmnnDelegateDelete);
+
+            std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc};
+            armnnDelegate::DelegateOptions delegateOptions(backends);
+            std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
+                        theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(delegateOptions),
+                                         armnnDelegate::TfLiteArmnnDelegateDelete);
+
+            // Instruct the Interpreter to use the armnnDelegate
+            if (interpreter->ModifyGraphWithDelegate(theArmnnDelegate.get()) != kTfLiteOk) {
+                std::cout << "Failed to ModifyGraphWithDelegate to Armnn!" << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+        else
+#endif
+#ifdef XNNPACK
+        if (backend == 'x') {
+            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/xnnpack/README.md
+            // IMPORTANT: initialize options with TfLiteXNNPackDelegateOptionsDefault() for
+            // API-compatibility with future extensions of the TfLiteXNNPackDelegateOptions
+            // structure.
+            TfLiteXNNPackDelegateOptions options = TfLiteXNNPackDelegateOptionsDefault();
+            options.num_threads = num_threads;
+            delegate = TfLiteXNNPackDelegateCreate(&options);
+            if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
+                std::cout << "Failed to ModifyGraphWithDelegate to XNN!" << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+#endif
+
+        if (interpreter->AllocateTensors() != kTfLiteOk) {
+            std::cout << "Failed to allocate tensors!" << std::endl;
+            return EXIT_FAILURE;
         }
 
         if (args.validation) {
@@ -265,6 +340,8 @@ int main(int argc, char* argv[])
             benchmark(interpreter);
         }
 
+        interpreter.reset();
         delete_delegate(backend);
     }
+    return EXIT_SUCCESS;
 }
