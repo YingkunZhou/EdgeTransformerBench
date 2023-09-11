@@ -11,6 +11,9 @@
 #include <algorithm>
 
 #include <onnxruntime_cxx_api.h>
+#ifdef NNAPI
+#include <nnapi_provider_factory.h>
+#endif
 #include "onnxruntime_perf.h"
 #include "utils.h"
 
@@ -190,12 +193,15 @@ int main(int argc, char* argv[])
     Ort::Env env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
                  instanceName.c_str());
     Ort::SessionOptions sessionOptions;
+#ifdef NNAPI
     if (backend == 'n') {
         // https://onnxruntime.ai/docs/execution-providers/NNAPI-ExecutionProvider
         uint32_t nnapi_flags = 0;
         Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(sessionOptions, nnapi_flags));
     }
-    else {
+    else
+#endif
+    {
         sessionOptions.SetIntraOpNumThreads(num_threads);
         // Sets graph optimization level
         // Available levels are
