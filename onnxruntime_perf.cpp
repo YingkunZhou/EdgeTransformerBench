@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
     args.data_path = "imagenet-div50";
     args.validation = false;
     args.batch_size = 1;
+    char backend = 'a';
     bool debug = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
@@ -190,6 +191,7 @@ int main(int argc, char* argv[])
                  instanceName.c_str());
     Ort::SessionOptions sessionOptions;
     if (backend == 'n') {
+        // https://onnxruntime.ai/docs/execution-providers/NNAPI-ExecutionProvider
         uint32_t nnapi_flags = 0;
         Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(sessionOptions, nnapi_flags));
     }
@@ -210,12 +212,11 @@ int main(int argc, char* argv[])
 
         int inter_threads = num_threads; // TODO
         sessionOptions.SetInterOpNumThreads(inter_threads);
-
-        Ort::AllocatorWithDefaultOptions allocator;
-
-        Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu( //TODO: cpu?
-            OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
     }
+
+    Ort::AllocatorWithDefaultOptions allocator;
+    Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu( //TODO: cpu?
+        OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
 
     for (const auto & model: test_models) {
         args.model = model.first;
