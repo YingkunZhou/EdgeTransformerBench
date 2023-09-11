@@ -126,20 +126,23 @@ int main(int argc, char* argv[])
     bool debug = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
+    int num_threads = 1;
 
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
+        {"threads",  required_argument, 0, 't'},
         {"append",  required_argument, 0, 0},
         {0, 0, 0, 0}
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vbdo", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "vgubdot", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -168,6 +171,12 @@ int main(int argc, char* argv[])
             case 'g':
                 debug = true;
                 break;
+            case 'u':
+                backend = optarg[0];
+                break;
+            case 't':
+                num_threads = atoi(optarg);
+                break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
                 break;
@@ -176,33 +185,37 @@ int main(int argc, char* argv[])
         }
     }
 
-    int num_threads = 1; // TODO
-    int inter_threads = 1; // TODO
-
     std::string instanceName{"image-classification-inference"};
     Ort::Env env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
                  instanceName.c_str());
     Ort::SessionOptions sessionOptions;
-    sessionOptions.SetIntraOpNumThreads(num_threads);
-    // Sets graph optimization level
-    // Available levels are
-    // ORT_DISABLE_ALL -> To disable all optimizations
-    // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node
-    // removals) ORT_ENABLE_EXTENDED -> To enable extended optimizations
-    // (Includes level 1 + more complex optimizations like node fusions)
-    // ORT_ENABLE_ALL -> To Enable All possible optimizations
-    sessionOptions.SetGraphOptimizationLevel(
-        GraphOptimizationLevel::ORT_ENABLE_ALL);
+    if (backend == 'n') {
+        uint32_t nnapi_flags = 0;
+        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(sessionOptions, nnapi_flags));
+    }
+    else {
+        sessionOptions.SetIntraOpNumThreads(num_threads);
+        // Sets graph optimization level
+        // Available levels are
+        // ORT_DISABLE_ALL -> To disable all optimizations
+        // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node
+        // removals) ORT_ENABLE_EXTENDED -> To enable extended optimizations
+        // (Includes level 1 + more complex optimizations like node fusions)
+        // ORT_ENABLE_ALL -> To Enable All possible optimizations
+        sessionOptions.SetGraphOptimizationLevel(
+            GraphOptimizationLevel::ORT_ENABLE_ALL);
 
-    sessionOptions.SetExecutionMode(
-        ExecutionMode::ORT_PARALLEL);
+        sessionOptions.SetExecutionMode(
+            ExecutionMode::ORT_PARALLEL);
 
-    sessionOptions.SetInterOpNumThreads(inter_threads);
+        int inter_threads = num_threads; // TODO
+        sessionOptions.SetInterOpNumThreads(inter_threads);
 
-    Ort::AllocatorWithDefaultOptions allocator;
+        Ort::AllocatorWithDefaultOptions allocator;
 
-    Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu( //TODO: cpu?
-        OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+        Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu( //TODO: cpu?
+            OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+    }
 
     for (const auto & model: test_models) {
         args.model = model.first;

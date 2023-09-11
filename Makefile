@@ -58,3 +58,9 @@ tflite-perf-test:
 
 	g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	-I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include -I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DARMNN
+
+ONNXRT_INC ?= $(HOME)/work/libonnxruntime/include
+ONNXRT_LIB ?= $(HOME)/work/libonnxruntime/lib
+
+onnxruntime-perf:
+	g++ -O3 -o onnxruntime-perf onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) -lonnxruntime $(FLAGS)
