@@ -43,24 +43,22 @@ pdlite-perf:
 
 TFLITE_INC ?= $(HOME)/work/tensorflow/include
 TFLITE_LIB ?= $(HOME)/work/tensorflow/lib
+ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include -I$(TFLITE_INC)/armnn/include
 
 tflite-perf:
-	#g++ -O3 -o tflite-perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
-	#-ltensorflowlite_gpu_delegate \
-	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation
 	g++ -O3 -o tflite-perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
-	-I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include -I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DARMNN
+	#-ltensorflowlite_gpu_delegate -DGPU \
+	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DNNAPI \
+	#$(ARMNN_FLAGS) -larmnnDelegate -larmnn -DARMNN
 
 tflite-perf-test:
-	#g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
-	#-ltensorflowlite_gpu_delegate \
-	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation
-
 	g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
-	-I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include -I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DARMNN
+	#-ltensorflowlite_gpu_delegate -DGPU \
+	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DNNAPI \
+	#$(ARMNN_FLAGS) -larmnnDelegate -larmnn -DARMNN
 
-ONNXRT_INC ?= $(HOME)/work/libonnxruntime/include
-ONNXRT_LIB ?= $(HOME)/work/libonnxruntime/lib
+ONNXRT_INC ?= $(HOME)/work/onnxruntime/include
+ONNXRT_LIB ?= $(HOME)/work/onnxruntime/lib
 
 onnxruntime-perf:
-	g++ -O3 -o onnxruntime-perf onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) -lonnxruntime $(FLAGS)
+	g++ -O3 -o onnxruntime-perf onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime
