@@ -3,7 +3,8 @@
 # export TNN_LIB=$HOME/work/TNN/install/lib
 # export PDLITE_LIB=$HOME/work/Paddle-Lite/build.lite.android.armv8.clang/inference_lite_lib.android.armv8.opencl/cxx/lib
 # export TFLITE_LIB=$HOME/work/tensorflow/lib
-# export LD_LIBRARY_PATH=$NCNN_LIB:$MNN_LIB:$TNN_LIB:$PDLITE_LIB:$TFLITE_LIB
+# export ONNXRT_LIB=$HOME/work/onnxruntime/lib
+# export LD_LIBRARY_PATH=$NCNN_LIB:$MNN_LIB:$TNN_LIB:$PDLITE_LIB:$TFLITE_LIB:$ONNXRT_LIB
 
 all: ncnn-perf mnn-perf tnn-perf pdlite-perf tflite-perf
 

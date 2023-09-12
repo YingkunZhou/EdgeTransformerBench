@@ -205,6 +205,17 @@ int main(int argc, char* argv[])
     }
     else
 #endif
+#ifdef QNN
+    if (backend == 'q') {
+        // https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html
+        std::unordered_map<std::string, std::string> qnn_options;
+        // qnn_options["backend_path"] = "libQnnCpu.so";
+        qnn_options["backend_path"] = "libQnnHtp.so";
+        Ort::SessionOptions session_options;
+        session_options.AppendExecutionProvider("QNN", qnn_options);
+    }
+    else
+#endif
     {
         sessionOptions.SetIntraOpNumThreads(num_threads);
         // Sets graph optimization level
