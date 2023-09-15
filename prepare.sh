@@ -1,0 +1,1 @@
+mkdir -p .libs .mnn .ncnn .onnx .pdlite .pt .tflite .tnn/

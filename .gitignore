@@ -46,3 +46,4 @@ warning.log
 .pdlite/
 .tnn/
 .onnx/
+bin/

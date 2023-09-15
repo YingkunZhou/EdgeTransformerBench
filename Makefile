@@ -5,7 +5,7 @@ MODEL ?= s1
 BACK ?= z
 
 init:
-	bin/prepare.sh
+	./prepare.sh
 
 ########################
 ###### ncnn part #######
