@@ -1,7 +1,7 @@
 onnx_mnn()
 {
     MODEL=$1
-    ~/work/MNN/build/MNNConvert -f ONNX --modelFile onnx/$MODEL.onnx --MNNModel mnn/$MODEL.mnn --bizCode MNN
+    ~/work/MNN/build/MNNConvert -f ONNX --modelFile .onnx/$MODEL.onnx --MNNModel .mnn/$MODEL.mnn --bizCode MNN
 }
 
 onnx_mnn efficientformerv2_s0

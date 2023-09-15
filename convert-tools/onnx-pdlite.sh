@@ -2,8 +2,8 @@ onnx_pdlite()
 {
     TYPE=$1
     MODEL=$2
-    x2paddle --framework=onnx --model=onnx/$MODEL.onnx --save_dir=pdlite --to_lite=True --lite_valid_places=$TYPE --lite_model_type=naive_buffer
-    mv pdlite/opt.nb pdlite/$MODEL.nb
+    x2paddle --framework=onnx --model=.onnx/$MODEL.onnx --save_dir=.pdlite --to_lite=True --lite_valid_places=$TYPE --lite_model_type=naive_buffer
+    mv .pdlite/opt.nb .pdlite/$MODEL.nb
 }
 
 ## replace opencl with arm

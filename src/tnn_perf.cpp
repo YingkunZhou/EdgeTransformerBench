@@ -215,8 +215,13 @@ int main(int argc, char* argv[])
                 args.debug = true;
                 break;
             case 'u':
-                if (optarg[0] == 'o')
+                if (optarg[0] == 'o') {
                     backend = tnn::DEVICE_OPENCL;
+                    std::cout << "INFO: Using OpenCL backend" << std::endl;
+                }
+                else {
+                    std::cout << "INFO: Using CPU backend" << std::endl;
+                }
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -228,6 +233,7 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
+    std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
     // TODO: Set the cpu affinity.
     // usually, -dl 0-3 for little core, -dl 4-7 for big core
@@ -248,8 +254,8 @@ int main(int argc, char* argv[])
         model_config.model_type = tnn::MODEL_TYPE_TNN;
         model_config.params.clear();
         // TODO: has opt suffix?
-        std::string tnnproto = "tnn/" + args.model + ".opt.tnnproto";
-        std::string tnnmodel = "tnn/" + args.model + ".opt.tnnmodel";
+        std::string tnnproto = ".tnn/" + args.model + ".opt.tnnproto";
+        std::string tnnmodel = ".tnn/" + args.model + ".opt.tnnmodel";
 
         model_config.params.push_back(fdLoadFile(tnnproto.c_str()));
         model_config.params.push_back(fdLoadFile(tnnmodel.c_str()));

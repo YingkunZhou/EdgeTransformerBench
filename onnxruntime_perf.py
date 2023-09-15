@@ -208,7 +208,7 @@ if __name__ == '__main__':
                 continue
 
             print(f"Creating onnx runtime session: {name}")
-            sess = ort.InferenceSession("onnx/%s.onnx" % name, sess_options=sess_options, providers=providers)
+            sess = ort.InferenceSession(".onnx/%s.onnx" % name, sess_options=sess_options, providers=providers)
             args.model = name
             args.input_size = resolution
             args.usi_eval = usi_eval

@@ -223,9 +223,7 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
-
-    // TODO
-
+    std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -238,7 +236,7 @@ int main(int argc, char* argv[])
         }
 
         args.input_size = model.second;
-        std::string model_file = "tflite/" + args.model + ".tflite";
+        std::string model_file = ".tflite/" + args.model + ".tflite";
         // create a interpreter
         std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
         std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
@@ -251,6 +249,7 @@ int main(int argc, char* argv[])
 
 #ifdef GPU
         if (backend == 'g') {
+            std::cout << "INFO: Using GPU backend" << std::endl;
             // https://www.tensorflow.org/lite/performance/gpu_advanced?hl=zh-cn
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/README.md
             // NEW: Prepare GPU delegate.
@@ -272,6 +271,7 @@ int main(int argc, char* argv[])
 #endif
 #ifdef NNAPI
         if (backend == 'n') {
+            std::cout << "INFO: Using NNAPI backend" << std::endl;
             //TODO: https://discuss.tensorflow.org/t/neural-network-fallback-to-cpu-using-nnapi-on-android/7703
             // https://community.nxp.com/t5/i-MX-Processors/how-to-know-the-imx8m-plus-NPU-acceleration-is-enable-already/m-p/1305328
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/tools/evaluation/utils.cc#L106C42-L106C42
@@ -292,6 +292,7 @@ int main(int argc, char* argv[])
 #endif
 #ifdef ARMNN
         if (backend == 'a') {
+            std::cout << "INFO: Using ARMNN backend" << std::endl;
             //https://review.mlplatform.org/plugins/gitiles/ml/armnn/+/3b38eedb3cc8f1c95a9ce62ddfbe926708666e72/delegate/BuildGuideNative.md#delegate-build-guide-introduction
             // Create the Arm NN Delegate
             //armnnDelegate::DelegateOptions options = armnnDelegate::TfLiteArmnnDelegateOptionsDefault();
@@ -314,6 +315,7 @@ int main(int argc, char* argv[])
 #endif
 #ifdef XNNPACK
         if (backend == 'x') {
+            std::cout << "INFO: Using XNNPACK backend" << std::endl;
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/xnnpack/README.md
             // IMPORTANT: initialize options with TfLiteXNNPackDelegateOptionsDefault() for
             // API-compatibility with future extensions of the TfLiteXNNPackDelegateOptions

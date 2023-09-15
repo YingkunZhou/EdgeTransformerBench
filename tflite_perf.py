@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
         print(f"Creating tflite runtime interpreter: {name}")
         # Load the TFLite model and allocate tensors
-        interpreter = tflite.Interpreter(model_path="tflite/%s.tflite" % name, num_threads=1) # TODO: num_threads doesn't work?
+        interpreter = tflite.Interpreter(model_path=".tflite/%s.tflite" % name, num_threads=1) # TODO: num_threads doesn't work?
         interpreter.allocate_tensors()
 
         args.model = name

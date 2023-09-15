@@ -1,7 +1,7 @@
 onnx_tnn()
 {
     MODEL=$1
-    python ~/work/TNN/tools/convert2tnn/converter.py onnx2tnn -optimize -v=v3.0 onnx/$MODEL.onnx -o tnn
+    python ~/work/TNN/tools/convert2tnn/converter.py onnx2tnn -optimize -v=v3.0 .onnx/$MODEL.onnx -o .tnn
 }
 
 ## for OpenCL

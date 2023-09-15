@@ -9,7 +9,7 @@ import torch
 from torch import nn
 import math
 from timm.models.layers import trunc_normal_, DropPath
-from edgenext import LayerNorm, PositionalEncodingFourier, XCA
+from .edgenext import LayerNorm, PositionalEncodingFourier, XCA
 
 class SDTAEncoderBNHS(nn.Module):
     """

@@ -7,15 +7,15 @@ import argparse
 import torch
 from timm.models import create_model
 
-import levit
-import levit_c
-import efficientformer_v2
-import swiftformer
-import edgenext
-import edgenext_bn_hs
-import emo
-import mobilevit
-import mobilevit_v2
+import models.levit
+import models.levit_c
+import models.efficientformer_v2
+import models.swiftformer
+import models.edgenext
+import models.edgenext_bn_hs
+import models.emo
+import models.mobilevit
+import models.mobilevit_v2
 
 torch.autograd.set_grad_enabled(False)
 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
             torch.onnx.export(
                 model,
                 inputs,
-                'onnx/'+name+'.onnx',
+                '.onnx/'+name+'.onnx',
                 export_params=True,
                 input_names=['input'],
                 output_names=['output'],
@@ -143,5 +143,5 @@ if __name__ == '__main__':
             )
         if not args.format or args.format == 'pt':
             trace_model = torch.jit.trace(model, inputs)
-            trace_model.save("pt/"+name+'.pt')
+            trace_model.save(".pt/"+name+'.pt')
 

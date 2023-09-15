@@ -220,14 +220,25 @@ int main(int argc, char* argv[])
                 args.debug = true;
                 break;
             case 'u':
-                if (optarg[0] == 'v')
+                if (optarg[0] == 'v') {
                     forward = MNN_FORWARD_VULKAN;
-                else if (optarg[0] == 'o')
+                    std::cout << "INFO: Using Vulkan backend" << std::endl;
+                }
+                else if (optarg[0] == 'o') {
                     forward = MNN_FORWARD_OPENCL;
-                else if (optarg[0] == 'g')
+                    std::cout << "INFO: Using OpenCL backend" << std::endl;
+                }
+                else if (optarg[0] == 'g') {
                     forward = MNN_FORWARD_OPENGL;
-                else if (optarg[0] == 'c')
+                    std::cout << "INFO: Using OpenGL backend" << std::endl;
+                }
+                else if (optarg[0] == 'c') {
                     forward = MNN_FORWARD_CUDA;
+                    std::cout << "INFO: Using CUDA backend" << std::endl;
+                }
+                else {
+                    std::cout << "INFO: Using CPU backend" << std::endl;
+                }
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -239,6 +250,7 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
+    std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
     int precision = 2;
 
@@ -251,7 +263,7 @@ int main(int argc, char* argv[])
         args.input_size = model.second;
 
         std::cout << "Creating MNN Interpreter: " << args.model << std::endl;
-        std::string model_file = "mnn/" + args.model + ".mnn";
+        std::string model_file = ".mnn/" + args.model + ".mnn";
         //std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
         std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()));
 #if 0

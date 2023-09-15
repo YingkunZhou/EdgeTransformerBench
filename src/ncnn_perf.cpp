@@ -214,8 +214,13 @@ int main(int argc, char* argv[])
                 debug = true;
                 break;
             case 'u':
-                if (optarg[0] == 'v')
+                if (optarg[0] == 'v') {
                     use_vulkan = true;
+                    std::cout << "INFO: Using Vulkan backend" << std::endl;
+                }
+                else {
+                    std::cout << "INFO: Using CPU backend" << std::endl;
+                }
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -227,6 +232,7 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
+    std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
     g_blob_pool_allocator.set_size_compare_ratio(0.f);
     g_workspace_pool_allocator.set_size_compare_ratio(0.f);
@@ -267,8 +273,8 @@ int main(int argc, char* argv[])
 
         char param_file[256];
         char model_file[256];
-        sprintf(param_file, "ncnn/" "%s.ncnn.param", args.model.c_str());
-        sprintf(model_file, "ncnn/" "%s.ncnn.bin", args.model.c_str());
+        sprintf(param_file, ".ncnn/" "%s.ncnn.param", args.model.c_str());
+        sprintf(model_file, ".ncnn/" "%s.ncnn.bin", args.model.c_str());
         // create a net
         std::cout << "Creating ncnn net: " << args.model << std::endl;
         ncnn::Net net;

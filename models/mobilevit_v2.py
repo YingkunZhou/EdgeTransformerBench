@@ -12,7 +12,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from timm.models.registry import register_model
 
-from mobilevit import ConvLayer2d, LinearLayer, InvertedResidual, GlobalPool
+from .mobilevit import ConvLayer2d, LinearLayer, InvertedResidual, GlobalPool
 
 class AdaptiveAvgPool2d(nn.Module):
 

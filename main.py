@@ -20,15 +20,15 @@ from timm.models import create_model
 from timm.utils import accuracy
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
-import levit
-import levit_c
-import efficientformer_v2
-import swiftformer
-import edgenext
-import edgenext_bn_hs
-import emo
-import mobilevit
-import mobilevit_v2
+import models.levit
+import models.levit_c
+import models.efficientformer_v2
+import models.swiftformer
+import models.edgenext
+import models.edgenext_bn_hs
+import models.emo
+import models.mobilevit
+import models.mobilevit_v2
 
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a

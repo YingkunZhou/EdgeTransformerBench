@@ -2,8 +2,10 @@ pt_ncnn()
 {
     MODEL=$2
     SHAPE=$1
-    ln -s ../pt/$MODEL.pt .
+    ln -s .pt/$MODEL.pt .ncnn
+    cd .ncnn
     ~/work/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE
+    cd -
 }
 
 pt_ncnn [1,3,224,224] efficientformerv2_s0

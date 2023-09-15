@@ -84,13 +84,20 @@ void benchmark(
     clock_gettime(CLOCK_REALTIME, &end);
     clock_gettime(CLOCK_REALTIME, &start);
     /// warmup
+#if !defined(DEBUG) && !defined(TEST)
     while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
+#endif
         predictor->Run();
         clock_gettime(CLOCK_REALTIME, &end);
+#if !defined(DEBUG) && !defined(TEST)
     }
+#endif
 
     std::unique_ptr<const paddle::lite_api::Tensor> output_tensor(std::move(predictor->GetOutput(0)));
     print_topk(output_tensor->data<float>(), 3);
+#if defined(TEST)
+    return;
+#endif
     /// testup
     std::vector<double> time_list = {};
     double time_tot = 0;
@@ -175,8 +182,13 @@ int main(int argc, char* argv[])
                 args.debug = true;
                 break;
             case 'u':
-                if (optarg[0] == 'o')
+                if (optarg[0] == 'o') {
                     use_opencl = true;
+                    std::cout << "INFO: Using OpenCL backend" << std::endl;
+                }
+                else {
+                    std::cout << "INFO: Using CPU backend" << std::endl;
+                }
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -188,6 +200,7 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
+    std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
     // TODO:
     int power_mode = 0;
 
@@ -200,7 +213,7 @@ int main(int argc, char* argv[])
         args.input_size = model.second;
 
         std::cout << "Creating PaddlePredictor: " << args.model << std::endl;
-        std::string model_file = "pdlite/" + args.model + ".nb";
+        std::string model_file = ".pdlite/" + args.model + ".nb";
 
         paddle::lite_api::MobileConfig config;
         // 1. Set MobileConfig

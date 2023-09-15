@@ -1,8 +1,8 @@
 onnx_tf()
 {
     MODEL=$1
-    onnx-tf convert -i onnx/$MODEL.onnx -o tflite/$MODEL.pb
-    python .tf-tflite.py --only-convert=$MODEL
+    onnx-tf convert -i .onnx/$MODEL.onnx -o .tflite/$MODEL.pb
+    python tf-tflite.py --only-convert=$MODEL
 }
 
 onnx_tf efficientformerv2_s0
