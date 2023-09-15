@@ -291,21 +291,27 @@ int main(int argc, char* argv[])
                 std::cout << "Got unknown parse returns: " << c << std::endl;
         }
     }
+    std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
     std::string instanceName{"image-classification-inference"};
     Ort::Env env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
                  instanceName.c_str());
     Ort::SessionOptions sessionOptions;
-#ifdef NNAPI
+#ifdef USE_NNAPI
     if (backend == 'n') {
+        std::cout << "INFO: Using NNAPI backend" << std::endl;
         // https://onnxruntime.ai/docs/execution-providers/NNAPI-ExecutionProvider
         uint32_t nnapi_flags = 0;
+        //nnapi_flags |= NNAPI_FLAG_USE_FP16;
+        //nnapi_flags |= NNAPI_FLAG_USE_NCHW;
+        //nnapi_flags |= NNAPI_FLAG_CPU_DISABLED;
+        //nnapi_flags |= NNAPI_FLAG_CPU_ONLY;
         Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(sessionOptions, nnapi_flags));
     }
     else
 #endif
-#ifdef QNN
     if (backend == 'q') {
+        std::cout << "INFO: Using QNN backend" << std::endl;
         // https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html
         std::unordered_map<std::string, std::string> qnn_options;
         // qnn_options["backend_path"] = "libQnnCpu.so";
@@ -314,8 +320,8 @@ int main(int argc, char* argv[])
         session_options.AppendExecutionProvider("QNN", qnn_options);
     }
     else
-#endif
     {
+        std::cout << "INFO: Using CPU backend" << std::endl;
         sessionOptions.SetIntraOpNumThreads(num_threads);
         // Sets graph optimization level
         // Available levels are

@@ -10,17 +10,17 @@
 
 #include <tensorflow/lite/interpreter.h>
 #include <tensorflow/lite/kernels/register.h>
-#ifdef GPU
+#ifdef USE_GPU
 #include <tensorflow/lite/delegates/gpu/delegate.h>
 #endif
-#ifdef NNAPI
+#ifdef USE_NNAPI
 #include <tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.h>
 #endif
-#ifdef ARMNN
+#ifdef USE_ARMNN
 #include <armnn_delegate.hpp>
 #endif
-#define XNNPACK // always enable
-#ifdef XNNPACK
+#define USE_XNNPACK // always enable
+#ifdef USE_XNNPACK
 #include <tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h>
 #endif
 
@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
         interpreter_builder.SetNumThreads(num_threads);
         if (interpreter_builder(&interpreter) != kTfLiteOk) return EXIT_FAILURE;
 
-#ifdef GPU
+#ifdef USE_GPU
         if (backend == 'g') {
             std::cout << "INFO: Using GPU backend" << std::endl;
             // https://www.tensorflow.org/lite/performance/gpu_advanced?hl=zh-cn
@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
         }
         else
 #endif
-#ifdef NNAPI
+#ifdef USE_NNAPI
         if (backend == 'n') {
             std::cout << "INFO: Using NNAPI backend" << std::endl;
             //TODO: https://discuss.tensorflow.org/t/neural-network-fallback-to-cpu-using-nnapi-on-android/7703
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
         }
         else
 #endif
-#ifdef ARMNN
+#ifdef USE_ARMNN
         if (backend == 'a') {
             std::cout << "INFO: Using ARMNN backend" << std::endl;
             //https://review.mlplatform.org/plugins/gitiles/ml/armnn/+/3b38eedb3cc8f1c95a9ce62ddfbe926708666e72/delegate/BuildGuideNative.md#delegate-build-guide-introduction
@@ -313,7 +313,7 @@ int main(int argc, char* argv[])
         }
         else
 #endif
-#ifdef XNNPACK
+#ifdef USE_XNNPACK
         if (backend == 'x') {
             std::cout << "INFO: Using XNNPACK backend" << std::endl;
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/xnnpack/README.md
