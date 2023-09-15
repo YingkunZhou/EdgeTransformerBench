@@ -57,7 +57,7 @@ if __name__ == '__main__':
         if args.only_convert and args.only_convert not in name:
             continue
 
-        converter = tf.lite.TFLiteConverter.from_saved_model("tflite/"+name+".pb") # path to the SavedModel directory
+        converter = tf.lite.TFLiteConverter.from_saved_model(".tflite/"+name+".pb") # path to the SavedModel directory
         converter.target_spec.supported_ops = [
             tf.lite.OpsSet.TFLITE_BUILTINS,
             tf.lite.OpsSet.SELECT_TF_OPS
@@ -69,4 +69,4 @@ if __name__ == '__main__':
 
         tf_lite_model = converter.convert()
         # Save the model.
-        open("tflite/"+name+'.tflite', 'wb').write(tf_lite_model)
+        open(".tflite/"+name+'.tflite', 'wb').write(tf_lite_model)

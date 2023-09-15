@@ -93,7 +93,7 @@ bin/pdlite-perf: src/pdlite_perf.cpp src/utils.cpp
 	g++ -O3 -o bin/pdlite-perf src/pdlite_perf.cpp -I$(PDLITE_INC)  -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
 
 bin/pdlite-perf-test: src/pdlite_perf.cpp src/utils.cpp
-	g++ -O3 -DTEST -o bin/pdlite-perf-test src/pdlite_perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
+	g++ -O3 -DTEST -o bin/pdlite-perf-test src/pdlite_perf.cpp -I$(PDLITE_INC) -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
 
 run-pdlite-perf: bin/pdlite-perf
 	LD_LIBRARY_PATH=$(PDLITE_LIB) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK)
@@ -115,13 +115,13 @@ tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
 bin/tflite-perf: src/tflite_perf.cpp src/utils.cpp
-	g++ -O3 -o tflite-perf tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	g++ -O3 -o bin/tflite-perf src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	#-ltensorflowlite_gpu_delegate -DGPU \
 	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DNNAPI \
 	#$(ARMNN_FLAGS) -larmnnDelegate -larmnn -DARMNN
 
 bin/tflite-perf-test: src/tflite_perf.cpp src/utils.cpp
-	g++ -O3 -DTEST -o tflite-perf-test tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	g++ -O3 -DTEST -o bin/tflite-perf-test src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	#-ltensorflowlite_gpu_delegate -DGPU \
 	#-lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DNNAPI \
 	#$(ARMNN_FLAGS) -larmnnDelegate -larmnn -DARMNN
@@ -145,16 +145,16 @@ tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
 bin/onnxruntime-perf: src/onnxruntime_perf.cpp src/utils.cpp
-	g++ -O3 -o onnxruntime-perf onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime
+	g++ -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime
 
 bin/onnxruntime-perf-test: src/onnxruntime_perf.cpp src/utils.cpp
-	g++ -O3 -DTEST -o onnxruntime-perf-test onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime
+	g++ -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime
 
 run-onnxruntime-perf: bin/onnxruntime-perf
-	LD_LIBRARY_PATH=$(ONNXRT_LIB) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-onnxruntime: bin/onnxruntime-perf
-	LD_LIBRARY_PATH=$(ONNXRT_LIB) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --validation
+	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --validation
 
 test-onnxruntime-perf: bin/onnxruntime-perf-test
-	LD_LIBRARY_PATH=$(ONNXRT_LIB) bin/onnxruntime-perf-test --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf-test --only-test $(MODEL) --backend $(BACK)
