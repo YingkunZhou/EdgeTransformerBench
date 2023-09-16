@@ -159,3 +159,27 @@ validation-onnxruntime: bin/onnxruntime-perf
 
 test-onnxruntime-perf: bin/onnxruntime-perf-test
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf-test --only-test $(MODEL) --backend $(BACK)
+
+########################
+##### pytorch part #####
+########################
+TORCH_LIB ?= $(PWD)/.libs/pytorch/install/lib
+TORCH_INC ?= $(PWD)/.libs/pytorch/install/include
+
+pytorch-perf: bin/pytorch-perf
+pytorch-perf-test: bin/pytorch-perf-test
+
+bin/pytorch-perf: src/pytorch_perf.cpp src/utils.cpp
+	g++ -O3 -o bin/pytorch-perf src/pytorch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
+
+bin/pytorch-perf-test: src/pytorch_perf.cpp src/utils.cpp
+	g++ -O3 -DTEST -o bin/pytorch-perf-test src/pytorch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
+
+run-pytorch-perf: bin/pytorch-perf
+	LD_LIBRARY_PATH=$(TORCH_LIB) bin/pytorch-perf --only-test $(MODEL) --backend $(BACK)
+
+validation-pytorch: bin/pytorch-perf
+	LD_LIBRARY_PATH=$(TORCH_LIB) bin/pytorch-perf --only-test $(MODEL) --backend $(BACK) --validation
+
+test-pytorch-perf: bin/pytorch-perf-test
+	LD_LIBRARY_PATH=$(TORCH_LIB) bin/pytorch-perf-test --only-test $(MODEL) --backend $(BACK)

@@ -1,21 +1,37 @@
-# orin
-$ bash demo.sh 2>warning.log
+$ bin/.demo.sh
+LD_LIBRARY_PATH=$PWD/.libs/ncnn/install-vulkan/lib bin/ncnn-perf --only-test s1 --backend z
+INFO: Using CPU backend
+INFO: Using num_threads == 1
 Creating ncnn net: efficientformerv2_s1
 (index: 985,  score: 13.187500), (index: 308,  score: 4.398438), (index: 984,  score: 4.390625),
-min =   155.54ms        max =   157.07ms        mean =  156.62ms        median =        156.68ms
-Creating TNN net: efficientformerv2_s1
-(index: 985,  score: 13.267979), (index: 984,  score: 4.345343), (index: 308,  score: 4.289362),
-min =   77.20ms max =   83.67ms mean =  79.04ms median =        79.12ms
+[126 iters] min = 159.46ms max = 160.31ms median = 159.79ms mean = 159.81ms
+LD_LIBRARY_PATH=$PWD/.libs/MNN/install/lib bin/mnn-perf --only-test s1 --backend z
+INFO: Using CPU backend
+INFO: Using num_threads == 1
 Creating MNN Interpreter: efficientformerv2_s1
 The device support i8sdot:1, support fp16:1, support i8mm: 0
-(index: 985,  score: 13.267048), (index: 984,  score: 4.345686), (index: 308,  score: 4.289115),
-min =   60.85ms max =   65.61ms mean =  62.01ms median =        62.08ms
-Creating tflite runtime interpreter: efficientformerv2_s1
-(index: 985,  score: 13.296132), (index: 984,  score: 4.359022), (index: 308,  score: 4.301730),
-min =   85.25ms max =   92.41ms mean =  90.50ms median =        90.83ms
-Creating onnx runtime session: efficientformerv2_s1
-(index: 985,  score: 13.296133), (index: 984,  score: 4.359020), (index: 308,  score: 4.301716),
-min =   100.24ms        max =   108.76ms        mean =  102.30ms        median =        102.17ms
+(index: 985,  score: 13.295982), (index: 984,  score: 4.359047), (index: 308,  score: 4.301670),
+[146 iters] min = 137.63ms max = 138.05ms median = 137.91ms mean = 137.77ms mean = 137.87ms
+LD_LIBRARY_PATH=$PWD/.libs/TNN/install/lib bin/tnn-perf --only-test s1 --backend z
+INFO: Using CPU backend
+INFO: Using num_threads == 1
+Creating TNN net: efficientformerv2_s1
+(index: 985,  score: 13.267979), (index: 984,  score: 4.345343), (index: 308,  score: 4.289362),
+[280 iters] min =  70.26ms max =  76.24ms median =  71.43ms mean =  71.44ms
+LD_LIBRARY_PATH=$PWD/.libs/Paddle-Lite/lib bin/pdlite-perf --only-test s1 --backend z
+INFO: Using CPU backend
+INFO: Using num_threads == 1
 Creating PaddlePredictor: efficientformerv2_s1
-(index: 985,  score: 13.485670), (index: 984,  score: 4.418849), (index: 308,  score: 4.411823),
-min =   86.06ms max =   89.00ms mean =  88.27ms median =        88.39ms
+(index: 985,  score: 13.485670), (index: 984,  score: 4.418847), (index: 308,  score: 4.411819),
+[206 iters] min =  96.96ms max =  97.44ms median =  97.18ms mean =  97.18ms
+LD_LIBRARY_PATH=$PWD/.libs/tensorflow/lib bin/tflite-perf --only-test s1 --backend z
+INFO: Using num_threads == 1
+Creating tflite runtime interpreter: efficientformerv2_s1
+(index: 985,  score: 13.296130), (index: 984,  score: 4.359022), (index: 308,  score: 4.301729),
+[220 iters] min =  86.40ms max =  92.14ms median =  91.13ms mean =  91.09ms
+LD_LIBRARY_PATH=$PWD/.libs/onnxruntime/lib:/home/loongson/miniforge3/lib bin/onnxruntime-perf --only-test s1 --backend z
+INFO: Using num_threads == 1
+INFO: Using CPU backend
+Creating onnx runtime session: efficientformerv2_s1
+(index: 985,  score: 13.296133), (index: 984,  score: 4.359019), (index: 308,  score: 4.301717),
+[205 iters] min =  97.52ms max =  98.65ms median =  98.00ms mean =  97.98ms

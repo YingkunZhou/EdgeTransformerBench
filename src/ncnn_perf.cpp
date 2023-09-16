@@ -137,9 +137,7 @@ void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
         ex.input(input_names[0], input_tensor);
         ex.extract(output_names[0], output_tensor);
         clock_gettime(CLOCK_REALTIME, &end);
-        long long seconds = end.tv_sec - start.tv_sec;
-        long long nanoseconds = end.tv_nsec - start.tv_nsec;
-        double elapse = seconds + nanoseconds * 1e-9;
+        double elapse = end.tv_sec - start.tv_sec + (end.tv_nsec - start.tv_nsec) * 1e-9;
         time_list.push_back(elapse);
         time_tot += elapse;
     }
