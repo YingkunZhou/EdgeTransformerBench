@@ -163,8 +163,8 @@ test-onnxruntime-perf: bin/onnxruntime-perf-test
 ########################
 ##### pytorch part #####
 ########################
-TORCH_LIB ?= $(PWD)/.libs/pytorch/install/lib
-TORCH_INC ?= $(PWD)/.libs/pytorch/install/include
+TORCH_LIB ?= $(PWD)/.libs/pytorch/lib
+TORCH_INC ?= $(PWD)/.libs/pytorch/include
 
 pytorch-perf: bin/pytorch-perf
 pytorch-perf-test: bin/pytorch-perf-test
