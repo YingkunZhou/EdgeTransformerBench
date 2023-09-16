@@ -40,7 +40,7 @@ struct MobileCallGuard {
 
 void evaluate(
   torch::jit::script::Module &module,
-  torch::Tensor *input)
+  torch::Tensor &input)
 {
     int class_index = 0;
     int num_predict = 0;
@@ -63,7 +63,7 @@ void evaluate(
     clock_gettime(CLOCK_REALTIME, &start);
     for (const std::string& class_path : classes) {
         for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            load_image(image.path(), input->host<float>(), args.model, args.input_size, args.batch_size);
+            load_image(image.path(), input.data_ptr<float>(), args.model, args.input_size, args.batch_size);
             /////////////////////////////////
             MobileCallGuard guard;
             auto output = module.forward({input}).toTensor();
@@ -72,7 +72,6 @@ void evaluate(
             bool acc1 = false;
             num_acc5 += acck(/*here*/output.data_ptr<float>(), 5, class_index*scale+offset, acc1);
             num_acc1 += acc1;
-            delete output;
         }
         class_index++;
         std::cout << "Done [" << class_index << "/" << classes.size() << "]";
@@ -88,7 +87,7 @@ void evaluate(
 
 void benchmark(
     torch::jit::script::Module &module,
-    torch::Tensor *input)
+    torch::Tensor &input)
 {
     // Measure latency
     load_image("daisy.jpg", input.data_ptr<float>(), args.model, args.input_size, args.batch_size);
@@ -129,19 +128,17 @@ void benchmark(
         time_list.push_back(elapse);
     }
 
-    double forward_max = *std::max_element(time_list.begin(), time_list.end()) * 1000;
-    double forward_min = *std::min_element(time_list.begin(), time_list.end()) * 1000;
-    double forward_median = time_list[time_list.size() / 2] * 1000;
-    double forward_mean = forward_tot * 1000 / time_list.size();
+    double time_max = *std::max_element(time_list.begin(), time_list.end()) * 1000;
+    double time_min = *std::min_element(time_list.begin(), time_list.end()) * 1000;
     double time_mean = time_tot * 1000 / time_list.size();
     std::sort(time_list.begin(), time_list.end());
+    double time_median = time_list[time_list.size() / 2] * 1000;
 
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "[" << time_list.size() << " iters]";
-    std::cout << " min ="   << std::setw(7) << forward_min  << "ms";
-    std::cout << " max ="   << std::setw(7) << forward_max  << "ms";
-    std::cout << " median ="<< std::setw(7) << forward_median<<"ms";
-    std::cout << " mean ="  << std::setw(7) << forward_mean << "ms";
+    std::cout << " min ="   << std::setw(7) << time_min  << "ms";
+    std::cout << " max ="   << std::setw(7) << time_max  << "ms";
+    std::cout << " median ="<< std::setw(7) << time_median<<"ms";
     std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
 }
 
@@ -151,7 +148,6 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     args.debug = false;
-    int forward = MNN_FORWARD_CPU;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
