@@ -104,8 +104,8 @@ void evaluate(
 #if defined(USE_TORCH)
             load_image(image.path(), input.data_ptr<float>(), args.model, args.input_size, args.batch_size);
             MobileCallGuard guard;
-            auto output = module.forward({input}).toTensor();
-            num_acc5 += acck(output.data_ptr<float>(), 5, index, num_acc1);
+            args.output = module.forward({input}).toTensor();
+            num_acc5 += acck(args.output.data_ptr<float>(), 5, index, num_acc1);
 #endif
         }
         class_index++;

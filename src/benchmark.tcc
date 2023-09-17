@@ -109,7 +109,7 @@ void benchmark(
 #endif
 #if defined(USE_TORCH)
         MobileCallGuard guard;
-        output = module.forward({input}).toTensor();
+        args.output = module.forward({input}).toTensor();
 #endif
 #if !defined(DEBUG) && !defined(TEST)
         stop = high_resolution_clock::now();
@@ -155,7 +155,7 @@ void benchmark(
     print_topk(output_tensor.data(), 3);
 #endif
 #if defined(USE_TORCH)
-    print_topk(output.data_ptr<float>(), 3);
+    print_topk(args.output.data_ptr<float>(), 3);
 #endif
 #if defined(TEST)
     return;
@@ -193,7 +193,7 @@ void benchmark(
 #endif
 #if defined(USE_TORCH)
         MobileCallGuard guard;
-        output = module.forward({input}).toTensor();
+        args.output = module.forward({input}).toTensor();
 #endif
         stop = high_resolution_clock::now();
         auto elapse = duration_cast<microseconds>(stop - start);

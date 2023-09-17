@@ -13,9 +13,6 @@
 #include <chrono>
 using namespace std::chrono;
 
-const int WARMUP_SEC = 5;
-const int TEST_SEC = 20 * 1000;
-
 struct {
   std::string model;
   bool validation;
