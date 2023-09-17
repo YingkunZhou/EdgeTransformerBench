@@ -27,7 +27,7 @@ bool acck(
     const float *scores,
     const int topk,
     const int index,
-    bool &acc1
+    int &acc1
 );
 
 void print_topk(const float *scores, const int topk);

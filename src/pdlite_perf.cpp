@@ -15,8 +15,8 @@
 #include <paddle_api.h>
 #include "utils.h"
 
-const int WARMUP_SEC = 5;
-const int TEST_SEC = 20;
+#include <chrono>
+using namespace std::chrono;
 
 struct {
   std::string model;
@@ -25,106 +25,11 @@ struct {
   int batch_size;
   bool debug;
   std::string data_path;
-  std::vector<int> input_dims;
 } args;
 
-void evaluate(
-    std::shared_ptr<paddle::lite_api::PaddlePredictor> &predictor,
-    std::unique_ptr<paddle::lite_api::Tensor> &input_tensor)
-{
-    int class_index = 0;
-    int num_predict = 0;
-    int num_acc1 = 0;
-    int num_acc5 = 0;
-    std::cout << std::fixed << std::setprecision(4);
-
-    int scale = 1;
-    int offset = 0;
-    if (args.data_path.find("20") != std::string::npos) {
-        scale = 20;
-    }
-    else if (args.data_path.find("50") != std::string::npos) {
-        scale = 50;
-        offset = 15;
-    }
-
-    std::vector<std::filesystem::path> classes = traverse_class(args.data_path);
-    struct timespec start, end;
-    clock_gettime(CLOCK_REALTIME, &start);
-    for (const std::string& class_path : classes) {
-        for (const auto & image: std::filesystem::directory_iterator(class_path)) {
-            load_image(image.path(), input_tensor->mutable_data<float>(), args.model, args.input_size, args.batch_size);
-            predictor->Run();
-            std::unique_ptr<const paddle::lite_api::Tensor> output_tensor(std::move(predictor->GetOutput(0)));
-            num_predict++;
-            bool acc1 = false;
-            num_acc5 += acck(output_tensor->data<float>(), 5, class_index*scale+offset, acc1);
-            num_acc1 += acc1;
-        }
-        class_index++;
-        std::cout << "Done [" << class_index << "/" << classes.size() << "]";
-        std::cout << "\tacc1: " << num_acc1*1.f/num_predict;
-        std::cout << "\tacc5: " << num_acc5*1.f/num_predict << std::endl;
-    }
-    clock_gettime(CLOCK_REALTIME, &end);
-    long long seconds = end.tv_sec - start.tv_sec;
-    long long nanoseconds = end.tv_nsec - start.tv_nsec;
-    double elapse = seconds + nanoseconds * 1e-9;
-    std::cout << "elapse time: " << elapse << std::endl;
-}
-
-void benchmark(
-    std::shared_ptr<paddle::lite_api::PaddlePredictor> &predictor,
-    std::unique_ptr<paddle::lite_api::Tensor> &input_tensor)
-{
-    // Measure latency
-    load_image("daisy.jpg", input_tensor->mutable_data<float>(), args.model, args.input_size, args.batch_size);
-
-    struct timespec start, end;
-    clock_gettime(CLOCK_REALTIME, &end);
-    clock_gettime(CLOCK_REALTIME, &start);
-    /// warmup
-#if !defined(DEBUG) && !defined(TEST)
-    while (end.tv_sec - start.tv_sec < WARMUP_SEC) {
-#endif
-        predictor->Run();
-        clock_gettime(CLOCK_REALTIME, &end);
-#if !defined(DEBUG) && !defined(TEST)
-    }
-#endif
-
-    std::unique_ptr<const paddle::lite_api::Tensor> output_tensor(std::move(predictor->GetOutput(0)));
-    print_topk(output_tensor->data<float>(), 3);
-#if defined(TEST)
-    return;
-#endif
-    /// testup
-    std::vector<double> time_list = {};
-    double time_tot = 0;
-    while (time_tot < TEST_SEC) {
-        clock_gettime(CLOCK_REALTIME, &start);
-        predictor->Run();
-        clock_gettime(CLOCK_REALTIME, &end);
-        long long seconds = end.tv_sec - start.tv_sec;
-        long long nanoseconds = end.tv_nsec - start.tv_nsec;
-        double elapse = seconds + nanoseconds * 1e-9;
-        time_list.push_back(elapse);
-        time_tot += elapse;
-    }
-
-    double time_max = *std::max_element(time_list.begin(), time_list.end()) * 1000;
-    double time_min = *std::min_element(time_list.begin(), time_list.end()) * 1000;
-    double time_mean = time_tot * 1000 / time_list.size();
-    std::sort(time_list.begin(), time_list.end());
-    double time_median = time_list[time_list.size() / 2] * 1000;
-
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << "[" << time_list.size() << " iters]";
-    std::cout << " min ="   << std::setw(7) << time_min  << "ms";
-    std::cout << " max ="   << std::setw(7) << time_max  << "ms";
-    std::cout << " median ="<< std::setw(7) << time_median<<"ms";
-    std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
-}
+#define USE_PDLITE
+#include "evaluate.tcc"
+#include "benchmark.tcc"
 
 int main(int argc, char* argv[])
 {

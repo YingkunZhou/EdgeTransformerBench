@@ -173,12 +173,12 @@ bool acck(
     const float *scores,
     const int topk,
     const int index,
-    bool &acc1)
+    int &num_acc1)
 {
     std::vector<std::pair<float, int>> vec;
     scores_topk(vec, scores, topk);
     if (index == vec[0].second) {
-        acc1 = true;
+        num_acc1 += 1;
         return true;
     }
     for (int i = 1; i < topk; i++) {
