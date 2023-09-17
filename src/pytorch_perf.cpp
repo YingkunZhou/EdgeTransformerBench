@@ -8,6 +8,7 @@
 
 #include <torch/script.h>
 #include <torch/csrc/jit/mobile/import.h>
+#include <torch/csrc/api/include/torch/utils.h>
 
 #include "utils.h"
 #include <chrono>
@@ -109,7 +110,9 @@ int main(int argc, char* argv[])
         }
     }
     std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
-
+    // https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html
+    at::set_num_threads(num_threads);
+    //at::set_num_interop_threads(num_threads); //TODO
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -118,14 +121,12 @@ int main(int argc, char* argv[])
         }
 
         args.input_size = model.second;
-        //////////////////////////////////////////////////
         std::cout << "Creating PyTorch Interpreter: " << args.model << std::endl;
         std::string model_file = ".pt/" + args.model + ".pt";
         MobileCallGuard guard;
         torch::jit::script::Module module = torch::jit::load(model_file);
         module.eval();
         torch::Tensor input = torch::rand({args.batch_size, 3, args.input_size, args.input_size});
-        //////////////////////////////////////////////////
         if (args.validation) {
             evaluate(module, input);
         }
