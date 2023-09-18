@@ -27,6 +27,7 @@ def get_args_parser():
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--fuse', action='store_true', default=False)
+    parser.add_argument('--mobile', default=None, type=str, help='cpu, vulkan, nnapi')
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
@@ -142,6 +143,19 @@ if __name__ == '__main__':
                 opset_version=opset_version
             )
         if not args.format or args.format == 'pt':
-            trace_model = torch.jit.trace(model, inputs)
-            trace_model.save(".pt/"+name+'.pt')
+            if args.mobile:
+                if args.mobile == "nnapi":
+                    inputs = inputs.contiguous(memory_format=torch.channels_last)
+                    inputs.nnapi_nhwc = True
+                trace_model = torch.jit.trace(model, inputs)
+                if args.mobile == "nnapi":
+                    from torch.backends._nnapi.prepare import convert_model_to_nnapi
+                    mobile_model = convert_model_to_nnapi(trace_model, inputs)
+                else:
+                    from torch.utils.mobile_optimizer import optimize_for_mobile
+                    mobile_model = optimize_for_mobile(trace_model, backend=args.mobile)
+                mobile_model._save_for_lite_interpreter(".pt/"+name+'.'+args.mobile[0]+'.ptl', _use_flatbuffer=True)
+            else:
+                trace_model = torch.jit.trace(model, inputs)
+                trace_model.save(".pt/"+name+'.pt')
 

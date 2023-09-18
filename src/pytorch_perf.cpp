@@ -33,7 +33,8 @@ struct MobileCallGuard {
   // Thanks to the unification of Variable class and Tensor class it's no longer
   // required to toggle the NonVariableTypeMode per op - so it doesn't hurt to
   // always set NonVariableTypeMode for inference only use case.
-  torch::AutoNonVariableTypeMode non_var_guard{true};
+  // torch::AutoNonVariableTypeMode non_var_guard{true};
+  c10::InferenceMode guard{true};
   // Disable graph optimizer to ensure list of unused ops are not changed for
   // custom mobile build.
   torch::jit::GraphOptimizerEnabledGuard no_optimizer_guard{false};
@@ -49,6 +50,7 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     args.debug = false;
+    char backend = ' ';
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -98,6 +100,7 @@ int main(int argc, char* argv[])
                 args.debug = true;
                 break;
             case 'u':
+                backend = optarg[0];
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -122,7 +125,23 @@ int main(int argc, char* argv[])
 
         args.input_size = model.second;
         std::cout << "Creating PyTorch Interpreter: " << args.model << std::endl;
-        std::string model_file = ".pt/" + args.model + ".pt";
+        std::string model_file;
+        if (backend == 'n') {
+          std::cout << "INFO: Using NNAPI backend" << std::endl;
+          model_file = ".pt/" + args.model + ".n.ptl";
+        }
+        else if (backend == 'c') {
+          std::cout << "INFO: Using mobile CPU backend" << std::endl;
+          model_file = ".pt/" + args.model + ".c.ptl";
+        }
+        else if (backend == 'v') {
+          std::cout << "INFO: Using Vulkan backend" << std::endl;
+          model_file = ".pt/" + args.model + ".v.ptl";
+        }
+        else {
+          std::cout << "INFO: Using trace CPU backend" << std::endl;
+          model_file = ".pt/" + args.model + ".pt";
+        }
         MobileCallGuard guard;
         torch::jit::script::Module module = torch::jit::load(model_file);
         module.eval();
