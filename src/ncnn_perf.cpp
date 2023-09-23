@@ -135,15 +135,13 @@ int main(int argc, char* argv[])
     }
 #endif // NCNN_VULKAN
 
-    int powersave = 2; //TODO
-    ncnn::set_cpu_powersave(powersave);
     ncnn::set_omp_dynamic(0);
     // TODO: doesn't work?
     // ncnn::set_omp_num_threads(num_threads);
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
         // TODO
@@ -151,7 +149,6 @@ int main(int argc, char* argv[])
 
         g_blob_pool_allocator.clear();
         g_workspace_pool_allocator.clear();
-
 #if NCNN_VULKAN
         if (use_vulkan)
         {
@@ -164,6 +161,10 @@ int main(int argc, char* argv[])
         char model_file[256];
         sprintf(param_file, ".ncnn/" "%s.ncnn.param", args.model.c_str());
         sprintf(model_file, ".ncnn/" "%s.ncnn.bin", args.model.c_str());
+        if (model_exists(model_file) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
         // create a net
         std::cout << "Creating ncnn net: " << args.model << std::endl;
         ncnn::Net net;

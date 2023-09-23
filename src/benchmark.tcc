@@ -33,7 +33,12 @@ void benchmark(
 #endif
 #if defined(USE_TORCH)
 void benchmark(
-    torch::jit::script::Module &module,
+#if defined(USE_TORCH_MOBILE)
+    torch::jit::mobile::Module
+#else
+    torch::jit::script::Module
+#endif
+    &module,
     torch::Tensor &input)
 #endif
 {
@@ -77,9 +82,7 @@ void benchmark(
     auto start = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
     /// warmup
-#if !defined(DEBUG) && !defined(TEST)
     while (duration_cast<seconds>(stop - start).count() < WARMUP_SEC) {
-#endif
 #if defined(USE_NCNN)
         ncnn::Extractor ex = net.create_extractor();
         ex.input(args.input_name, input_tensor);
@@ -108,13 +111,13 @@ void benchmark(
                     );
 #endif
 #if defined(USE_TORCH)
-        MobileCallGuard guard;
         args.output = module.forward({input}).toTensor();
 #endif
-#if !defined(DEBUG) && !defined(TEST)
+#if defined(DEBUG) || defined(TEST)
+        break;
+#endif
         stop = high_resolution_clock::now();
     }
-#endif
 
 #if defined(USE_NCNN)
 #if defined(DEBUG)
@@ -192,7 +195,6 @@ void benchmark(
                     );
 #endif
 #if defined(USE_TORCH)
-        MobileCallGuard guard;
         args.output = module.forward({input}).toTensor();
 #endif
         stop = high_resolution_clock::now();

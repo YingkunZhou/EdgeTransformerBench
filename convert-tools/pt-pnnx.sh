@@ -2,8 +2,8 @@ pt_ncnn()
 {
     MODEL=$2
     SHAPE=$1
-    ln -s .pt/$MODEL.pt .ncnn
     cd .ncnn
+    ln -s ../.pt/$MODEL.pt .
     ~/work/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE
     cd -
 }
@@ -39,8 +39,8 @@ pt_ncnn [1,3,256,256] mobilevitv2_200
 # (index: 999,  score: -nan), (index: 998,  score: -nan), (index: 997,  score: -nan),
 # Panvk (index: 387,  score: 7.382812), (index: 282,  score: 6.496094), (index: 292,  score: 6.316406),
 pt_ncnn [1,3,256,256] mobilevit_xx_small
-pt_ncnn [1,3,256,256] mobilevit_x_small
-pt_ncnn [1,3,256,256] mobilevit_small
+#pt_ncnn [1,3,256,256] mobilevit_x_small
+#pt_ncnn [1,3,256,256] mobilevit_small
 
 # layer torch.flatten not exists or registered
 #pt_ncnn [1,3,224,224] LeViT_128S

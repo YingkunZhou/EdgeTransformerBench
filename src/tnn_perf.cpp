@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <getopt.h>
 #include <fstream>
+#include <cstring>
 
 #include <tnn/core/common.h>
 #include <tnn/core/instance.h>
@@ -117,6 +118,10 @@ int main(int argc, char* argv[])
                     backend = tnn::DEVICE_OPENCL;
                     std::cout << "INFO: Using OpenCL backend" << std::endl;
                 }
+                else if (optarg[0] == 'c') {
+                    backend = tnn::DEVICE_CUDA;
+                    std::cout << "INFO: Using CUDA backend" << std::endl;
+                }
                 else {
                     std::cout << "INFO: Using CPU backend" << std::endl;
                 }
@@ -137,16 +142,18 @@ int main(int argc, char* argv[])
     // usually, -dl 0-3 for little core, -dl 4-7 for big core
     // only works when -dl flags were set. benchmark script not set -dl flags
     // SetCpuAffinity();
-
+    tnn::NetworkConfig network_config;
+    network_config.device_type = backend;
+    if (backend == tnn::DEVICE_CUDA)
+        network_config.network_type = tnn::NETWORK_TYPE_TENSORRT;
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
         args.input_size = model.second;
 
-        std::cout << "Creating TNN net: " << args.model << std::endl;
         tnn::ModelConfig model_config;
         // model_config.model_type = tnn::MODEL_TYPE_NCNN;
         model_config.model_type = tnn::MODEL_TYPE_TNN;
@@ -154,15 +161,16 @@ int main(int argc, char* argv[])
         // TODO: has opt suffix?
         std::string tnnproto = ".tnn/" + args.model + ".opt.tnnproto";
         std::string tnnmodel = ".tnn/" + args.model + ".opt.tnnmodel";
-
+        if (model_exists(tnnmodel) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
+        std::cout << "Creating TNN net: " << args.model << std::endl;
         model_config.params.push_back(fdLoadFile(tnnproto.c_str()));
         model_config.params.push_back(fdLoadFile(tnnmodel.c_str()));
         // model_config.params.push_back(model_path_str_) ??
         tnn::TNN net;
         auto status = net.Init(model_config);
-
-        tnn::NetworkConfig network_config;
-        network_config.device_type = backend;
 
         // TODO: network_config.{library_path, precision, cache_path, network_type}
         args.input_dims = {1, 3/*image_channel*/, args.input_size, args.input_size};

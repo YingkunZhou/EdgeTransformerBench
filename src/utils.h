@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <sys/stat.h>
+
 const float IMAGENET_DEFAULT_MEAN[3] = {0.485f, 0.456f, 0.406f};
 const float IMAGENET_DEFAULT_STD[3]  = {0.229f, 0.224f, 0.225f};
 const int NUM_CLASSES = 1000;
@@ -36,5 +38,10 @@ std::vector<std::filesystem::path>
 traverse_class(std::string imagenet_path);
 
 extern std::vector<std::pair<std::string, int>> test_models;
+
+inline bool model_exists (const std::string& name) {
+  struct stat buffer;
+  return (stat(name.c_str(), &buffer) == 0);
+}
 
 #endif // UTILS_H

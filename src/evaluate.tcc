@@ -30,7 +30,12 @@ void evaluate(
 #endif
 #if defined(USE_TORCH)
 void evaluate(
-    torch::jit::script::Module &module,
+#if defined(USE_TORCH_MOBILE)
+    torch::jit::mobile::Module
+#else
+    torch::jit::script::Module
+#endif
+    &module,
     torch::Tensor &input)
 #endif
 {
@@ -103,7 +108,6 @@ void evaluate(
 #endif
 #if defined(USE_TORCH)
             load_image(image.path(), input.data_ptr<float>(), args.model, args.input_size, args.batch_size);
-            MobileCallGuard guard;
             args.output = module.forward({input}).toTensor();
             num_acc5 += acck(args.output.data_ptr<float>(), 5, index, num_acc1);
 #endif

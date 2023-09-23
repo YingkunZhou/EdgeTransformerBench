@@ -26,6 +26,7 @@ struct {
 
 // Some common guards for inference-only custom mobile LibTorch.
 struct MobileCallGuard {
+#if !defined(USE_TORCH_MOBILE) // TODO: mobile model without gaurd?
   // AutoGrad is disabled for mobile by default.
   torch::autograd::AutoGradMode no_autograd_guard{false};
   // VariableType dispatch is not included in default mobile build. We need set
@@ -38,6 +39,7 @@ struct MobileCallGuard {
   // Disable graph optimizer to ensure list of unused ops are not changed for
   // custom mobile build.
   torch::jit::GraphOptimizerEnabledGuard no_optimizer_guard{false};
+#endif
 };
 
 #define USE_TORCH
@@ -114,37 +116,55 @@ int main(int argc, char* argv[])
     }
     std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
     // https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html
+    at::init_num_threads();
     at::set_num_threads(num_threads);
     //at::set_num_interop_threads(num_threads); //TODO
+    if (backend == 'n') {
+        std::cout << "INFO: Using NNAPI backend" << std::endl;
+    }
+    else if (backend == 'c') {
+        std::cout << "INFO: Using mobile CPU backend" << std::endl;
+    }
+    else if (backend == 'v') {
+        std::cout << "INFO: Using Vulkan backend" << std::endl;
+    }
+    else {
+        std::cout << "INFO: Using trace CPU backend" << std::endl;
+    }
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
         args.input_size = model.second;
-        std::cout << "Creating PyTorch Interpreter: " << args.model << std::endl;
         std::string model_file;
         if (backend == 'n') {
-          std::cout << "INFO: Using NNAPI backend" << std::endl;
           model_file = ".pt/" + args.model + ".n.ptl";
         }
         else if (backend == 'c') {
-          std::cout << "INFO: Using mobile CPU backend" << std::endl;
           model_file = ".pt/" + args.model + ".c.ptl";
         }
         else if (backend == 'v') {
-          std::cout << "INFO: Using Vulkan backend" << std::endl;
           model_file = ".pt/" + args.model + ".v.ptl";
         }
         else {
-          std::cout << "INFO: Using trace CPU backend" << std::endl;
           model_file = ".pt/" + args.model + ".pt";
         }
+
+        if (model_exists(model_file) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
+        std::cout << "Creating pytorch module: " << args.model << std::endl;
+#if defined(USE_TORCH_MOBILE)
+        auto module = torch::jit::_load_for_mobile(model_file);
+#else
         MobileCallGuard guard;
         torch::jit::script::Module module = torch::jit::load(model_file);
         module.eval();
+#endif
         torch::Tensor input = torch::rand({args.batch_size, 3, args.input_size, args.input_size});
         if (args.validation) {
             evaluate(module, input);

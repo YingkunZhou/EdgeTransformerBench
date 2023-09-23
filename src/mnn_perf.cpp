@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <getopt.h>
+#include <cstring>
 
 #include <MNN/Interpreter.hpp>
 #include "utils.h"
@@ -120,11 +121,22 @@ int main(int argc, char* argv[])
     }
     std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
-    int precision = 2;
+    // https://www.yuque.com/mnn/cn/create_session#Wi4on
+    // TODO: for better performance (lower latency)
+    int precision = MNN::BackendConfig::Precision_Low;
+    MNN::ScheduleConfig config;
+    config.type = static_cast<MNNForwardType>(forward);
+    config.numThread = num_threads;
+    MNN::BackendConfig backendConfig;
+    backendConfig.precision = (MNN::BackendConfig::PrecisionMode) precision;
+    backendConfig.power = MNN::BackendConfig::Power_High;
+    config.backendConfig = &backendConfig;
+    // https://www.yuque.com/mnn/cn/create_session#xtQLb
+    auto runtimeInfo = MNN::Interpreter::createRuntime({config});
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
@@ -132,8 +144,11 @@ int main(int argc, char* argv[])
 
         std::cout << "Creating MNN Interpreter: " << args.model << std::endl;
         std::string model_file = ".mnn/" + args.model + ".mnn";
-        //std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
-        std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()));
+        if (model_exists(model_file) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
+        std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
 #if 0
         // https://www.yuque.com/mnn/cn/create_session#KtfMk
         //net->setCacheFile(".cachefile");
@@ -144,16 +159,7 @@ int main(int argc, char* argv[])
         net->setSessionMode(MNN::Interpreter::Session_Release);
 #endif
 
-        MNN::ScheduleConfig config;
-        config.type = static_cast<MNNForwardType>(forward);
-        config.numThread = num_threads;
-        MNN::BackendConfig backendConfig;
-        backendConfig.precision = (MNN::BackendConfig::PrecisionMode) precision;
-        backendConfig.power = MNN::BackendConfig::Power_High;
-        config.backendConfig = &backendConfig;
-
-        auto session = net->createSession(config);
-
+        auto session = net->createSession(config, runtimeInfo);
         if (args.debug) {
             float memoryUsage = 0.0f;
             float flops = 0.0f;

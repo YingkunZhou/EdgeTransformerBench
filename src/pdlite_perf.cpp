@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <getopt.h>
 #include <fstream>
+#include <cstring>
 
 #include <paddle_api.h>
 #include "utils.h"
@@ -111,15 +112,18 @@ int main(int argc, char* argv[])
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
         args.input_size = model.second;
 
-        std::cout << "Creating PaddlePredictor: " << args.model << std::endl;
         std::string model_file = ".pdlite/" + args.model + ".nb";
-
+        if (model_exists(model_file) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
+        std::cout << "Creating PaddlePredictor: " << args.model << std::endl;
         paddle::lite_api::MobileConfig config;
         // 1. Set MobileConfig
         config.set_model_from_file(model_file);
@@ -148,7 +152,7 @@ int main(int argc, char* argv[])
 
                 // Make sure you have write permission of the binary path.
                 // We strongly recommend each model has a unique binary name.
-                const std::string bin_path = "pdlite/";
+                const std::string bin_path = ".pdlite/";
                 const std::string bin_name = args.model + "_kernel.bin";
                 config.set_opencl_binary_path_name(bin_path, bin_name);
 
@@ -157,7 +161,7 @@ int main(int argc, char* argv[])
                 // CL_TUNE_RAPID: 1
                 // CL_TUNE_NORMAL: 2
                 // CL_TUNE_EXHAUSTIVE: 3
-                const std::string tuned_path = "pdlite/";
+                const std::string tuned_path = ".pdlite/";
                 const std::string tuned_name = args.model + "_tuned.bin";
                 config.set_opencl_tune(paddle::lite_api::CL_TUNE_NORMAL, tuned_path, tuned_name);
 

@@ -134,16 +134,16 @@ int main(int argc, char* argv[])
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (args.model.find("EMO") != std::string::npos) {
-            //std::cout << "tflite didn't suppot EMO model!" << std::endl;
-            continue;
-        }
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
         args.input_size = model.second;
         std::string model_file = ".tflite/" + args.model + ".tflite";
+        if (model_exists(model_file) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
         // create a interpreter
         std::cout << "Creating tflite runtime interpreter: " << args.model << std::endl;
         std::unique_ptr<FlatBufferModel> tflite_model = FlatBufferModel::BuildFromFile(model_file.c_str());
@@ -169,6 +169,7 @@ int main(int argc, char* argv[])
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/cl/testing/delegate_testing.cc
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to gpu!" << std::endl;
+                continue;
                 return EXIT_FAILURE;
             }
             // interpreter_builder.AddDelegate(delegate);
@@ -192,6 +193,7 @@ int main(int argc, char* argv[])
             delegate = TfLiteNnapiDelegateCreate(&options);
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to nnapi!" << std::endl;
+                continue;
                 return EXIT_FAILURE;
             }
         }
@@ -207,7 +209,16 @@ int main(int argc, char* argv[])
             //    theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(options), armnnDelegate::TfLiteArmnnDelegateDelete);
             //https://github.com/nxp-imx/armnn-imx/blob/lf-5.15.5_1.0.0/delegate/samples/armnn_delegate_example.cpp
             std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc};
-            armnnDelegate::DelegateOptions delegateOptions(backends);
+            unsigned int numberOfThreads = num_threads; // the leagal name to pass thread number parameter
+            armnn::BackendOptions cpuAcc("CpuAcc",
+                                        {
+                                            { "FastMathEnabled", true },
+                                            { "NumberOfThreads", numberOfThreads }
+                                        });
+            armnn::OptimizerOptionsOpaque optimizerOptions;
+            optimizerOptions.AddModelOption(cpuAcc);
+            armnnDelegate::DelegateOptions delegateOptions(backends, optimizerOptions);
+
             std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
                         theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(delegateOptions),
                                          armnnDelegate::TfLiteArmnnDelegateDelete);
@@ -215,6 +226,7 @@ int main(int argc, char* argv[])
             // Instruct the Interpreter to use the armnnDelegate
             if (interpreter->ModifyGraphWithDelegate(theArmnnDelegate.get()) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to Armnn!" << std::endl;
+                continue;
                 return EXIT_FAILURE;
             }
         }
@@ -232,6 +244,7 @@ int main(int argc, char* argv[])
             delegate = TfLiteXNNPackDelegateCreate(&options);
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to XNN!" << std::endl;
+                continue;
                 return EXIT_FAILURE;
             }
         }

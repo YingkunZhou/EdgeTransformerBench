@@ -252,12 +252,16 @@ int main(int argc, char* argv[])
 
     for (const auto & model: test_models) {
         args.model = model.first;
-        if (only_test && args.model.find(only_test) == std::string::npos) {
+        if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
 
         args.input_size = model.second;
         std::string model_file = ".onnx/" + args.model + ".onnx";
+        if (model_exists(model_file) == 0) {
+            std::cerr << args.model << " model doesn't exist!!!" << std::endl;
+            continue;
+        }
         // create a session
         std::cout << "Creating onnx runtime session: " << args.model << std::endl;
         Ort::Session session(env, model_file.c_str(), sessionOptions);

@@ -41,6 +41,7 @@ onnx_pdlite opencl edgenext_small
 #onnx_pdlite opencl mobilevitv2_200
 
 # [F  9/ 4  0:23:55.496 ...p/Paddle-Lite/lite/operators/slice_op.cc:47 InferShapeImpl] Check failed: (param_.axes[i] < in_dims.size()): -1!<3 The index of dimension in axes must be less than the size of input shape.
+# --opset-version == 9 will fix the problem
 onnx_pdlite opencl mobilevit_xx_small
 onnx_pdlite opencl mobilevit_x_small
 onnx_pdlite opencl mobilevit_small

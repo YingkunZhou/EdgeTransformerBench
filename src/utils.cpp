@@ -2,6 +2,7 @@
 #include <opencv2/dnn/dnn.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <PillowResize/PillowResize.hpp>
 
 #include <iostream>
 #include <numeric>
@@ -94,8 +95,10 @@ void pre_process(cv::Mat& img, std::string model, int input_size) {
     // transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC)
     /* https://github.com/python-pillow/Pillow/issues/2718
        but has difference with python pillow
+       https://github.com/zurutech/pillow-resize
     */
-    cv::resize(img, img, cv::Size(width, height), cv::InterpolationFlags::INTER_CUBIC);
+    // cv::resize(img, img, cv::Size(width, height), cv::InterpolationFlags::INTER_CUBIC);
+    img = PillowResize::resize(img, cv::Size(width, height), PillowResize::INTERPOLATION_BICUBIC);
 
     // std::cout << img.at<cv::Vec3b>(112,112) << std::endl;
     // transforms.CenterCrop(args.input_size)

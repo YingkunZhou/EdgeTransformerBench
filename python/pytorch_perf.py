@@ -27,16 +27,16 @@ torch.autograd.set_grad_enabled(False)
 WARMUP_SEC = 5
 TEST_SEC  = 20
 
-
-def benchmarking_cpu(model, inputs):
+def benchmarking_cpu(model, inputs, args):
     # warmup
     start = time.perf_counter()
     while time.perf_counter() - start < WARMUP_SEC:
         outputs = model(inputs)
+        if args.test: break
 
     val, idx = outputs.topk(3)
     print(list(zip(idx[0].tolist(), val[0].tolist())))
-
+    if args.test: return
     time_list = []
     while sum(time_list) < TEST_SEC:
         start = time.perf_counter()
@@ -95,6 +95,7 @@ def get_args_parser():
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--fuse', action='store_true', default=False)
+    parser.add_argument('--test', action='store_true', default=False)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
@@ -110,6 +111,7 @@ def get_args_parser():
     parser.add_argument('--use-script', action='store_true', default=False)
     parser.add_argument('--use-trace', action='store_true', default=False)
     parser.add_argument('--use-compile', action='store_true', default=False)
+    parser.add_argument('--use-mobile', action='store_true', default=False)
     parser.add_argument('--use_amp', action='store_true', default=False,
                         help="Use PyTorch's AMP (Automatic Mixed Precision) or not") #TODO: much slower?
     parser.add_argument('--backend', default='inductor', type=str, help='pytorch compile backend')
@@ -224,17 +226,14 @@ if __name__ == '__main__':
             if args.use_script:
                 script_model = torch.jit.script(model)
             if args.use_trace:
-                inputs = torch.randn(
-                    1, #args.batch_size, TODO: here we only support single batch size benchmarking
-                    3, resolution,
-                    resolution, device=device
-                )
-                trace_model = torch.jit.trace(model, inputs)
+                trace_model = torch.jit.load(".pt/" + args.model + ".pt")
             if args.use_compile:
                 import torch._dynamo as dynamo
                 # dynamo.config.verbose=True
                 # dynamo.config.suppress_errors = True
                 compile_model = torch.compile(model, backend=args.backend)
+            if args.use_mobile:
+                mobile_model = torch.jit.load(".pt/" + args.model + ".c.ptl")
 
             if args.validation:
                 dataset_val = build_dataset(args)
@@ -256,15 +255,19 @@ if __name__ == '__main__':
                     evaluate(data_loader_val, trace_model, device, args)
                 if args.use_compile:
                     evaluate(data_loader_val, compile_model, device, args)
+                if args.use_mobile:
+                    evaluate(data_loader_val, mobile_model, device, args)
             else:
                 # load test image
                 inputs = load_image(args=args).to(device)
 
                 if args.use_eager:
-                    benchmarking(model, inputs)
+                    benchmarking(model, inputs, args)
                 if args.use_script:
-                    benchmarking(script_model, inputs)
+                    benchmarking(script_model, inputs, args)
                 if args.use_trace:
-                    benchmarking(trace_model, inputs)
+                    benchmarking(trace_model, inputs, args)
                 if args.use_compile:
-                    benchmarking(compile_model, inputs)
+                    benchmarking(compile_model, inputs, args)
+                if args.use_mobile:
+                    benchmarking(mobile_model, inputs, args)
