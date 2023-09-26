@@ -193,7 +193,6 @@ if __name__ == '__main__':
             args.model = name
             args.input_size = resolution
 
-            print(f"Creating model: {name}")
             model = create_model(
                 name,
                 pretrained=extern and args.pretrained,
@@ -226,6 +225,9 @@ if __name__ == '__main__':
             if args.use_script:
                 script_model = torch.jit.script(model)
             if args.use_trace:
+                if not os.path.exists(".pt/" + args.model + ".pt"):
+                    print(args.model + " model doesn't exist!!!")
+                    continue
                 trace_model = torch.jit.load(".pt/" + args.model + ".pt")
             if args.use_compile:
                 import torch._dynamo as dynamo
@@ -233,8 +235,12 @@ if __name__ == '__main__':
                 # dynamo.config.suppress_errors = True
                 compile_model = torch.compile(model, backend=args.backend)
             if args.use_mobile:
+                if not os.path.exists(".pt/" + args.model + ".c.ptl"):
+                    print(args.model + " model doesn't exist!!!")
+                    continue
                 mobile_model = torch.jit.load(".pt/" + args.model + ".c.ptl")
 
+            print(f"Creating model: {name}")
             if args.validation:
                 dataset_val = build_dataset(args)
                 sampler_val = torch.utils.data.SequentialSampler(dataset_val)

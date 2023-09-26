@@ -31,13 +31,13 @@ bin/ncnn-perf-test: src/ncnn_perf.cpp $(DEPS)
 	$(CXX) -O3 -DTEST -o bin/ncnn-perf-test src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
 
 run-ncnn-perf: bin/ncnn-perf
-	LD_LIBRARY_PATH=$(NCNN_LIB) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-ncnn: bin/ncnn-perf
-	LD_LIBRARY_PATH=$(NCNN_LIB) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK) --validation
+	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK) --validation
 
 test-ncnn-perf: bin/ncnn-perf-test
-	LD_LIBRARY_PATH=$(NCNN_LIB) bin/ncnn-perf-test --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf-test --only-test $(MODEL) --backend $(BACK)
 
 ########################
 ###### mnn part ########
@@ -55,13 +55,13 @@ bin/mnn-perf-test: src/mnn_perf.cpp $(DEPS)
 	$(CXX) -O3 -DTEST -o bin/mnn-perf-test src/mnn_perf.cpp -I$(MNN_INC) -L$(MNN_LIB) -lMNN $(FLAGS)
 
 run-mnn-perf: bin/mnn-perf
-	LD_LIBRARY_PATH=$(MNN_LIB) bin/mnn-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-mnn: bin/mnn-perf
-	LD_LIBRARY_PATH=$(MNN_LIB) bin/mnn-perf --only-test $(MODEL) --backend $(BACK) --validation
+	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf --only-test $(MODEL) --backend $(BACK) --validation
 
 test-mnn-perf: bin/mnn-perf-test
-	LD_LIBRARY_PATH=$(MNN_LIB) bin/mnn-perf-test --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf-test --only-test $(MODEL) --backend $(BACK)
 
 ########################
 ###### tnn part ########
@@ -79,13 +79,13 @@ bin/tnn-perf-test: src/tnn_perf.cpp $(DEPS)
 	$(CXX) -O3 -DTEST -o bin/tnn-perf-test src/tnn_perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
 
 run-tnn-perf: bin/tnn-perf
-	LD_LIBRARY_PATH=$(TNN_LIB) bin/tnn-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(TNN_LIB:$(LD_LIBRARY_PATH)) bin/tnn-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-tnn: bin/tnn-perf
-	LD_LIBRARY_PATH=$(TNN_LIB) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --validation
+	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --validation
 
 test-tnn-perf: bin/tnn-perf-test
-	LD_LIBRARY_PATH=$(TNN_LIB) bin/tnn-perf-test --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf-test --only-test $(MODEL) --backend $(BACK)
 
 ########################
 ##### pdlite part ######
@@ -103,13 +103,13 @@ bin/pdlite-perf-test: src/pdlite_perf.cpp $(DEPS)
 	$(CXX) -O3 -DTEST -o bin/pdlite-perf-test src/pdlite_perf.cpp -I$(PDLITE_INC) -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
 
 run-pdlite-perf: bin/pdlite-perf
-	LD_LIBRARY_PATH=$(PDLITE_LIB) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-pdlite: bin/pdlite-perf
-	LD_LIBRARY_PATH=$(PDLITE_LIB) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK) --validation
+	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK) --validation
 
 test-pdlite-perf: bin/pdlite-perf-test
-	LD_LIBRARY_PATH=$(PDLITE_LIB) bin/pdlite-perf-test --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf-test --only-test $(MODEL) --backend $(BACK)
 
 ########################
 ##### tflite part ######
@@ -207,10 +207,10 @@ bin/torch-perf-test: src/torch_perf.cpp $(DEPS)
 	#-D_GLIBCXX_USE_CXX11_ABI=0
 
 run-torch-perf: bin/torch-perf
-	LD_LIBRARY_PATH=$(TORCH_LIB) bin/torch-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-torch: bin/torch-perf
-	LD_LIBRARY_PATH=$(TORCH_LIB) bin/torch-perf --only-test $(MODEL) --backend $(BACK) --validation
+	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf --only-test $(MODEL) --backend $(BACK) --validation
 
 test-torch-perf: bin/torch-perf-test
-	LD_LIBRARY_PATH=$(TORCH_LIB) bin/torch-perf-test --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf-test --only-test $(MODEL) --backend $(BACK)
