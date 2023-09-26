@@ -329,6 +329,12 @@ cd onnxruntime
 git submodule update --init --recursive
 # ./build.sh --config RelWithDebInfo --build_shared_lib --parallel --compile_no_warning_as_error --skip_tests
 ./build.sh --config Release --build_shared_lib --parallel --compile_no_warning_as_error --skip_tests
+cd build/Linux/Release
+## TO keep the directory structure the same as github release tar pacakge
+DESTDIR=../install make install -j`nproc`
+cd ../install
+mv usr/local/include/onnxruntime/ include
+mv usr/local/lib .
 ```
 </details>
 
