@@ -2,9 +2,9 @@ pt_ncnn()
 {
     MODEL=$2
     SHAPE=$1
-    cd .ncnn
-    ln -s ../.pt/$MODEL.pt .
-    ~/work/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE
+    mkdir -p .ncnn/fp32 && cd .ncnn/fp32
+    ln -s ../../.pt/$MODEL.pt .
+    ../../.libs/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE
     cd -
 }
 
