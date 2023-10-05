@@ -110,6 +110,7 @@ def get_args_parser():
     parser.add_argument('--use-eager', action='store_true', default=False)
     parser.add_argument('--use-script', action='store_true', default=False)
     parser.add_argument('--use-trace', action='store_true', default=False)
+    parser.add_argument('--use-inference', action='store_true', default=False)
     parser.add_argument('--use-compile', action='store_true', default=False)
     parser.add_argument('--use-mobile', action='store_true', default=False)
     parser.add_argument('--use_amp', action='store_true', default=False,
@@ -229,6 +230,9 @@ if __name__ == '__main__':
                     print(args.model + " model doesn't exist!!!")
                     continue
                 trace_model = torch.jit.load(".pt/" + args.model + ".pt")
+            if args.use_inference:
+                inputs = torch.randn(1, 3, resolution, resolution,)
+                frozen_model = torch.jit.optimize_for_inference(torch.jit.script(model))
             if args.use_compile:
                 import torch._dynamo as dynamo
                 # dynamo.config.verbose=True
@@ -259,6 +263,8 @@ if __name__ == '__main__':
                     evaluate(data_loader_val, script_model, device, args)
                 if args.use_trace:
                     evaluate(data_loader_val, trace_model, device, args)
+                if args.use_inference:
+                    evaluate(data_loader_val, frozen_model, device, args)
                 if args.use_compile:
                     evaluate(data_loader_val, compile_model, device, args)
                 if args.use_mobile:
@@ -273,6 +279,8 @@ if __name__ == '__main__':
                     benchmarking(script_model, inputs, args)
                 if args.use_trace:
                     benchmarking(trace_model, inputs, args)
+                if args.use_inference:
+                    benchmarking(frozen_model, inputs, args)
                 if args.use_compile:
                     benchmarking(compile_model, inputs, args)
                 if args.use_mobile:

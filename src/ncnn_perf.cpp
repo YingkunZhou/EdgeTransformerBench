@@ -159,8 +159,8 @@ int main(int argc, char* argv[])
 
         char param_file[256];
         char model_file[256];
-        sprintf(param_file, ".ncnn/" "%s.ncnn.param", args.model.c_str());
-        sprintf(model_file, ".ncnn/" "%s.ncnn.bin", args.model.c_str());
+        sprintf(param_file, ".ncnn/" "%s.ncnn.int8.param", args.model.c_str());
+        sprintf(model_file, ".ncnn/" "%s.ncnn.int8.bin", args.model.c_str());
         if (model_exists(model_file) == 0) {
             std::cerr << args.model << " model doesn't exist!!!" << std::endl;
             continue;

@@ -25,10 +25,10 @@ ncnn-perf: bin/ncnn-perf
 ncnn-perf-test: bin/ncnn-perf-test
 
 bin/ncnn-perf: src/ncnn_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/ncnn-perf src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
+	LD_LIBRARY_PATH=$(NCNN_LIB) $(CXX) -O3 -o bin/ncnn-perf src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
 
 bin/ncnn-perf-test: src/ncnn_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/ncnn-perf-test src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
+	LD_LIBRARY_PATH=$(NCNN_LIB) $(CXX) -O3 -DTEST -o bin/ncnn-perf-test src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
 
 run-ncnn-perf: bin/ncnn-perf
 	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK)

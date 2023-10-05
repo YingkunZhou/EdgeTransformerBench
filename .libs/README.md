@@ -3,18 +3,69 @@ export CC=/usr/bin/clang-16
 export CXX=/usr/bin/clang++-16
 ```
 
+# opencv
+
+<details>
+<summary>Linux</summary>
+
+- [OpenCV Basics - Others](https://wykvictor.github.io/2018/08/01/OpenCV-6.html)
+- [rebuild your opencv4 from source with "add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)", have fun.](https://github.com/opencv/opencv/issues/13000#issuecomment-452150611)
+
+```bash
+git clone https://github.com/opencv/opencv.git --depth=1
+cd opencv
+mkdir build && cd build
+cmake -D CMAKE_INSTALL_PREFIX=../install ..
+make install -j`nproc`
+cd ../install
+vim opencv4.pc
+export PKG_CONFIG_PATH=/opencv/install
+```
+
+`vim CMakeLists.txt`
+
+```diff
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 40d80e1..c7019c1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -554,6 +554,7 @@ if(ENABLE_IMPL_COLLECTION)
+   add_definitions(-DCV_COLLECT_IMPL_DATA)
+ endif()
+
++add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+ if(OPENCV_DISABLE_FILESYSTEM_SUPPORT)
+   add_definitions(-DOPENCV_HAVE_FILESYSTEM_SUPPORT=0)
+ endif()
+
+```
+
+```log
+# Package Information for pkg-config
+
+Name: OpenCV
+Description: Open Source Computer Vision Library
+Version: 4.8.0
+Libs: -L/opencv/install/lib -lopencv_imgproc -lopencv_imgcodecs -lopencv_core -lopencv_dnn
+Libs.private: -ldl -lm -lpthread -lrt
+Cflags: -I/opencv/install/include/opencv4
+```
+</details>
+
 # ncnn
 
 <details>
 <summary>Linux</summary>
 
 ```bash
+# will use openmp lib to enable multi-threads
+sudo apt install libomp-16-dev
 git clone https://github.com/Tencent/ncnn.git #--depth=1
 cd ncnn
 #git submodule sync
 git submodule update --init --recursive
 mkdir -p build && cd build
-cmake -D NCNN_SHARED_LIB=ON -D NCNN_VULKAN=ON .. -D CMAKE_BUILD_TYPE=Release \
+/usr/bin/cmake -D NCNN_SHARED_LIB=ON -D NCNN_VULKAN=ON .. -D CMAKE_BUILD_TYPE=Release \
 -D CMAKE_INSTALL_PREFIX=../install -D NCNN_BUILD_BENCHMARK=OFF
 make install -j`nproc`
 ```
@@ -341,7 +392,7 @@ mv usr/local/lib .
 
 # torch
 
-为什么编译pytorch环境编译器之类的这么依赖。。。。
+pytorch 实在是太TM复杂了！！！而且还强烈依赖openblas库，对性能的影响非常敏感！！！
 
 <details>
 <summary>Linux</summary>
@@ -401,33 +452,199 @@ git submodule update --init --recursive
 cd pytorch
 python setup.py clean
 #export PATH=$HOME/work/shaderc/build/install/bin:$PATH
-#BUILD_BINARY=ON USE_OPENMP=1 USE_CUDA=0 USE_VULKAN=1 python setup.py bdist_wheel
-BUILD_BINARY=ON USE_OPENMP=1 USE_CUDA=0 python setup.py bdist_wheel
+#BUILD_BINARY=ON BUILD_TEST=0 USE_CUDA=0 USE_VULKAN=1 python setup.py bdist_wheel
+BUILD_BINARY=ON BUILD_TEST=0 USE_CUDA=0 python setup.py bdist_wheel
 ```
 
+```python
+import torch
 print(*torch.__config__.show().split("\n"), sep="\n")
+```
 
 note:
-1. use USE_OPENMP will get 2x performance
+1. use BLAS lib will get 2x performance
 2. but unfortunately, the system openblas which installed by `apt install libopenblas-dev` is buggy!!!
 ```bash
-#sudo rm /lib/aarch64-linux-gnu/libopenblas.so.0
-#sudo ln -s $CMAKE_PREFIX_PATH/lib/libopenblasp-r0.3.23.so /lib/aarch64-linux-gnu/libopenblas.so.0
 wget http://mirror.archlinuxarm.org/aarch64/extra/openblas-0.3.24-2-aarch64.pkg.tar.xz
 tar xf openblas-0.3.24-2-aarch64.pkg.tar.xz
 export LD_LIBRARY_PATH=$PWD/usr/lib
 ```
+3. here we use libopenblas.so which contains in [torch-2.1.0.dev20230825-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl](https://github.com/YingkunZhou/EdgeTransformerPerf/releases/download/v0.0/torch-2.1.0.dev20230825-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl)
+
+
+<details>
+<summary>
+don't read below
+</summary>
+
+~~use conda compiler toolchain~~
 
 ```bash
-#LLVM_VERSION=14.0.6
-#conda install clangxx==$LLVM_VERSION llvm-openmp==$LLVM_VERSION libclang==$LLVM_VERSION \
-#  clangdev==$LLVM_VERSION llvm==$LLVM_VERSION llvm-dev==$LLVM_VERSION \
-#  llvm-tools==$LLVM_VERSION libclang-cpp==$LLVM_VERSION \
-#  libstdcxx-devel_linux-aarch64 --yes
-```
+LLVM_VERSION=14.0.6
+conda install clangxx==$LLVM_VERSION llvm-openmp==$LLVM_VERSION libclang==$LLVM_VERSION \
+  clangdev==$LLVM_VERSION llvm==$LLVM_VERSION llvmdev==$LLVM_VERSION \
+  llvm-tools==$LLVM_VERSION libclang-cpp==$LLVM_VERSION \
+  gxx==10.3.0 scons --yes # here we use gcc-10.3.0 to build acl
 
-https://github.com/aws/aws-graviton-getting-started/blob/main/machinelearning/pytorch.md
+# conda install numactl
+export LD_LIBRARY_PATH=$HOME/miniforge3/envs/pytorch/lib
+export CPLUS_INCLUDE_PATH=$HOME/miniforge3/envs/pytorch/include
+```
+</details>
+
+## build with ACL acc
+
+```bash
+# https://github.com/aws/aws-graviton-getting-started/blob/main/machinelearning/pytorch.md
 
 export ACL_ROOT_DIR=$HOME/work/ComputeLibrary
+export USE_MKLDNN=ON USE_MKLDNN_ACL=ON USE_CUDA=0 BUILD_TEST=0
+python setup.py bdist_wheel
+```
+- https://github.com/aws/aws-graviton-getting-started/blob/main/machinelearning/pytorch.md
+- **[the offical methods we choose](https://github.com/pytorch/builder/blob/main/aarch64_linux/build_aarch64_wheel.py)**
+- https://github.com/pytorch/pytorch/issues/51039
+- https://hub.docker.com/r/armswdev/pytorch-arm-neoverse
+- https://github.com/pytorch/xla/blob/master/scripts/build_torch_wheels.sh
+- [As for why I want to know this, I want to compile pytorch in the source code to link my self-installed ACLs and find that it is much slower than the torch installed using pip, under the same version of torch.](https://github.com/pytorch/pytorch/issues/97421)
+- https://download.pytorch.org/whl/nightly/torch/
 
+
+- https://github.com/ARM-software/Tool-Solutions/tree/main/docker/pytorch-aarch64
+- [Docker必备六大国内镜像](https://segmentfault.com/a/1190000023117518)
+https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
+
+
+```json
+# cat /etc/docker/daemon.json
+{
+    "bip": "172.18.0.1/16",
+    "registry-mirrors": [
+        "https://xxx.mirror.aliyuncs.com"
+    ]
+}
+```
+
+export https_proxy=http://xxx:xxx
+export http_proxy=http://xxx:xxx
+
+- [Setup the proxy for Dockerfile building](https://dev.to/zyfa/setup-the-proxy-for-dockerfile-building--4jc8)
+```diff
+diff --git a/docker/pytorch-aarch64/Dockerfile b/docker/pytorch-aarch64/Dockerfile
+index 78334c6..5484033 100644
+--- a/docker/pytorch-aarch64/Dockerfile
++++ b/docker/pytorch-aarch64/Dockerfile
+@@ -25,6 +25,8 @@ ARG default_py_version=3.10
+ FROM ubuntu:22.04 AS pytorch-base
+ ARG default_py_version
+ ENV PY_VERSION="${default_py_version}"
++ENV http_proxy http://xxx:xxx
++ENV https_proxy http://xxx:xxx
+
+ RUN if ! [ "$(arch)" = "aarch64" ] ; then exit 1; fi
+
+```
+
+**we finally use [aarch64_ci_build.sh](https://github.com/pytorch/builder/blob/main/aarch64_linux/aarch64_ci_build.sh) methods to build pytorch**
+
+```dockerfile
+ARG default_py_version=3.8
+
+FROM ubuntu:20.04
+ARG default_py_version
+ENV PY_VERSION="${default_py_version}"
+
+RUN if ! [ "$(arch)" = "aarch64" ] ; then exit 1; fi
+
+ENV TZ=Asia/Shanghai \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
+# Install core OS packages
+RUN apt-get -y install \
+      zsh \
+      wget \
+      accountsservice \
+      apport \
+      at \
+      autoconf \
+      bc \
+      build-essential \
+      cmake \
+      cpufrequtils \
+      curl \
+      ethtool \
+      g++-10 \
+      gcc-10 \
+      gettext-base \
+      gfortran-10 \
+      git \
+      iproute2 \
+      iputils-ping \
+      lxd \
+      libbz2-dev \
+      libc++-dev \
+      libcgal-dev \
+      libffi-dev \
+      libfreetype6-dev \
+      libhdf5-dev \
+      libjpeg-dev \
+      liblzma-dev \
+      libncurses5-dev \
+      libncursesw5-dev \
+      libpng-dev \
+      libreadline-dev \
+      libsox-fmt-all \
+      libsqlite3-dev \
+      libssl-dev \
+      libxml2-dev \
+      libxslt-dev \
+      locales \
+      lsb-release \
+      lvm2 \
+      moreutils \
+      net-tools \
+      open-iscsi \
+      openjdk-8-jdk \
+      openssl \
+      pciutils \
+      policykit-1 \
+      python${PY_VERSION} \
+      python${PY_VERSION}-dev \
+      python${PY_VERSION}-distutils \
+      python${PY_VERSION}-venv \
+      python3-pip \
+      python-openssl \
+      rsync \
+      rsyslog \
+      snapd \
+      scons \
+      sox \
+      ssh \
+      sudo \
+      time \
+      udev \
+      unzip \
+      ufw \
+      uuid-runtime \
+      vim \
+      xz-utils \
+      zip \
+      zlib1g-dev
+
+# Set default gcc, python and pip versions
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 1 && \
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-10 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+```
+
+```bash
+docker build . -f Dockerfile -t xxx
+docker run --name pytorch --hostname pytorch -v xxx:/xxx -it xxx bash
+docker start pytorch
+docker exec -it pytorch zsh
+```
 </details>

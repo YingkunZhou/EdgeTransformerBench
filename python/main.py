@@ -18,7 +18,7 @@ from torchvision import datasets, transforms
 
 from timm.models import create_model
 from timm.utils import accuracy
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD, DEFAULT_CROP_PCT
 
 import models.levit
 import models.levit_c
@@ -230,7 +230,7 @@ def get_transform(args):
         crop_pct = 0.95
         size = int(args.input_size / crop_pct)
     elif is_edgenext:
-        crop_pct = 224 / 256
+        crop_pct = DEFAULT_CROP_PCT
         size = int(args.input_size / crop_pct)
     else:
         size = args.input_size + 32
@@ -244,7 +244,7 @@ def get_transform(args):
     if is_mobilevit:
         pass
     elif is_efficientnetv2_b3:
-        t.append(transforms.Normalize([0.5,0.5,0.5], [0.5,0.5,0.5]))
+        t.append(transforms.Normalize(IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD))
     else:
         t.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
 
