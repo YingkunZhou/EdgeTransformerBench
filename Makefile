@@ -199,11 +199,13 @@ torch-perf: bin/torch-perf
 torch-perf-test: bin/torch-perf-test
 
 bin/torch-perf: src/torch_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/torch-perf src/torch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS) #-DUSE_TORCH_MOBILE
+	LD_LIBRARY_PATH=$(TORCH_LIB) $(CXX) -O3 -o bin/torch-perf src/torch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
+	#-DUSE_TORCH_MOBILE
 	#-D_GLIBCXX_USE_CXX11_ABI=0
 
 bin/torch-perf-test: src/torch_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/torch-perf-test src/torch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS) #-DUSE_TORCH_MOBILE
+	LD_LIBRARY_PATH=$(TORCH_LIB) $(CXX) -O3 -DTEST -o bin/torch-perf-test src/torch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
+	#-DUSE_TORCH_MOBILE
 	#-D_GLIBCXX_USE_CXX11_ABI=0
 
 run-torch-perf: bin/torch-perf
