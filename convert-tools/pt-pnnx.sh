@@ -1,3 +1,4 @@
+# USAGE: bash convert-tools/pt-pnnx.sh
 pt_ncnn()
 {
     MODEL=$2

@@ -1,5 +1,5 @@
 # https://linux.cn/article-9718-1.html
-# parallel --jobs 16 < convert-tools/convert.sh
+# USAGE: parallel --jobs 16 < convert-tools/convert.sh
 OMP_NUM_THREADS=1 python python/convert.py --format pt --only-convert efficientformerv2_s0
 OMP_NUM_THREADS=1 python python/convert.py --format pt --only-convert efficientformerv2_s1
 OMP_NUM_THREADS=1 python python/convert.py --format pt --only-convert efficientformerv2_s2

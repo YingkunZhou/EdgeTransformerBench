@@ -1,6 +1,24 @@
 """
 reference code:
     - https://github.com/openppl-public/ppq/blob/master/ppq/samples/quantize_onnx_model.py
+    - https://github.com/openppl-public/ppq/blob/master/md_doc/inference_with_ncnn.md
+"""
+
+"""
+python python/ppq-quant.py --only-convert mobilenetv3_large_100
+
+# only for mobilenetv3_large_100
+python -c "
+MODEL='mobilenetv3_large_100'
+a = [l.split()[0] for l in open('.ncnn/kl-int8/'+MODEL+'.ncnn.table').readlines()]
+b = [' '.join([a[i]]+l.split()[1:]) for i, l in enumerate(open('.ncnn/ppq-int8/'+MODEL+'.ncnn.table').readlines())]
+open('.ncnn/ppq-int8/'+MODEL+'.ncnn.table', 'w').write('\n'.join(b))
+"
+
+MODEL=mobilenetv3_large_100
+# .libs/ncnn/install/bin/onnx2ncnn .ncnn/ppq-int8/$MODEL.onnx .ncnn/ppq-int8/$MODEL.param .ncnn/ppq-int8/$MODEL.bin
+# .libs/ncnn/install/bin/ncnnoptimize .ncnn/ppq-int8/$MODEL.param .ncnn/ppq-int8/$MODEL.bin .ncnn/opt/$MODEL.ncnn.param .ncnn/opt/$MODEL.ncnn.bin 0
+.libs/ncnn/install/bin/ncnn2int8 .ncnn/opt/$MODEL.ncnn.param .ncnn/opt/$MODEL.ncnn.bin .ncnn/ppq-int8/$MODEL.ncnn.param .ncnn/ppq-int8/$MODEL.ncnn.bin .ncnn/ppq-int8/$MODEL.ncnn.table
 """
 
 import os
@@ -99,6 +117,7 @@ if __name__ == '__main__':
 
         # AssertionError: Calibration steps is too large, ppq can quantize your network within 8-512 calibration steps. More calibration steps will greatly delay ppq's calibration procedure. Reset your calib_steps parameter please.
         calib_steps = max(min(512, len(dataset_val)), 8)   # 8 ~ 512
+        # TODO: use onnxsim to sim the onnx model first
         quantized = quantize_onnx_model(
             onnx_import_file=".onnx/" + args.model + ".sim.onnx",
             calib_dataloader=calibration_dataloader,
@@ -111,5 +130,5 @@ if __name__ == '__main__':
 
         # export quantization param file and model file
         export_ppq_graph(graph=quantized, platform=PLATFORM,
-                         graph_save_to=args.model + '.onnx',
-                         config_save_to=args.model + '.table')
+                         graph_save_to=".ncnn/ppq-int8/" + args.model + '.onnx',
+                         config_save_to=".ncnn/ppq-int8/" + args.model + '.ncnn.table')

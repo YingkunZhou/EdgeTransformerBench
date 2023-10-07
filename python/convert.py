@@ -132,6 +132,7 @@ if __name__ == '__main__':
                 export_params=True,
                 input_names=['input'],
                 output_names=['output'],
+                do_constant_folding=True,
                 opset_version=args.opset_version
             )
         if not args.format or args.format == 'pt':
