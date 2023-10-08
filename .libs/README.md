@@ -84,6 +84,11 @@ mkdir -p build && build
 cmake -D CMAKE_BUILD_TYPE=Release -D MNN_VULKAN=ON -D MNN_OPENCL=ON .. \
 -D CMAKE_INSTALL_PREFIX=../install -D MNN_SEP_BUILD=OFF #-D MNN_OPENGL=ON
 make install -j`nproc`
+
+-D MNN_ARM82=ON
+-D MNN_BUILD_CONVERTER=ON
+-D MNN_BUILD_BENCHMARK=ON
+-D MNN_BUILD_QUANTOOLS=ON
 ```
 
 ```diff

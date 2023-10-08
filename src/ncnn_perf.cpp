@@ -169,6 +169,38 @@ int main(int argc, char* argv[])
         std::cout << "Creating ncnn net: " << args.model << std::endl;
         ncnn::Net net;
         net.opt.num_threads = num_threads;
+#if 0
+        // https://github.com/Tencent/ncnn/blob/master/src/option.cpp#L46C18-L46C18
+        std::cout << "opt status: " <<
+        net.opt.use_fp16_packed     <<
+        net.opt.use_fp16_storage    <<
+        net.opt.use_fp16_arithmetic <<
+        net.opt.use_bf16_storage    <<
+        net.opt.use_int8_inference  <<
+        net.opt.use_int8_packed     <<
+        net.opt.use_int8_storage    <<
+        net.opt.use_int8_arithmetic <<
+        net.opt.use_packing_layout;
+        net.opt.use_fp16_packed     = false;
+        net.opt.use_fp16_storage    = false;
+        net.opt.use_fp16_arithmetic = false;
+        net.opt.use_bf16_storage    = false;
+        net.opt.use_int8_inference  = false;
+        net.opt.use_int8_packed     = false;
+        net.opt.use_int8_storage    = false;
+        net.opt.use_int8_arithmetic = false;
+        //net.opt.use_packing_layout  = false;
+        std::cout << " ==> "        <<
+        net.opt.use_fp16_packed     <<
+        net.opt.use_fp16_storage    <<
+        net.opt.use_fp16_arithmetic <<
+        net.opt.use_bf16_storage    <<
+        net.opt.use_int8_inference  <<
+        net.opt.use_int8_packed     <<
+        net.opt.use_int8_storage    <<
+        net.opt.use_int8_arithmetic <<
+        net.opt.use_packing_layout  << std::endl;
+#endif
 #if NCNN_VULKAN
         if (use_vulkan)
         {

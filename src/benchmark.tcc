@@ -175,9 +175,21 @@ void benchmark(
         ex.extract(args.output_name, args.output_tensor);
 #endif
 #if defined(USE_MNN)
+#if 0
+        // https://github.com/alibaba/MNN/blob/master/benchmark/benchmark.cpp style
+        // will get better performance,
+        // BUT will give meaningless output result!!!
+        void* host = args.input->map(MNN::Tensor::MAP_TENSOR_WRITE,  args.input->getDimensionType());
+        args.input->unmap(MNN::Tensor::MAP_TENSOR_WRITE,  args.input->getDimensionType(), host);
+#else
         args.input->copyFromHostTensor(input_tensor);
+#endif
         // net->runSessionWithCallBack(session, NULL, NULL, true);
         net->runSession(session);
+#if 0
+        host = args.output->map(MNN::Tensor::MAP_TENSOR_READ,  args.output->getDimensionType());
+        args.output->unmap(MNN::Tensor::MAP_TENSOR_READ,  args.output->getDimensionType(), host);
+#endif
 #endif
 #if defined(USE_TNN)
         status = instance->Forward();
