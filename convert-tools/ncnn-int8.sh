@@ -37,7 +37,7 @@ ncnn_int8()
 
 # TODO: please first patch `ncnn-tools-quantize.patch` to ncnn repo and rebuild quantize tools
 download_calibration
-METHOD=aciq # we use METHOD=kl(,aciq,eq) as default
+METHOD=kl # we use METHOD=kl(,aciq,eq) as default
 ncnn_int8 [224,224,3] RAW $METHOD efficientformerv2_s0
 ncnn_int8 [224,224,3] RAW $METHOD efficientformerv2_s1
 ncnn_int8 [224,224,3] RAW $METHOD efficientformerv2_s2

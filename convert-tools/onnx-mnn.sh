@@ -1,7 +1,10 @@
+# USAGE: ./convert-tools/onnx-mnn.sh
 onnx_mnn()
 {
     MODEL=$1
-    ~/work/MNN/build/MNNConvert -f ONNX --modelFile .onnx/$MODEL.onnx --MNNModel .mnn/$MODEL.mnn --bizCode MNN
+    #mkdir -p .mnn/int8; .libs/MNN/build/MNNConvert -f ONNX --modelFile .onnx/$MODEL.onnx --MNNModel .mnn/int8/$MODEL.mnn --bizCode MNN --weightQuantBits 8 --weightQuantAsymmetric true
+    #mkdir -p .mnn/fp16; .libs/MNN/build/MNNConvert -f ONNX --modelFile .onnx/$MODEL.onnx --MNNModel .mnn/fp16/$MODEL.mnn --bizCode MNN --fp16
+    mkdir -p .mnn/fp32; .libs/MNN/build/MNNConvert -f ONNX --modelFile .onnx/$MODEL.onnx --MNNModel .mnn/fp32/$MODEL.mnn --bizCode MNN
 }
 
 onnx_mnn efficientformerv2_s0

@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
         //net->resizeSession(session);
         net->releaseModel(); //TODO: ?
 
-        auto input_tensor = new MNN::Tensor(args.input, MNN::Tensor::CAFFE);
+        auto input_tensor = new MNN::Tensor(args.input, args.input->getDimensionType());
         if (args.validation) {
             evaluate(net, session, input_tensor);
         }

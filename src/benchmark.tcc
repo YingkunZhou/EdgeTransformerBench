@@ -130,7 +130,7 @@ void benchmark(
     print_topk((float *)args.output_tensor.data, 3);
 #endif
 #if defined(USE_MNN)
-    auto output_tensor = new MNN::Tensor(args.output, MNN::Tensor::CAFFE);
+    auto output_tensor = new MNN::Tensor(args.output, args.output->getDimensionType());
     args.output->copyToHostTensor(output_tensor);
 #if defined(DEBUG)
     size_t len = output_tensor->size() / 4;

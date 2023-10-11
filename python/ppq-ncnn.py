@@ -5,7 +5,7 @@ reference code:
 """
 
 """
-python python/ppq-quant.py --only-convert mobilenetv3_large_100
+python python/ppq-ncnn.py --only-convert mobilenetv3_large_100
 
 # only for mobilenetv3_large_100
 python -c "
