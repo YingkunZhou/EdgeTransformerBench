@@ -10,9 +10,7 @@ validation-all: validation-ncnn validation-mnn validation-tnn validation-pdlite 
 init:
 	./prepare.sh
 
-PillowResize_LIB = $(PWD)/.libs/pillow-resize/install/lib
-PillowResize_INC = $(PWD)/.libs/pillow-resize/install/include
-DEPS = src/utils.cpp src/evaluate.tcc src/benchmark.tcc
+DEPS = src/utils.cpp src/evaluate.tcc src/benchmark.tcc src/PillowResize.cc
 FLAGS = src/utils.cpp src/PillowResize.cc -std=c++17 `pkg-config --cflags --libs opencv4`
 
 ########################
