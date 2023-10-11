@@ -13,7 +13,7 @@ init:
 PillowResize_LIB = $(PWD)/.libs/pillow-resize/install/lib
 PillowResize_INC = $(PWD)/.libs/pillow-resize/install/include
 DEPS = src/utils.cpp src/evaluate.tcc src/benchmark.tcc
-FLAGS = src/utils.cpp -std=c++17 `pkg-config --cflags --libs opencv4` -I$(PillowResize_INC) $(PillowResize_LIB)/libPillowResize.a
+FLAGS = src/utils.cpp src/PillowResize.cc -std=c++17 `pkg-config --cflags --libs opencv4`
 
 ########################
 ###### ncnn part #######

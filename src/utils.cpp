@@ -2,7 +2,7 @@
 #include <opencv2/dnn/dnn.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include <PillowResize/PillowResize.hpp>
+#include "PillowResize.hpp"
 
 #include <iostream>
 #include <numeric>
