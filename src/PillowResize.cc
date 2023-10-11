@@ -21,7 +21,7 @@
 #endif
 #include <cmath>
 
-#include <PillowResize/PillowResize.hpp>
+#include "PillowResize.hpp"
 
 double PillowResize::BoxFilter::filter(double x) const
 {
