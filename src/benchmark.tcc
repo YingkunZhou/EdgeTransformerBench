@@ -211,8 +211,8 @@ void benchmark(
 #endif
         stop = high_resolution_clock::now();
         auto elapse = duration_cast<microseconds>(stop - start);
-        time_list.push_back(elapse.count() / 1e3);
-        time_tot += elapse.count() / 1e6;
+        time_list.push_back(elapse.count() / 1000.0);
+        time_tot += elapse.count() / 1000000.0;
     }
 
     float time_max = *std::max_element(time_list.begin(), time_list.end());

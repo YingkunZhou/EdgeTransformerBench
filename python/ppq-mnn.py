@@ -40,6 +40,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for name, resolution in [
+        # use --opset-version 13
         ('efficientformerv2_s0', 224),
         ('efficientformerv2_s1', 224),
         ('efficientformerv2_s2', 224),
@@ -48,10 +49,12 @@ if __name__ == '__main__':
         ('SwiftFormer_S' , 224),
         ('SwiftFormer_L1', 224),
 
-        ('EMO_1M', 224),
-        ('EMO_2M', 224),
-        ('EMO_5M', 224),
-        ('EMO_6M', 224),
+        # NotImplementedError: Graph op: /stage4.1/Mod_2(Mod) has no backend implementation on target platform TargetPlatform.SOI.
+        # Register this op to ppq.executor.base.py and ppq.executor.op first
+        #('EMO_1M', 224),
+        #('EMO_2M', 224),
+        #('EMO_5M', 224),
+        #('EMO_6M', 224),
 
         ('edgenext_xx_small', 256),
         ('edgenext_x_small' , 256),
@@ -91,6 +94,19 @@ if __name__ == '__main__':
         DEVICE = 'cuda'
         PLATFORM = TargetPlatform.MNN_INT8
         quant_setting = QuantizationSettingFactory.mnn_setting()
+        # https://github.com/openppl-public/ppq/blob/master/ppq/api/setting.py#L333
+        # https://github.com/openppl-public/ppq/blob/master/ppq/samples/Tutorial/bestPractice.py
+        print(quant_setting.quantize_activation)
+        print(quant_setting.quantize_activation_setting.calib_algorithm)
+        print(quant_setting.quantize_parameter)
+        print(quant_setting.quantize_parameter_setting.calib_algorithm)
+        print(quant_setting.lsq_optimization)
+        print(quant_setting.equalization)
+        print(quant_setting.dispatcher)
+        #quant_setting.equalization = True # use layerwise equalization algorithm.
+        #quant_setting.dispatcher   = 'conservative' # dispatch this network in conservertive way.
+        #QSetting.quantize_activation_setting.calib_algorithm = 'kl'
+        #QSetting.quantize_parameter_setting.calib_algorithm  = 'minmax'
 
         # run quantization
         dataset_val = build_dataset(args)
@@ -104,43 +120,37 @@ if __name__ == '__main__':
 
         # AssertionError: Calibration steps is too large, ppq can quantize your network within 8-512 calibration steps. More calibration steps will greatly delay ppq's calibration procedure. Reset your calib_steps parameter please.
         calib_steps = max(min(512, len(dataset_val)), 8)   # 8 ~ 512
-        graph = load_onnx_graph(onnx_import_file = ".onnx/" + args.model + ".onnx")
-        print('网络正量化中，根据你的量化配置，这将需要一段时间:')
-        quantized = quantize_native_model(
-            setting=quant_setting,                     # setting 对象用来控制标准量化逻辑
-            model=graph,
+        # TODO: use onnxsim to sim the onnx model first
+        quantized = quantize_onnx_model(
+            onnx_import_file=".onnx/" + args.model + ".sim.onnx",
             calib_dataloader=calibration_dataloader,
-            calib_steps=calib_steps,
-            input_shape=[1, 3, resolution, resolution], # 如果你的网络只有一个输入，使用这个参数传参
-            inputs=None,                    # 如果你的网络有多个输入，使用这个参数传参，就是 input_shape=None, inputs=[torch.zeros(1,3,224,224), torch.zeros(1,3,224,224)]
-            collate_fn=lambda x: x.to(DEVICE),  # collate_fn 跟 torch dataloader 的 collate fn 是一样的，用于数据预处理，
-                                                        # 你当然也可以用 torch dataloader 的那个，然后设置这个为 None
-            platform=PLATFORM,
-            device=DEVICE,
-            do_quantize=True)
+            calib_steps=calib_steps, input_shape=[1, 3, resolution, resolution],
+            setting=quant_setting, collate_fn=collate_fn,
+            platform=PLATFORM, device=DEVICE, verbose=0
+        )
+        debug = False
+        if debug:
+            # -------------------------------------------------------------------
+            # PPQ 计算量化误差时，使用信噪比的倒数作为指标，即噪声能量 / 信号能量
+            # 量化误差 0.1 表示在整体信号中，量化噪声的能量约为 10%
+            # 你应当注意，在 graphwise_error_analyse 分析中，我们衡量的是累计误差
+            # 网络的最后一层往往都具有较大的累计误差，这些误差是其前面的所有层所共同造成的
+            # 你需要使用 layerwise_error_analyse 逐层分析误差的来源
+            # -------------------------------------------------------------------
+            print('正计算网络量化误差(SNR)，最后一层的误差应小于 0.1 以保证量化精度:')
+            reports = graphwise_error_analyse(
+                graph=quantized, running_device=DEVICE, steps=32,
+                dataloader=calibration_dataloader, collate_fn=lambda x: x.to(DEVICE))
+            for op, snr in reports.items():
+                if snr > 0.1: ppq_warning(f'层 {op} 的累计量化误差显著，请考虑进行优化')
 
-        # -------------------------------------------------------------------
-        # PPQ 计算量化误差时，使用信噪比的倒数作为指标，即噪声能量 / 信号能量
-        # 量化误差 0.1 表示在整体信号中，量化噪声的能量约为 10%
-        # 你应当注意，在 graphwise_error_analyse 分析中，我们衡量的是累计误差
-        # 网络的最后一层往往都具有较大的累计误差，这些误差是其前面的所有层所共同造成的
-        # 你需要使用 layerwise_error_analyse 逐层分析误差的来源
-        # -------------------------------------------------------------------
-        print('正计算网络量化误差(SNR)，最后一层的误差应小于 0.1 以保证量化精度:')
-        reports = graphwise_error_analyse(
-            graph=quantized, running_device=DEVICE, steps=32,
-            dataloader=calibration_dataloader, collate_fn=lambda x: x.to(DEVICE))
-        for op, snr in reports.items():
-            if snr > 0.1: ppq_warning(f'层 {op} 的累计量化误差显著，请考虑进行优化')
+            REQUIRE_ANALYSE = False
+            if REQUIRE_ANALYSE:
+                print('正计算逐层量化误差(SNR)，每一层的独立量化误差应小于 0.1 以保证量化精度:')
+                layerwise_error_analyse(graph=quantized, running_device=DEVICE,
+                                        interested_outputs=None,
+                                        dataloader=calibration_dataloader, collate_fn=lambda x: x.to(DEVICE))
 
-        REQUIRE_ANALYSE = False
-        if REQUIRE_ANALYSE:
-            print('正计算逐层量化误差(SNR)，每一层的独立量化误差应小于 0.1 以保证量化精度:')
-            layerwise_error_analyse(graph=quantized, running_device=DEVICE,
-                                    interested_outputs=None,
-                                    dataloader=calibration_dataloader, collate_fn=lambda x: x.to(DEVICE))
-
-        print('网络量化结束，正在生成目标文件:')
         export_ppq_graph(
             graph=quantized, platform=PLATFORM,
             graph_save_to=".mnn/ppq-int8/" + args.model + '.quantized.onnx',

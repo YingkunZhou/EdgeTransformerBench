@@ -77,7 +77,7 @@ bin/tnn-perf-test: src/tnn_perf.cpp $(DEPS)
 	$(CXX) -O3 -DTEST -o bin/tnn-perf-test src/tnn_perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
 
 run-tnn-perf: bin/tnn-perf
-	LD_LIBRARY_PATH=$(TNN_LIB:$(LD_LIBRARY_PATH)) bin/tnn-perf --only-test $(MODEL) --backend $(BACK)
+	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK)
 
 validation-tnn: bin/tnn-perf
 	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --validation

@@ -120,6 +120,38 @@ index a5c44f9..e7e8083 100644
 ```
 </details>
 
+<details>
+<summary>Android</summary>
+
+```bash
+## way 1: native build
+#pkg install mesa-dev # for opengl
+cmake -D CMAKE_BUILD_TYPE=Release -D MNN_USE_LOGCAT=false -D MNN_VULKAN=ON -D MNN_OPENCL=ON .. \
+-D CMAKE_INSTALL_PREFIX=../install -DMNN_BUILD_FOR_ANDROID_COMMAND=true -DNATIVE_LIBRARY_OUTPUT=. -DNATIVE_INCLUDE_OUTPUT=.  -D MNN_SEP_BUILD=OFF -D MNN_ARM82=ON #-D MNN_OPENGL=ON
+make install -j`nproc`
+## way 2: cross build
+cd project/android
+vim build_64.sh
+#######################################################
+#!/bin/bash
+cmake ../../../ \
+-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+-DCMAKE_BUILD_TYPE=Release \
+-DANDROID_ABI="arm64-v8a" \
+-DMNN_USE_LOGCAT=false \
+-DANDROID_PLATFORM=android-24  \
+-DMNN_BUILD_FOR_ANDROID_COMMAND=true \
+-D MNN_OPENCL=ON -D MNN_VULKAN=ON -D MNN_OPENGL=ON \
+-D MNN_SEP_BUILD=OFF -D CMAKE_INSTALL_PREFIX=../install-mnn \
+-DNATIVE_LIBRARY_OUTPUT=. -DNATIVE_INCLUDE_OUTPUT=.
+
+make install -j32
+#######################################################
+export ANDROID_NDK=<prefix>/android-ndk-r22b
+mkdir build_64 && cd build_64 && ../build_64.sh
+```
+</details>
+
 # TNN
 
 <details>
@@ -142,6 +174,7 @@ cmake -D CMAKE_BUILD_TYPE=Release \
 -D TNN_OPENMP_ENABLE=ON \
 -D TNN_OPENCL_ENABLE=ON \
 -D CMAKE_SYSTEM_PROCESSOR=aarch64 \
+-D CMAKE_INSTALL_PREFIX=../install \
 -D TNN_BUILD_SHARED=ON .. \
 # -D TNN_CUDA_ENABLE=ON -D TNN_TENSORRT_ENABLE=ON
 
