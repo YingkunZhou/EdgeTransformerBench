@@ -14,6 +14,8 @@ onnx_tf()
     python python/tf-tflite.py --only-convert=$MODEL
 }
 
+download_calibration
+
 onnx_tf efficientformerv2_s0
 onnx_tf efficientformerv2_s1
 onnx_tf efficientformerv2_s2

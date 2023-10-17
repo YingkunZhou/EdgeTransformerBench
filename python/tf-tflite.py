@@ -6,6 +6,7 @@ Reference doc:
 """
 
 import argparse
+import torch
 import tensorflow as tf
 from main import build_dataset
 
@@ -18,6 +19,7 @@ def get_args_parser():
     parser.add_argument('--test', action='store_true', default=False)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
+    parser.add_argument('--format', default='fp32', type=str, help='model datatype')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     # Dataset parameters
     parser.add_argument('--validation', action='store_true', default=False)
@@ -79,28 +81,37 @@ if __name__ == '__main__':
         args.input_size = resolution
 
         converter = tf.lite.TFLiteConverter.from_saved_model(".tflite/"+name+".pb") # path to the SavedModel directory
-        converter.target_spec.supported_ops = [
-            tf.lite.OpsSet.TFLITE_BUILTINS,
-            tf.lite.OpsSet.SELECT_TF_OPS
-        ]
+        if args.format == "int16":
+            converter.target_spec.supported_ops = [
+                tf.lite.OpsSet.TFLITE_BUILTINS,
+                tf.lite.OpsSet.SELECT_TF_OPS,
+                tf.lite.OpsSet.EXPERIMENTAL_TFLITE_BUILTINS_ACTIVATIONS_INT16_WEIGHTS_INT8
+            ]
+        else:
+            converter.target_spec.supported_ops = [
+                tf.lite.OpsSet.TFLITE_BUILTINS,
+                tf.lite.OpsSet.SELECT_TF_OPS
+            ]
         # tell converter which type of optimization techniques to use
 
         dataset_val = build_dataset(args)
-        calibration_dataset = [i[0] for i in dataset_val]
+        calibration_dataset = [torch.unsqueeze(i[0], dim=0) for i in dataset_val]
         def representative_dataset():
             for i in calibration_dataset:
                 yield [i]
-        # https://www.tensorflow.org/lite/performance/post_training_quantization?hl=zh-cn
-        # https://www.tensorflow.org/lite/performance/post_training_float16_quant?hl=zh-cn
-        # 您还可以在 GPU 上评估 fp16 量化模型。要使用降低的精度值执行所有算术，请确保在您的应用中创建 TfLiteGPUDelegateOptions 结构，并将 precision_loss_allowed 设置为 1：
-        converter.representative_dataset = representative_dataset
-        converter.optimizations = [tf.lite.Optimize.DEFAULT] # 推断时，权重从 8 位精度转换为浮点，并使用浮点内核进行计算。此转换会完成一次并缓存，以减少延迟。
-        # 为了进一步改善延迟，“动态范围”算子会根据激活的范围将其动态量化为 8 位，并使用 8 位权重和激活执行计算。此优化提供的延迟接近全定点推断。但是，输出仍使用浮点进行存储，因此使用动态范围算子的加速小于全定点计算。
-        #converter.target_spec.supported_types = [tf.float16]
-        #converter.target_spec.supported_types = [tf.bfloat16]
-        # to view the best option for optimization read documentation of tflite about optimization
-        # go to this link https://www.tensorflow.org/lite/guide/get_started#4_optimize_your_model_optional
+        #to view the best option for optimization read documentation of tflite about optimization
+        #go to this link https://www.tensorflow.org/lite/guide/get_started#4_optimize_your_model_optional
+        #https://www.tensorflow.org/lite/performance/post_training_quantization?hl=zh-cn
+        #https://www.tensorflow.org/lite/performance/post_training_float16_quant?hl=zh-cn
+        if args.format == "int16" or args.format == "int8":
+            converter.representative_dataset = representative_dataset
+        if args.format != "fp32":
+            converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        if args.format == "bf16":
+            converter.target_spec.supported_types = [tf.float16]
+        if args.format == "fp16":
+            converter.target_spec.supported_types = [tf.bfloat16]
 
         tf_lite_model = converter.convert()
         # Save the model.
-        open(".tflite/"+name+'.tflite', 'wb').write(tf_lite_model)
+        open(".tflite/"+args.format+"/"+name+'.tflite', 'wb').write(tf_lite_model)
