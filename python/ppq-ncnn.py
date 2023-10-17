@@ -21,10 +21,8 @@ MODEL=mobilenetv3_large_100
 .libs/ncnn/install/bin/ncnn2int8 .ncnn/opt/$MODEL.ncnn.param .ncnn/opt/$MODEL.ncnn.bin .ncnn/ppq-int8/$MODEL.ncnn.param .ncnn/ppq-int8/$MODEL.ncnn.bin .ncnn/ppq-int8/$MODEL.ncnn.table
 """
 
-import os
 import argparse
 
-import numpy as np
 import torch
 from ppq import BaseGraph, QuantizationSettingFactory, TargetPlatform
 from ppq.api import export_ppq_graph, quantize_onnx_model
@@ -36,7 +34,6 @@ def get_args_parser():
     parser.add_argument('--batch-size', default=1, type=int)
     # Model parameters
     parser.set_defaults(pretrained=True)
-    parser.add_argument('--fuse', action='store_true', default=False)
     parser.add_argument('--test', action='store_true', default=False)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
@@ -44,7 +41,6 @@ def get_args_parser():
     # Dataset parameters
     parser.add_argument('--validation', action='store_true', default=False)
     parser.add_argument('--data-path', default='.ncnn/calibration', type=str, help='dataset path')
-    parser.add_argument('--num_workers', default=2, type=int)
 
     return parser
 

@@ -1,8 +1,17 @@
+download_calibration()
+{
+    mkdir -p .tflite/calibration && cd .tflite/calibration
+    git clone https://github.com/nihui/imagenet-sample-images.git
+    rm imagenet-sample-images/.git -rf
+    cd -
+}
+
 onnx_tf()
 {
+    # https://github.com/YingkunZhou/EdgeTransformerPerf/wiki/tensorflow-lite#how-to-convert-model
     MODEL=$1
     onnx-tf convert -i .onnx/$MODEL.onnx -o .tflite/$MODEL.pb
-    python convert-tools/tf-tflite.py --only-convert=$MODEL
+    python python/tf-tflite.py --only-convert=$MODEL
 }
 
 onnx_tf efficientformerv2_s0
