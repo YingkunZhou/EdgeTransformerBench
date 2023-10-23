@@ -48,52 +48,52 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('ppq quantization script', parents=[get_args_parser()])
     args = parser.parse_args()
 
-    for name, resolution in [
-        ('efficientformerv2_s0', 224),
-        ('efficientformerv2_s1', 224),
-        ('efficientformerv2_s2', 224),
+    for name, resolution, usi_eval in [
+        ('efficientformerv2_s0', 224, False),
+        ('efficientformerv2_s1', 224, False),
+        ('efficientformerv2_s2', 224, False),
 
-        ('SwiftFormer_XS', 224),
-        ('SwiftFormer_S' , 224),
-        ('SwiftFormer_L1', 224),
+        ('SwiftFormer_XS', 224, False),
+        ('SwiftFormer_S' , 224, False),
+        ('SwiftFormer_L1', 224, False),
 
-        ('EMO_1M', 224),
-        ('EMO_2M', 224),
-        ('EMO_5M', 224),
-        ('EMO_6M', 224),
+        ('EMO_1M', 224, False),
+        ('EMO_2M', 224, False),
+        ('EMO_5M', 224, False),
+        ('EMO_6M', 224, False),
 
-        ('edgenext_xx_small', 256),
-        ('edgenext_x_small' , 256),
-        ('edgenext_small'   , 256),
+        ('edgenext_xx_small', 256, False),
+        ('edgenext_x_small' , 256, False),
+        ('edgenext_small'   , 256, True),
 
-        ('mobilevitv2_050', 256),
-        ('mobilevitv2_075', 256),
-        ('mobilevitv2_100', 256),
-        ('mobilevitv2_125', 256),
-        ('mobilevitv2_150', 256),
-        ('mobilevitv2_175', 256),
-        ('mobilevitv2_200', 256),
+        ('mobilevitv2_050', 256, False),
+        ('mobilevitv2_075', 256, False),
+        ('mobilevitv2_100', 256, False),
+        ('mobilevitv2_125', 256, False),
+        ('mobilevitv2_150', 256, False),
+        ('mobilevitv2_175', 256, False),
+        ('mobilevitv2_200', 256, False),
 
-        ('mobilevit_xx_small', 256),
-        ('mobilevit_x_small' , 256),
-        ('mobilevit_small'   , 256),
+        ('mobilevit_xx_small', 256, False),
+        ('mobilevit_x_small' , 256, False),
+        ('mobilevit_small'   , 256, False),
 
-        ('LeViT_128S', 224),
-        ('LeViT_128' , 224),
-        ('LeViT_192' , 224),
-        ('LeViT_256' , 224),
+        ('LeViT_128S', 224, False),
+        ('LeViT_128' , 224, False),
+        ('LeViT_192' , 224, False),
+        ('LeViT_256' , 224, False),
 
-        ('resnet50', 224),
-        ('mobilenetv3_large_100', 224),
-        ('tf_efficientnetv2_b0' , 224),
-        ('tf_efficientnetv2_b1' , 240),
-        ('tf_efficientnetv2_b2' , 260),
-        ('tf_efficientnetv2_b3' , 300),
+        ('resnet50', 224, False),
+        ('mobilenetv3_large_100', 224, False),
+        ('tf_efficientnetv2_b0' , 224, False),
+        ('tf_efficientnetv2_b1' , 240, False),
+        ('tf_efficientnetv2_b2' , 260, False),
+        ('tf_efficientnetv2_b3' , 300, False),
     ]:
         if args.only_convert and args.only_convert not in name:
             continue
 
-        args.usi_eval = False
+        args.usi_eval = usi_eval
         args.model = name
         args.input_size = resolution
 

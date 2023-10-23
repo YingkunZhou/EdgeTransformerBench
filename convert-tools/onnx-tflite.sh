@@ -11,6 +11,7 @@ onnx_tf()
     # https://github.com/YingkunZhou/EdgeTransformerPerf/wiki/tensorflow-lite#how-to-convert-model
     TYPE=$1
     MODEL=$2
+    mkdir -p .tflite/$TYPE
     onnx-tf convert -i .onnx/$MODEL.onnx -o .tflite/$MODEL.pb
     python python/tf-tflite.py --only-convert=$MODEL --format=$TYPE
 }
