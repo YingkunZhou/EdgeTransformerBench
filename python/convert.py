@@ -7,15 +7,15 @@ import argparse
 import torch
 from timm.models import create_model
 
-import models.levit
-import models.levit_c
-import models.efficientformer_v2
-import models.swiftformer
-import models.edgenext
-import models.edgenext_bn_hs
-import models.emo
-import models.mobilevit
-import models.mobilevit_v2
+import sota.efficientformer_v2
+import sota.swiftformer
+import sota.edgenext
+import sota.edgenext_bn_hs
+import sota.emo
+import sota.mobilevit
+import sota.mobilevit_v2
+import sota.levit
+import sota.levit_c
 
 torch.autograd.set_grad_enabled(False)
 
@@ -26,9 +26,9 @@ def get_args_parser():
     parser.add_argument('--opset-version', default=None, type=int)
     # Model parameters
     parser.set_defaults(pretrained=True)
+    parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--fuse', action='store_true', default=False)
     parser.add_argument('--mobile', default=None, type=str, help='cpu, vulkan, nnapi')
-    parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     parser.add_argument('--format', default='', type=str, help='conversion format')
@@ -104,7 +104,7 @@ if __name__ == '__main__':
             model.load_state_dict(weights_dict)
 
         if args.fuse:
-            models.levit.replace_batchnorm(model)  # TODO: speedup levit
+            sota.levit.replace_batchnorm(model)  # TODO: speedup levit
 
         # TODO: does onnx export need this?
         model.eval()

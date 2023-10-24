@@ -12,15 +12,15 @@ from PIL import Image
 from timm.models import create_model
 from main import get_transform, build_dataset, evaluate, pil_loader_BGR, pil_loader_RGB
 
-import models.levit
-import models.levit_c
-import models.efficientformer_v2
-import models.swiftformer
-import models.edgenext
-import models.edgenext_bn_hs
-import models.emo
-import models.mobilevit
-import models.mobilevit_v2
+import sota.efficientformer_v2
+import sota.swiftformer
+import sota.edgenext
+import sota.edgenext_bn_hs
+import sota.emo
+import sota.mobilevit
+import sota.mobilevit_v2
+import sota.levit
+import sota.levit_c
 
 torch.autograd.set_grad_enabled(False)
 
@@ -218,7 +218,7 @@ if __name__ == '__main__':
                 model.load_state_dict(weights_dict)
 
             if args.fuse:
-                levit.replace_batchnorm(model)  # TODO: acc val speed & acc
+                sota.levit.replace_batchnorm(model)  # TODO: acc val speed & acc
 
             model.to(device)
             model.eval()

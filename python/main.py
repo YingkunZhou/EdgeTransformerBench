@@ -20,15 +20,15 @@ from timm.models import create_model
 from timm.utils import accuracy
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD, DEFAULT_CROP_PCT
 
-import models.levit
-import models.levit_c
-import models.efficientformer_v2
-import models.swiftformer
-import models.edgenext
-import models.edgenext_bn_hs
-import models.emo
-import models.mobilevit
-import models.mobilevit_v2
+import sota.levit
+import sota.levit_c
+import sota.efficientformer_v2
+import sota.swiftformer
+import sota.edgenext
+import sota.edgenext_bn_hs
+import sota.emo
+import sota.mobilevit
+import sota.mobilevit_v2
 
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a
@@ -328,7 +328,7 @@ def main(args):
         model.load_state_dict(weights_dict)
 
     if args.fuse:
-        levit.replace_batchnorm(model)  # TODO: acc val speed & acc
+        sota.levit.replace_batchnorm(model)  # TODO: acc val speed & acc
 
     model.to(device)
 
