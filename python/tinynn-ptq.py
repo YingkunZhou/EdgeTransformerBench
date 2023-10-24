@@ -104,7 +104,7 @@ def main_worker(args):
             quantizer = PostQuantizer(model, dummy_input, work_dir='.tflite')
             ptq_model = quantizer.quantize()
 
-        print(ptq_model)
+        # print(ptq_model)
 
         # Use DataParallel to speed up calibrating when possible
         if torch.cuda.device_count() > 1:
