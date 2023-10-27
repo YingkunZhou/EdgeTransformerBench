@@ -8,6 +8,7 @@ Reference doc:
 import argparse
 import torch
 import tensorflow as tf
+import numpy as np
 from main import build_dataset
 
 def get_args_parser():
@@ -96,17 +97,18 @@ if __name__ == '__main__':
 
         dataset_val = build_dataset(args)
         calibration_dataset = [torch.unsqueeze(i[0], dim=0) for i in dataset_val]
+        #calibration_dataset = calibration_dataset[:20]
         def representative_dataset():
             for i in calibration_dataset:
-                yield [i]
+                yield [i.numpy().astype(np.float32)]
         #to view the best option for optimization read documentation of tflite about optimization
         #go to this link https://www.tensorflow.org/lite/guide/get_started#4_optimize_your_model_optional
         #https://www.tensorflow.org/lite/performance/post_training_quantization?hl=zh-cn
         #https://www.tensorflow.org/lite/performance/post_training_float16_quant?hl=zh-cn
-        if args.format == "int16" or args.format == "int8":
-            converter.representative_dataset = representative_dataset
         if args.format != "fp32":
             converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        if args.format == "int16" or args.format == "int8":
+            converter.representative_dataset = representative_dataset
         if args.format == "bf16":
             converter.target_spec.supported_types = [tf.float16]
         if args.format == "fp16":
