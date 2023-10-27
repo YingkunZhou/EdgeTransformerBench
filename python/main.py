@@ -250,6 +250,18 @@ def get_transform(args):
 
     return transforms.Compose(t)
 
+def load_image(args):
+    data_transform = get_transform(args)
+    image = pil_loader_BGR('daisy.jpg') if "mobilevit_" in args.model \
+        else pil_loader_RGB('daisy.jpg')
+
+    # [N, C, H, W]
+    image = data_transform(image)
+    # for tensorflow lite
+    # image = image.permute((1, 2, 0))
+    # expand batch dimension
+    return torch.unsqueeze(image, dim=0)
+
 def build_dataset(args):
     root = os.path.join(args.data_path)
     loader = pil_loader_BGR if "mobilevit_" in args.model else pil_loader_RGB

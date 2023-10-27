@@ -148,7 +148,9 @@ class Linear_BN(torch.nn.Sequential):
     def forward(self, x):
         l, bn = self._modules.values()
         x = l(x)
-        return bn(x.flatten(0, 1)).reshape_as(x)
+        # https://pytorch.org/docs/stable/generated/torch.Tensor.reshape_as.html
+        # ERROR (tinynn.converter.base) Unsupported ops: aten::reshape_as
+        return bn(x.flatten(0, 1)).reshape(x.shape)
 
 
 class BN_Linear(torch.nn.Sequential):

@@ -10,7 +10,7 @@ import time
 import numpy as np
 from PIL import Image
 from timm.models import create_model
-from main import get_transform, build_dataset, evaluate, pil_loader_BGR, pil_loader_RGB
+from main import load_image, build_dataset, evaluate
 
 import sota.efficientformer_v2
 import sota.swiftformer
@@ -76,17 +76,6 @@ def benchmarking_cuda(model, inputs):
     time_mean   = np.mean(time_list)   * 1000
     time_median = np.median(time_list) * 1000
     print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
-
-
-def load_image(args):
-    data_transform = get_transform(args)
-    image = pil_loader_BGR('daisy.jpg') if "mobilevit_" in args.model \
-        else pil_loader_RGB('daisy.jpg')
-
-    # [N, C, H, W]
-    image = data_transform(image)
-    # expand batch dimension
-    return torch.unsqueeze(image, dim=0)
 
 def get_args_parser():
     parser = argparse.ArgumentParser(

@@ -1,3 +1,10 @@
+"""
+reference code:
+    - https://github.com/alibaba/TinyNeuralNetwork/blob/main/examples/quantization/post.py
+    - https://github.com/alibaba/TinyNeuralNetwork/blob/main/examples/converter/convert.py
+    - https://github.com/alibaba/TinyNeuralNetwork/blob/main/examples/converter/dynamic.py
+"""
+
 import argparse
 import torch
 import torch.nn as nn
@@ -78,8 +85,6 @@ def main_worker(args):
                 if "state_dict" in weights_dict:
                     args.usi_eval = True
                     weights_dict = weights_dict["state_dict"]
-                elif args.model_ema: # for EdgeNeXt
-                    weights_dict = weights_dict["model_ema"]
                 elif "model" in weights_dict:
                     weights_dict = weights_dict["model"]
 
@@ -97,58 +102,90 @@ def main_worker(args):
             # Provide a viable input for the model
             dummy_input = torch.rand((1, 3, 224, 224))
 
-            # For per-tensor quantization, if there are many outliers in the weight, CLE can significantly improve the
-            # quantization accuracy
-            if args.cle:
-                cross_layer_equalize(model, dummy_input, get_device())
-            quantizer = PostQuantizer(model, dummy_input, work_dir='.tflite')
-            ptq_model = quantizer.quantize()
+            if args.format == "int8":
+                # For per-tensor quantization, if there are many outliers in the weight, CLE can significantly improve the
+                # quantization accuracy
+                if args.cle:
+                    cross_layer_equalize(model, dummy_input, get_device())
+                quantizer = PostQuantizer(model, dummy_input, work_dir='.tflite')
+                ptq_model = quantizer.quantize()
 
-        # print(ptq_model)
+        if args.format == "fp32":
+            with torch.no_grad():
+                model.cpu()
+                model.eval()
 
-        # Use DataParallel to speed up calibrating when possible
-        if torch.cuda.device_count() > 1:
-            ptq_model = nn.DataParallel(ptq_model)
+                converter = TFLiteConverter(
+                    model,
+                    dummy_input,
+                    tflite_path='.tflite/'+args.format+'/'+args.model+'.tflite',
+                    nchw_transpose=False,
+                )
+                converter.convert()
+        elif args.format == "dynamic":
+            with torch.no_grad():
+                model.cpu()
+                model.eval()
 
-        # Move model to the appropriate device
-        device = get_device()
-        ptq_model.to(device=device)
+                converter = TFLiteConverter(
+                    model,
+                    dummy_input,
+                    tflite_path='.tflite/'+args.format+'/'+args.model+'.tflite',
+                    quantize_target_type='int8',
+                    strict_symmetric_check=True,
+                    # Enable hybrid quantization
+                    hybrid_quantization_from_float=True,
+                    # Enable hybrid per-channel quantization (lower q-loss, but slower??? really)
+                    hybrid_per_channel=True,
+                    # Use asymmetric inputs for hybrid quantization (probably lower q-loss, but a bit slower)
+                    hybrid_asymmetric_inputs=True,
+                    # Enable hybrid per-channel quantization for `Conv2d` and `DepthwiseConv2d`
+                    hybrid_conv=True,
+                    nchw_transpose=False,
+                )
+                converter.convert()
+        elif args.format == "int8":
+            # print(ptq_model)
+            # Use DataParallel to speed up calibrating when possible
+            if torch.cuda.device_count() > 1:
+                ptq_model = nn.DataParallel(ptq_model)
 
-        context = DLContext()
-        context.device = device
-        dataset_val = build_dataset(args)
-        sampler_val = torch.utils.data.SequentialSampler(dataset_val)
-        context.train_loader = torch.utils.data.DataLoader(
-            dataset_val,
-            sampler=sampler_val,
-            batch_size=args.batch_size,
-            num_workers=args.workers, # acc val speed
-            pin_memory=args.pin_mem,
-            drop_last=False
-        )
-        context.max_iteration = 1000
+            # Move model to the appropriate device
+            device = get_device()
+            ptq_model.to(device=device)
 
-        # Post quantization calibration
-        calibrate(ptq_model, context)
+            context = DLContext()
+            context.device = device
+            dataset_val = build_dataset(args)
+            sampler_val = torch.utils.data.SequentialSampler(dataset_val)
+            context.train_loader = torch.utils.data.DataLoader(
+                dataset_val,
+                sampler=sampler_val,
+                batch_size=args.batch_size,
+                num_workers=args.workers, # acc val speed
+                pin_memory=args.pin_mem,
+                drop_last=False
+            )
+            # context.max_iteration = 250
 
-        with torch.no_grad():
-            ptq_model.eval()
-            ptq_model.cpu()
+            # Post quantization calibration
+            calibrate(ptq_model, context)
 
-            # The step below converts the model to an actual quantized model, which uses the quantized kernels.
-            ptq_model = quantizer.convert(ptq_model)
-
-            # When converting quantized models, please ensure the quantization backend is set.
-            torch.backends.quantized.engine = quantizer.backend
-
-            # The code section below is used to convert the model to the TFLite format
-            # If you need a quantized model with a specific data type (e.g. int8)
-            # you may specify `quantize_target_type='int8'` in the following line.
-            # If you need a quantized model with strict symmetric quantization check (with pre-defined zero points),
-            # you may specify `strict_symmetric_check=True` in the following line.
-            converter = TFLiteConverter(ptq_model, dummy_input, tflite_path='.tflite/ptq_model.tflite')
-            converter.convert()
-
+            with torch.no_grad():
+                ptq_model.eval()
+                ptq_model.cpu()
+                # The step below converts the model to an actual quantized model, which uses the quantized kernels.
+                ptq_model = quantizer.convert(ptq_model)
+                # When converting quantized models, please ensure the quantization backend is set.
+                print(quantizer.backend)
+                torch.backends.quantized.engine = quantizer.backend
+                converter = TFLiteConverter(
+                    ptq_model,
+                    dummy_input,
+                    tflite_path='.tflite/'+args.format+'/'+args.model+'.tflite',
+                    nchw_transpose=False,
+                )
+                converter.convert()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -156,13 +193,14 @@ if __name__ == '__main__':
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--data-path', metavar='DIR', default=".ncnn/calibration", help='path to dataset')
     parser.add_argument('--workers', type=int, default=8)
-    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--batch-size', type=int, default=4)
     parser.add_argument('--weights', default='./weights', metavar='DIR', help='weights path')
     parser.add_argument('--cle', type=bool, default=False)
     parser.add_argument('--pin-mem', action='store_true',
                         help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     parser.add_argument('--fuse', action='store_true', default=False)
+    parser.add_argument('--format', default='fp32', type=str, help='model datatype')
 
     args = parser.parse_args()
 

@@ -152,11 +152,24 @@ void load_image(
     }
     pre_process(img, model, input_size);
     // Make copies of the same image input.
+#ifdef USE_HWC
+    for (int64_t i = 0; i < batch_size; ++i)
+    {
+        float *input_tensor_i = input_tensor + i * 3 * input_size * input_size;
+        auto tmp = img.begin<float>();
+        for (int64_t j = 0; j < input_size * input_size; ++j) {
+            input_tensor_i[j * 3 + 0] = tmp[j + 0 * input_size * input_size];
+            input_tensor_i[j * 3 + 1] = tmp[j + 1 * input_size * input_size];
+            input_tensor_i[j * 3 + 2] = tmp[j + 2 * input_size * input_size];
+        }
+    }
+#else // USE_CHW
     for (int64_t i = 0; i < batch_size; ++i)
     {
         std::copy(img.begin<float>(), img.end<float>(),
         input_tensor + i * 3 * input_size * input_size);
     }
+#endif
 }
 
 void scores_topk(

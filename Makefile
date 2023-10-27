@@ -11,7 +11,9 @@ init:
 	./prepare.sh
 
 DEPS = src/utils.cpp src/evaluate.tcc src/benchmark.tcc src/PillowResize.cc
-FLAGS = src/utils.cpp src/PillowResize.cc -std=c++17 `pkg-config --cflags --libs opencv4`
+# DEF="-DUSE_HWC" make tflite-perf-test
+DEF ?=
+FLAGS = src/utils.cpp src/PillowResize.cc -std=c++17 `pkg-config --cflags --libs opencv4` $(DEF)
 
 ########################
 ###### ncnn part #######
