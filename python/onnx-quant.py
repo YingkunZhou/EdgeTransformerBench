@@ -10,6 +10,8 @@ import numpy
 import argparse
 import onnxruntime
 from onnxruntime.quantization import CalibrationDataReader, QuantFormat, QuantType, quantize_static, quantize_dynamic, CalibrationMethod
+import onnx
+from onnxconverter_common import float16
 from main import build_dataset
 
 class DataReader(CalibrationDataReader):
@@ -17,13 +19,18 @@ class DataReader(CalibrationDataReader):
         self.enum_data = None
 
         # Use inference session to get input shape.
-        session = onnxruntime.InferenceSession(".onnx/prep/"+name+".onnx", None)
+        use_prep = "prep"
+        if "edgenext" in name or "EMO" in name or "LeViT" in name:
+            use_prep = "fp32"
+
+        session = onnxruntime.InferenceSession(".onnx/"+use_prep+"/"+name+".onnx", None)
         (_, _, height, _) = session.get_inputs()[0].shape
 
         # Convert image to input data
         args.data_path = calibration_image_folder
         args.model = model_name
         args.input_size = height
+        print(height)
         args.usi_eval = model_name == "edgenext_small"
         dataset_val = build_dataset(args)
         dataset_val = [numpy.expand_dims(i[0], axis=0) for i in dataset_val]
@@ -67,64 +74,68 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('onnx model quantization scrip', parents=[get_args_parser()])
     args = parser.parse_args()
 
-    for name, resolution in [
-        ('efficientformerv2_s0', 224),
-        ('efficientformerv2_s1', 224),
-        ('efficientformerv2_s2', 224),
+    for name in [
+        ('efficientformerv2_s0'),
+        ('efficientformerv2_s1'),
+        ('efficientformerv2_s2'),
 
-        ('SwiftFormer_XS', 224),
-        ('SwiftFormer_S' , 224),
-        ('SwiftFormer_L1', 224),
+        ('SwiftFormer_XS'),
+        ('SwiftFormer_S' ),
+        ('SwiftFormer_L1'),
 
-        ('EMO_1M', 224), # cannot convert, even if converted, still cannnot run
-        ('EMO_2M', 224), # cannot convert, even if converted, still cannnot run
-        ('EMO_5M', 224), # cannot convert, even if converted, still cannnot run
-        ('EMO_6M', 224), # cannot convert, even if converted, still cannnot run
+        ('EMO_1M'), # cannot convert, even if converted, still cannnot run
+        ('EMO_2M'), # cannot convert, even if converted, still cannnot run
+        ('EMO_5M'), # cannot convert, even if converted, still cannnot run
+        ('EMO_6M'), # cannot convert, even if converted, still cannnot run
 
-        ('edgenext_xx_small', 256),
-        ('edgenext_x_small' , 256),
-        ('edgenext_small'   , 256),
+        ('edgenext_xx_small'),
+        ('edgenext_x_small' ),
+        ('edgenext_small'   ),
 
-        ('mobilevitv2_050', 256),
-        ('mobilevitv2_075', 256),
-        ('mobilevitv2_100', 256),
-        ('mobilevitv2_125', 256),
-        ('mobilevitv2_150', 256),
-        ('mobilevitv2_175', 256),
-        ('mobilevitv2_200', 256),
+        ('mobilevitv2_050'),
+        ('mobilevitv2_075'),
+        ('mobilevitv2_100'),
+        ('mobilevitv2_125'),
+        ('mobilevitv2_150'),
+        ('mobilevitv2_175'),
+        ('mobilevitv2_200'),
 
-        ('mobilevit_xx_small', 256),
-        ('mobilevit_x_small' , 256),
-        ('mobilevit_small'   , 256),
+        ('mobilevit_xx_small'),
+        ('mobilevit_x_small' ),
+        ('mobilevit_small'   ),
 
-        ('LeViT_128S', 224),
-        ('LeViT_128' , 224),
-        ('LeViT_192' , 224),
-        ('LeViT_256' , 224),
+        ('LeViT_128S'),
+        ('LeViT_128' ),
+        ('LeViT_192' ),
+        ('LeViT_256' ),
 
-        ('resnet50', 224),
-        ('mobilenetv3_large_100', 224),
-        ('tf_efficientnetv2_b0' , 224),
-        ('tf_efficientnetv2_b1' , 240),
-        ('tf_efficientnetv2_b2' , 260),
-        ('tf_efficientnetv2_b3' , 300),
+        ('resnet50'),
+        ('mobilenetv3_large_100'),
+        ('tf_efficientnetv2_b0' ),
+        ('tf_efficientnetv2_b1' ),
+        ('tf_efficientnetv2_b2' ),
+        ('tf_efficientnetv2_b3' ),
     ]:
         if args.only_convert and args.only_convert not in name:
             continue
 
         print(name)
-        args.model = name
-        args.input_size = resolution
+        use_prep = "prep"
+        if "edgenext" in name or "EMO" in name or "LeViT" in name:
+            use_prep = "fp32"
 
-        dr = DataReader(
-            args.data_path, args.model
-        )
-
-        if True:
+        if args.format == "fp16":
+            model = onnx.load(".onnx/fp32/"+name+".onnx")
+            model_fp16 = float16.convert_float_to_float16(model, keep_io_types=True)
+            onnx.save(model_fp16, ".onnx/fp16/"+name+".onnx")
+        elif args.format == "int8":
+            dr = DataReader(
+                args.data_path, name
+            )
             # Calibrate and quantize model
             # Turn off model optimization during quantization
             quantize_static(
-                ".onnx/prep/"+name+".onnx",
+                ".onnx/"+use_prep+"/"+name+".onnx",
                 ".onnx/int8/"+name+".onnx",
                 dr,
                 quant_format=args.quant_format,
@@ -133,11 +144,11 @@ if __name__ == '__main__':
                 weight_type=QuantType.QInt8,
                 calibrate_method=CalibrationMethod.MinMax,
             )
-        else:
+        elif args.format == "dynamic":
             # https://github.com/microsoft/onnxruntime/issues/15888
             # I have the same problem. I am finding that onnxruntime does not support the ConvInteger layer unfortunately, that means dynamic quantization is not working in onnxruntime if initial model has CNNs inside. Very sad!
             quantize_dynamic(
-                ".onnx/prep/"+name+".onnx",
+                ".onnx/"+use_prep+"/"+name+".onnx",
                 ".onnx/dynamic/"+name+".onnx",
                 weight_type=QuantType.QInt8,
             )
