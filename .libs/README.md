@@ -684,5 +684,17 @@ docker build . -f Dockerfile -t xxx
 docker run --name pytorch --hostname pytorch -v xxx:/xxx -it xxx bash
 docker start pytorch
 docker exec -it pytorch zsh
+update-alternatives --config gcc
+update-alternatives --config g++
+# openblas use clang-14, onednn+acl use gcc-10
+# export CMAKE_BUILD_PARALLEL_LEVEL=4 # set thread number to build pytorch
+# cd /usr/lib/aarch64-linux-gnu
+# rm libgomp.so.1; ln -s ../llvm-14/lib/libomp.so.5 libgomp.so.1
+
+# https://github.com/pytorch/pytorch/issues/29327
+export USE_QNNPACK=ON
+export USE_PYTORCH_QNNPACK=ON
+
+DESIRED_PYTHON="3.8" ./aarch64_ci_build.sh
 ```
 </details>

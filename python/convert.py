@@ -6,6 +6,11 @@ https://github.com/facebookresearch/LeViT/blob/main/speed_test.py
 import argparse
 import torch
 from timm.models import create_model
+from main import build_dataset
+from torch.ao.quantization import get_default_qconfig_mapping
+from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
+
+import copy
 
 import sota.efficientformer_v2
 import sota.swiftformer
@@ -24,6 +29,7 @@ def get_args_parser():
         'EdgeTransformerPerf model format conversion script', add_help=False)
     parser.add_argument('--batch-size', default=1, type=int)
     parser.add_argument('--opset-version', default=None, type=int)
+    parser.add_argument('--data-path', default='.ncnn/calibration', type=str, help='dataset path')
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
@@ -79,6 +85,9 @@ if __name__ == '__main__':
     ]:
         if args.only_convert and args.only_convert not in name:
             continue
+        args.usi_eval = False
+        args.model = name
+        args.input_size = resolution
 
         print(f"Creating model: {name}")
         model = create_model(
@@ -91,6 +100,8 @@ if __name__ == '__main__':
             # print(weights_dict.keys())
 
             if "state_dict" in weights_dict:
+                print(args.model)
+                args.usi_eval = True
                 weights_dict = weights_dict["state_dict"]
             elif "model" in weights_dict:
                 weights_dict = weights_dict["model"]
@@ -123,6 +134,31 @@ if __name__ == '__main__':
             1, #args.batch_size, TODO: here we only support single batch size benchmarking
             channels, resolution, resolution,
         )
+
+        # we need to deepcopy if we still want to keep model_fp unchanged after quantization since quantization apis change the input model
+        float_model = copy.deepcopy(model)
+        float_model.eval()
+        # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
+        qconfig_mapping = get_default_qconfig_mapping('qnnpack')
+        # a tuple of one or more example inputs are needed to trace the model
+        example_inputs = (inputs,)
+
+        prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
+        prepared_model.eval()
+        calibration_data_loader = build_dataset(args)
+        calibration_data = [torch.unsqueeze(i[0], dim=0) for i in calibration_data_loader]
+        # calibration_data = calibration_data[:2] # for quick try
+        def calibrate(model, data_loader):
+            with torch.inference_mode():
+                for i in data_loader: model(i)
+
+        calibrate(prepared_model, calibration_data)
+
+        quantized_model = convert_fx(prepared_model)  # convert the calibrated model to a quantized model
+        # https://github.com/pytorch/pytorch/issues/69426
+        trace_model = torch.jit.script(quantized_model)
+        trace_model.save(".pt/int8/"+name+'.pt')
+        exit(0)
 
         if not args.format or args.format == 'onnx':
             torch.onnx.export(

@@ -11,6 +11,9 @@ import numpy as np
 from PIL import Image
 from timm.models import create_model
 from main import load_image, build_dataset, evaluate
+from torch.ao.quantization import get_default_qconfig_mapping
+from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
+import copy
 
 import sota.efficientformer_v2
 import sota.swiftformer
@@ -97,6 +100,7 @@ def get_args_parser():
     parser.add_argument('--no-cpu', action='store_false', dest='cpu')
     parser.add_argument('--cuda', action='store_true', default=False)
     parser.add_argument('--use-eager', action='store_true', default=False)
+    parser.add_argument('--use-quant', action='store_true', default=False)
     parser.add_argument('--use-script', action='store_true', default=False)
     parser.add_argument('--use-trace', action='store_true', default=False)
     parser.add_argument('--use-inference', action='store_true', default=False)
@@ -212,15 +216,38 @@ if __name__ == '__main__':
             model.to(device)
             model.eval()
 
+            inputs = torch.randn(1, 3, resolution, resolution,)
+
+            if args.use_quant:
+                # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
+                torch.backends.quantized.engine = 'qnnpack'
+                # we need to deepcopy if we still want to keep model_fp unchanged after quantization since quantization apis change the input model
+                float_model = copy.deepcopy(model)
+                float_model.eval()
+                qconfig_mapping = get_default_qconfig_mapping('qnnpack')
+                # a tuple of one or more example inputs are needed to trace the model
+                example_inputs = (inputs,)
+
+                prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
+                prepared_model.eval()
+                calibration_data_loader = build_dataset(args)
+                calibration_data = [torch.unsqueeze(i[0], dim=0) for i in calibration_data_loader]
+                calibration_data = calibration_data[:2] # for quick try
+                with torch.inference_mode():
+                    for i in calibration_data:
+                        prepared_model(i)
+
+                quantized_model = convert_fx(prepared_model)  # convert the calibrated model to a quantized model
             if args.use_script:
                 script_model = torch.jit.script(model)
             if args.use_trace:
+                # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
+                torch.backends.quantized.engine = 'qnnpack'
                 if not os.path.exists(".pt/" + args.model + ".pt"):
                     print(args.model + " model doesn't exist!!!")
                     continue
                 trace_model = torch.jit.load(".pt/" + args.model + ".pt")
             if args.use_inference:
-                inputs = torch.randn(1, 3, resolution, resolution,)
                 frozen_model = torch.jit.optimize_for_inference(torch.jit.script(model))
             if args.use_compile:
                 import torch._dynamo as dynamo
@@ -264,6 +291,8 @@ if __name__ == '__main__':
 
                 if args.use_eager:
                     benchmarking(model, inputs, args)
+                if args.use_quant:
+                    benchmarking(quantized_model, inputs, args)
                 if args.use_script:
                     benchmarking(script_model, inputs, args)
                 if args.use_trace:
