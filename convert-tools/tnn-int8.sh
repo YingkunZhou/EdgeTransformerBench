@@ -13,10 +13,17 @@ tnn_int8()
     MERGE=$4
     BIAS=$5
     SCALE=$6
+    ROOT=$PWD
+
     cd .tnn
-    ../.libs/TNN/platforms/linux/build_quantize/quantization_cmd -p fp32/$MODEL.opt.tnnproto -m fp32/$MODEL.opt.tnnmodel \
-    -b $BLOB -w $WEIGHT -t $MERGE -n $BIAS -s $SCALE -i calibration/imagenet-sample-images
-    mv model.quantized.tnnmodel int8/$MODEL.opt.tnnmodel; mv model.quantized.tnnproto int8/$MODEL.opt.tnnproto
+    mkdir -p int8
+
+    $ROOT/.libs/TNN/platforms/linux/build_quantize/quantization_cmd -p fp32/$MODEL.opt.tnnproto -m fp32/$MODEL.opt.tnnmodel \
+    -b $BLOB -w $WEIGHT -t $MERGE -n $BIAS -s $SCALE \
+    -i calibration/imagenet-sample-images
+
+    mv model.quantized.tnnmodel int8/$MODEL.opt.tnnmodel
+    mv model.quantized.tnnproto int8/$MODEL.opt.tnnproto
     cd -
 }
 

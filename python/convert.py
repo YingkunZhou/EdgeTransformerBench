@@ -135,36 +135,11 @@ if __name__ == '__main__':
             channels, resolution, resolution,
         )
 
-        # we need to deepcopy if we still want to keep model_fp unchanged after quantization since quantization apis change the input model
-        float_model = copy.deepcopy(model)
-        float_model.eval()
-        # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
-        qconfig_mapping = get_default_qconfig_mapping('qnnpack')
-        # a tuple of one or more example inputs are needed to trace the model
-        example_inputs = (inputs,)
-
-        prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
-        prepared_model.eval()
-        calibration_data_loader = build_dataset(args)
-        calibration_data = [torch.unsqueeze(i[0], dim=0) for i in calibration_data_loader]
-        # calibration_data = calibration_data[:2] # for quick try
-        def calibrate(model, data_loader):
-            with torch.inference_mode():
-                for i in data_loader: model(i)
-
-        calibrate(prepared_model, calibration_data)
-
-        quantized_model = convert_fx(prepared_model)  # convert the calibrated model to a quantized model
-        # https://github.com/pytorch/pytorch/issues/69426
-        trace_model = torch.jit.script(quantized_model)
-        trace_model.save(".pt/int8/"+name+'.pt')
-        exit(0)
-
         if not args.format or args.format == 'onnx':
             torch.onnx.export(
                 model,
                 inputs,
-                '.onnx/'+name+'.onnx',
+                '.onnx/fp32/'+name+'.onnx',
                 export_params=True,
                 input_names=['input'],
                 output_names=['output'],
@@ -183,8 +158,8 @@ if __name__ == '__main__':
                 else:
                     from torch.utils.mobile_optimizer import optimize_for_mobile
                     mobile_model = optimize_for_mobile(trace_model, backend=args.mobile)
-                mobile_model._save_for_lite_interpreter(".pt/"+name+'.'+args.mobile[0]+'.ptl', _use_flatbuffer=True)
+                mobile_model._save_for_lite_interpreter(".pt/fp32/"+name+'.'+args.mobile[0]+'.ptl', _use_flatbuffer=True)
             else:
                 trace_model = torch.jit.trace(model, inputs)
-                trace_model.save(".pt/"+name+'.pt')
+                trace_model.save(".pt/fp32/"+name+'.pt')
 

@@ -697,4 +697,25 @@ export USE_PYTORCH_QNNPACK=ON
 
 DESIRED_PYTHON="3.8" ./aarch64_ci_build.sh
 ```
+
+google search: Didn't find engine for operation quantized::conv2d_prepack NoQEngine
+- https://github.com/pytorch/pytorch/issues/29327
+- https://github.com/pytorch/pytorch/issues/76755
+
+```diff
+diff --git a/aten/src/ATen/Context.cpp b/aten/src/ATen/Context.cpp
+index 1ec545d..63675a5 100644
+--- a/aten/src/ATen/Context.cpp
++++ b/aten/src/ATen/Context.cpp
+@@ -286,7 +286,7 @@ bool Context::hasLAPACK() {
+ at::QEngine Context::qEngine() const {
+   static auto _quantized_engine = []() {
+     at::QEngine qengine = at::kNoQEngine;
+-#if defined(C10_MOBILE) && defined(USE_PYTORCH_QNNPACK)
++#if defined(USE_PYTORCH_QNNPACK)
+     qengine = at::kQNNPACK;
+ #endif
+
+
+```
 </details>

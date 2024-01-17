@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 
     // https://www.yuque.com/mnn/cn/create_session#Wi4on
     // TODO: for better performance (lower latency)
-    int precision = MNN::BackendConfig::Precision_Normal;
+    int precision = MNN::BackendConfig::Precision_High;
     MNN::ScheduleConfig config;
     config.type = static_cast<MNNForwardType>(forward);
     config.numThread = num_threads;

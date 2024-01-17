@@ -12,7 +12,7 @@ onnx_tf()
     TYPE=$1
     MODEL=$2
     mkdir -p .tflite/$TYPE
-    onnx-tf convert -i .onnx/$MODEL.onnx -o .tflite/$MODEL.pb
+    onnx-tf convert -i .onnx/fp32/$MODEL.onnx -o .tflite/$MODEL.pb
     python python/tf-tflite.py --only-convert=$MODEL --format=$TYPE
 }
 

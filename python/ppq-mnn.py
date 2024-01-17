@@ -5,6 +5,8 @@ reference code:
 """
 
 """
+# sim the onnx model first by onnx-sim.sh
+
 MODEL=resnet50
 python python/ppq-mnn.py --only-convert $MODEL
 .libs/MNN/install-2.6.2/bin/MNNConvert -f ONNX --modelFile .mnn/ppq-int8/$MODEL.quantized.onnx --MNNModel .mnn/ppq-int8/$MODEL.quantized.mnn --bizCode MNN
@@ -122,7 +124,7 @@ if __name__ == '__main__':
         calib_steps = max(min(512, len(dataset_val)), 8)   # 8 ~ 512
         # TODO: use onnxsim to sim the onnx model first
         quantized = quantize_onnx_model(
-            onnx_import_file=".onnx/" + args.model + ".sim.onnx",
+            onnx_import_file=".onnx/fp32" + args.model + ".sim.onnx",
             calib_dataloader=calibration_dataloader,
             calib_steps=calib_steps, input_shape=[1, 3, resolution, resolution],
             setting=quant_setting, collate_fn=collate_fn,

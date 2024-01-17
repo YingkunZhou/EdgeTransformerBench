@@ -1,8 +1,9 @@
 onnx_tnn()
 {
     MODEL=$1
-    python ~/work/TNN/tools/convert2tnn/converter.py onnx2tnn -optimize -v=v3.0 .onnx/$MODEL.onnx -o .tnn
-    rm .onnx/$MODEL.opt.onnx
+    mkdir -p .tnn/fp32
+    python .libs/TNN/tools/convert2tnn/converter.py onnx2tnn -optimize -v=v3.0 .onnx/fp32/$MODEL.onnx -o .tnn/fp32
+    rm .onnx/fp32/$MODEL.opt.onnx
 }
 
 ## for OpenCL

@@ -28,6 +28,7 @@ SwiftFormer_depth = {
     'l3': [4, 4, 12, 6],
 }
 
+# TODO: will, need retrain the weights, otherwise uesless!!!
 CoreMLConversion = False
 
 

@@ -1,7 +1,7 @@
 onnx_sim()
 {
     MODEL=$1
-    cd .onnx
+    cd .onnx/fp32
     onnxsim $MODEL.onnx $MODEL.sim.onnx
     cd -
 }

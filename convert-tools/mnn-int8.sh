@@ -1,6 +1,7 @@
 download_calibration()
 {
     cd .mnn
+    # borrow ncnn calibration dataset
     ln -sf ../.ncnn/calibration .
     cd -
 }
@@ -19,8 +20,9 @@ download_calibration()
 mnn_int8()
 {
     MODEL=$1
+    ROOT=$PWD
     cd .mnn
-    ../.libs/MNN/build/quantized.out fp32/$MODEL.mnn quant/$MODEL.mnn quant/$MODEL.json
+    $ROOT/.libs/MNN/build/quantized.out fp32/$MODEL.mnn quant/$MODEL.mnn quant/$MODEL.json
     cd -
 }
 

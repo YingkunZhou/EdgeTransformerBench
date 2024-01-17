@@ -20,18 +20,26 @@ ncnn_int8()
     PIXEL=$2
     METHOD=$3
     MODEL=$4
+    ROOT=$PWD
     THREAD=12
 
     cd .ncnn
+
     mkdir -p $METHOD-int8 opt
-    ../.libs/ncnn/install/bin/ncnnoptimize \
-        fp32/$MODEL.ncnn.param fp32/$MODEL.ncnn.bin opt/$MODEL.ncnn.param opt/$MODEL.ncnn.bin 0
-    ../.libs/ncnn/install/bin/ncnn2table \
-        opt/$MODEL.ncnn.param opt/$MODEL.ncnn.bin imagelist.txt $METHOD-int8/$MODEL.ncnn.table \
-        mean=0 norm=0 shape=$SHAPE pixel=$PIXEL thread=$THREAD method=$METHOD
-    ../.libs/ncnn/install/bin/ncnn2int8 \
+    $ROOT/.libs/ncnn/install/bin/ncnnoptimize \
+        fp32/$MODEL.ncnn.param fp32/$MODEL.ncnn.bin \
+        opt/$MODEL.ncnn.param opt/$MODEL.ncnn.bin 0
+
+    $ROOT/.libs/ncnn/install/bin/ncnn2table \
         opt/$MODEL.ncnn.param opt/$MODEL.ncnn.bin \
-        $METHOD-int8/$MODEL.ncnn.param $METHOD-int8/$MODEL.ncnn.bin $METHOD-int8/$MODEL.ncnn.table
+        imagelist.txt $METHOD-int8/$MODEL.ncnn.table \
+        mean=0 norm=0 shape=$SHAPE pixel=$PIXEL thread=$THREAD method=$METHOD
+
+    $ROOT/.libs/ncnn/install/bin/ncnn2int8 \
+        opt/$MODEL.ncnn.param opt/$MODEL.ncnn.bin \
+        $METHOD-int8/$MODEL.ncnn.param $METHOD-int8/$MODEL.ncnn.bin \
+        $METHOD-int8/$MODEL.ncnn.table
+
     cd ..
 }
 
