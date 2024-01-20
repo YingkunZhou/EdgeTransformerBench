@@ -170,14 +170,14 @@ cmake ../../../ \
 -DMNN_USE_LOGCAT=false \
 -DANDROID_PLATFORM=android-24  \
 -DMNN_BUILD_FOR_ANDROID_COMMAND=true \
--D MNN_OPENCL=ON -D MNN_VULKAN=ON -D MNN_OPENGL=ON \
+-D MNN_OPENCL=ON -D MNN_VULKAN=ON -D MNN_ARM82=ON \
 -D MNN_SEP_BUILD=OFF -D CMAKE_INSTALL_PREFIX=../install \
 -DNATIVE_LIBRARY_OUTPUT=. -DNATIVE_INCLUDE_OUTPUT=.
 
 make install -j32
 #######################################################
 export ANDROID_NDK=<prefix>/android-ndk-r22b
-mkdir build_64 && cd build_64 && ../build_64.sh
+mkdir build && cd build && ../build_64.sh
 ```
 </details>
 
