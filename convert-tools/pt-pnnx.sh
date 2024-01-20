@@ -4,9 +4,13 @@ pt_ncnn()
     MODEL=$2
     SHAPE=$1
     ROOT=$PWD
+    mkdir -p .ncnn/fp16 && cd .ncnn/fp16
+    ln -s $ROOT/.pt/fp32/$MODEL.pt .
+    $ROOT/.libs/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE fp16=1
+
     mkdir -p .ncnn/fp32 && cd .ncnn/fp32
     ln -s $ROOT/.pt/fp32/$MODEL.pt .
-    $ROOT/.libs/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE
+    $ROOT/.libs/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE fp16=0
     cd -
 }
 

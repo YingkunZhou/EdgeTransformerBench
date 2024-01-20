@@ -5,8 +5,10 @@ export CXX=/usr/bin/clang++-16
 
 # opencv
 
+just use apt install (Linux) or pkg install (Android)
+
 <details>
-<summary>Linux</summary>
+<summary>~~Linux~~</summary>
 
 - [OpenCV Basics - Others](https://wykvictor.github.io/2018/08/01/OpenCV-6.html)
 - [rebuild your opencv4 from source with "add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)", have fun.](https://github.com/opencv/opencv/issues/13000#issuecomment-452150611)
@@ -65,12 +67,39 @@ cd ncnn
 #git submodule sync
 git submodule update --init --recursive
 mkdir -p build && cd build
+export LDFLAGS="-L/usr/lib/llvm-16/lib"
+export CPPFLAGS="-I/usr/lib/llvm-16/include"
 /usr/bin/cmake -D NCNN_SHARED_LIB=ON -D NCNN_VULKAN=ON .. -D CMAKE_BUILD_TYPE=Release \
 -D CMAKE_INSTALL_PREFIX=../install -D NCNN_BUILD_BENCHMARK=OFF
 make install -j`nproc`
 ```
+
+```bash
+# conda activate # use conda env
+cd tools/pnnx
+# pip install torch
+# remove protobuf & libprotobuf package
+mkdir build && cd build
+cmake ..
+make -j`nproc`
+```
 </details>
 
+<details>
+<summary>Android</summary>
+
+```bash
+export ANDROID_NDK=$PWD/android-ndk-r22b
+mkdir build && cd build
+cmake -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+    -DANDROID_ABI="arm64-v8a" \
+    -DANDROID_PLATFORM=android-24 -DNCNN_VULKAN=ON .. \
+    -D CMAKE_INSTALL_PREFIX=../install -D NCNN_SHARED_LIB=ON
+
+make install -j`nproc`
+```
+
+</details>
 
 # mnn
 
@@ -142,7 +171,7 @@ cmake ../../../ \
 -DANDROID_PLATFORM=android-24  \
 -DMNN_BUILD_FOR_ANDROID_COMMAND=true \
 -D MNN_OPENCL=ON -D MNN_VULKAN=ON -D MNN_OPENGL=ON \
--D MNN_SEP_BUILD=OFF -D CMAKE_INSTALL_PREFIX=../install-mnn \
+-D MNN_SEP_BUILD=OFF -D CMAKE_INSTALL_PREFIX=../install \
 -DNATIVE_LIBRARY_OUTPUT=. -DNATIVE_INCLUDE_OUTPUT=.
 
 make install -j32
@@ -158,16 +187,21 @@ mkdir build_64 && cd build_64 && ../build_64.sh
 <summary>Linux</summary>
 
 ```bash
-#sudo apt install libprotoc-dev
-#sudo apt install libomp-16-dev
-# see https://github.com/YingkunZhou/EdgeTransformerPerf/wiki/tnn for more details
 git clone https://github.com/Tencent/TNN.git # --depth=1
+
+sudo apt install protobuf-compiler
+sudo apt install libprotoc-dev
+sudo apt install libomp-16-dev # also for runtime
+export LDFLAGS="-L/usr/lib/llvm-16/lib"
+export CPPFLAGS="-I/usr/lib/llvm-16/include"
+# see https://github.com/YingkunZhou/EdgeTransformerPerf/wiki/tnn for more details
 mkdir -p build && cd build
 cmake -D CMAKE_BUILD_TYPE=Release \
 -D CMAKE_SYSTEM_NAME=Linux \
 -D CMAKE_C_COMPILER=clang-16 \
 -D CMAKE_CXX_COMPILER=clang++-16 \
 -D TNN_ARM_ENABLE=ON \
+-D TNN_ARM82_ENABLE=ON \
 -D TNN_TEST_ENABLE=ON \
 -D TNN_CPU_ENABLE=ON \
 -D TNN_RK_NPU_ENABLE=OFF \
@@ -183,6 +217,10 @@ make -j`nproc`
 mkdir -p ../install/include && mkdir -p ../install/lib
 cp -a libTNN.so* ../install/lib
 cp -r ../include/tnn ../install/include
+---
+
+cd TNN/tools/convert2tnn
+./build.sh
 ```
 
 ```diff
@@ -212,8 +250,95 @@ index 1b11af6..febf16f 100644
 
 
 ```
+
+```diff
+diff --git a/third_party/flatbuffers/src/idl_gen_rust.cpp b/third_party/flatbuffers/src/idl_gen_rust.cpp
+index 455780cd..6082a02a 100644
+--- a/third_party/flatbuffers/src/idl_gen_rust.cpp
++++ b/third_party/flatbuffers/src/idl_gen_rust.cpp
+@@ -496,7 +496,6 @@ class RustGenerator : public BaseGenerator {
+     // example: f(A, D::E)          -> super::D::E
+     // does not include leaf object (typically a struct type).
+
+-    size_t i = 0;
+     std::stringstream stream;
+
+     auto s = src->components.begin();
+@@ -507,7 +506,6 @@ class RustGenerator : public BaseGenerator {
+       if (*s != *d) { break; }
+       ++s;
+       ++d;
+-      ++i;
+     }
+
+     for (; s != src->components.end(); ++s) { stream << "super::"; }
+diff --git a/tools/converter/source/onnx/onnx_utils.h b/tools/converter/source/onnx/onnx_utils.h
+index 27f42bed..403960eb 100644
+--- a/tools/converter/source/onnx/onnx_utils.h
++++ b/tools/converter/source/onnx/onnx_utils.h
+@@ -17,6 +17,7 @@
+
+ #include <cassert>
+ #include <vector>
++#include <cmath>
+
+ #include "onnx.pb.h"
+ #include "onnx_proxy_graph.h"
+diff --git a/tools/dynamic_range_quantization/utils.h b/tools/dynamic_range_quantization/utils.h
+index 3de8d35d..0574b318 100644
+--- a/tools/dynamic_range_quantization/utils.h
++++ b/tools/dynamic_range_quantization/utils.h
+@@ -13,6 +13,7 @@
+ // specific language governing permissions and limitations under the License.
+ #include "tnn/core/macro.h"
+ #include "tnn/interpreter/raw_buffer.h"
++#include <cmath>
+
+ namespace TNN_NS {
+
+diff --git a/tools/onnx2tnn/src/core/onnx_fuse/onnx2tnn_fuse_gelu.cc b/tools/onnx2tnn/src/core/onnx_fuse/onnx2tnn_fuse_gelu.cc
+index 04f888eb..b3716387 100644
+--- a/tools/onnx2tnn/src/core/onnx_fuse/onnx2tnn_fuse_gelu.cc
++++ b/tools/onnx2tnn/src/core/onnx_fuse/onnx2tnn_fuse_gelu.cc
+@@ -13,6 +13,7 @@
+ // specific language governing permissions and limitations under the License.
+
+ #include <algorithm>
++#include <cmath>
+
+ #include "onnx2tnn.h"
+
+```
 </details>
 
+<details>
+<summary>Android</summary>
+
+```bash
+mkdir build && cd build
+cmake \
+-D CMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+-D ANDROID_ABI="arm64-v8a" \
+-D ANDROID_PLATFORM=android-24 \
+-D BUILD_FOR_ANDROID_COMMAND=true \
+-D TNN_ARM_ENABLE=ON \
+-D TNN_ARM82_ENABLE=ON \
+-D TNN_TEST_ENABLE=ON \
+-D TNN_CPU_ENABLE=ON \
+-D TNN_RK_NPU_ENABLE=OFF \
+-D TNN_OPENMP_ENABLE=ON \
+-D TNN_OPENCL_ENABLE=ON \
+-D CMAKE_SYSTEM_PROCESSOR=aarch64 \
+-D CMAKE_INSTALL_PREFIX=../install \
+-D TNN_BUILD_SHARED=ON ..
+
+make -j`nproc`
+
+mkdir -p ../install/include && mkdir -p ../install/lib
+cp -a libTNN.so* ../install/lib
+cp -r ../include/tnn ../install/include
+```
+</details>
 
 # paddle lite
 

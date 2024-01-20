@@ -4,11 +4,20 @@ onnx_tnn()
     mkdir -p .tnn/fp32
     python .libs/TNN/tools/convert2tnn/converter.py onnx2tnn -optimize -v=v3.0 .onnx/fp32/$MODEL.onnx -o .tnn/fp32
     rm .onnx/fp32/$MODEL.opt.onnx
+
+    mkdir -p .tnn/fp16
+    python .libs/TNN/tools/convert2tnn/converter.py onnx2tnn -half -optimize -v=v3.0 .onnx/fp32/$MODEL.onnx -o .tnn/fp16
+    rm .onnx/fp32/$MODEL.opt.onnx
+
+    mkdir -p .tnn/int8
+    ln -sf $PWD/.libs/TNN/tools/convert2tnn/build/dynamic_range_quantization bin/dynamic_range_quantization
+    python .libs/TNN/tools/convert2tnn/converter.py onnx2tnn -int8 -optimize -v=v3.0 .onnx/fp32/$MODEL.onnx -o .tnn/int8
+    rm .onnx/fp32/$MODEL.opt.onnx
 }
 
 ## for OpenCL
-#E/tnn: virtual Status tnn::OpenCLSoftmaxLayerAcc::Init(Context *, LayerParam *, LayerResource *, const std::vector<Blob *> &, const std::vector<Blob *> &) [File source/tnn/device/opencl/acc/opencl_softmax_layer_acc.cc][Line 49] not support axis = -1 in softmax yet!
-#E/tnn: virtual Status tnn::DefaultNetwork::InitLayers(NetStructure *, NetResource *) [File source/tnn/core/default_ne
+#E/tnn: Init [File source/tnn/device/opencl/acc/opencl_softmax_layer_acc.cc][Line 49] not support axis = -1 in softmax yet!
+#E/tnn: InitLayers [File source/tnn/core/default_network.cc][Line 321] Error Init layer /network.4/network.4.7/token_mixer/Softmax (err: 40963 or 0xA003)
 onnx_tnn efficientformerv2_s0
 onnx_tnn efficientformerv2_s1
 onnx_tnn efficientformerv2_s2
@@ -53,8 +62,8 @@ onnx_tnn efficientformerv2_s2
 #onnx_tnn mobilevit_small
 
 ## for OpenCL
-#E/tnn: virtual Status tnn::OpenCLSplitVLayerAcc::Init(Context *, LayerParam *, LayerResource *, const std::vector<Blob *> &, const std::vector<Blob *> &) [File source/tnn/device/opencl/acc/opencl_splitv_layer_acc.cc][Line 69] axis=3 is not support in SplitV yet!
-#E/tnn: virtual Status tnn::DefaultNetwork::InitLayers(NetStructure *, NetResource *) [File source/tnn/core/default_network.cc][Line 321] Error Init layer /blocks/blocks.0/m/Split (err: 40963 or 0xA003)
+#E/tnn: Init [File source/tnn/device/opencl/acc/opencl_splitv_layer_acc.cc][Line 69] axis=3 is not support in SplitV yet!
+#E/tnn: InitLayers [File source/tnn/core/default_network.cc][Line 321] Error Init layer /blocks/blocks.0/m/Split (err: 40963 or 0xA003)
 onnx_tnn LeViT_128S
 onnx_tnn LeViT_128
 onnx_tnn LeViT_192

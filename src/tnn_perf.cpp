@@ -144,6 +144,9 @@ int main(int argc, char* argv[])
     // SetCpuAffinity();
     tnn::NetworkConfig network_config;
     network_config.device_type = backend;
+    network_config.precision = tnn::PRECISION_HIGH;
+    // network_config.precision = tnn::PRECISION_AUTO;
+    // enable_tune_kernel for OpenCL
     if (backend == tnn::DEVICE_CUDA)
         network_config.network_type = tnn::NETWORK_TYPE_TENSORRT;
     for (const auto & model: test_models) {
