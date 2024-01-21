@@ -342,41 +342,23 @@ cp -r ../include/tnn ../install/include
 
 # paddle lite
 
+https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/demo_guides/opencl.md
+
 <details>
 <summary>Linux</summary>
+
+build_linux.sh: NUM_PROC=32
 
 ```bash
 git clone https://github.com/PaddlePaddle/Paddle-Lite.git #--depth=1
 cd Paddle-Lite
-./lite/tools/build_linux.sh --arch=armv8 --with_extra=ON --toolchain=clang
+./lite/tools/build_linux.sh --arch=armv8 --with_extra=ON --toolchain=clang \
+--with_exception=ON --with_opencl=ON --with_arm82_fp16=ON
 ```
 
 ```diff
-diff --git a/lite/api/paddle_place.h b/lite/api/paddle_place.h
-index c5757b8..abed5b0 100644
---- a/lite/api/paddle_place.h
-+++ b/lite/api/paddle_place.h
-@@ -15,6 +15,7 @@
- #pragma once
- #include <set>
- #include <string>
-+#include <cstdint>
-
- // Generic helper definitions for shared library support
- #if defined _WIN32 || defined __CYGWIN__
-diff --git a/lite/tools/build_linux.sh b/lite/tools/build_linux.sh
-index ace7a8b..d3df143 100755
 --- a/lite/tools/build_linux.sh
 +++ b/lite/tools/build_linux.sh
-@@ -100,7 +100,7 @@ WITH_BENCHMARK=OFF
- # use Arm DNN library instead of built-in math library, defaults to OFF.
- WITH_ARM_DNN_LIBRARY=OFF
- # num of threads used during compiling..
--readonly NUM_PROC=${LITE_BUILD_THREADS:-4}
-+readonly NUM_PROC=32
- #####################################################################################################
-
-
 @@ -344,9 +344,6 @@ function make_publish_so {
          build_dir=${build_dir}.kunlunxin_xpu
      fi
@@ -386,9 +368,27 @@ index ace7a8b..d3df143 100755
 -    fi
      mkdir -p $build_dir
      cd $build_dir
-
-
 ```
+
+[how to convert model](https://github.com/YingkunZhou/EdgeTransformerPerf/wiki/paddlelite#how-to-convert-model)
+
+```bash
+./lite/tools/build.sh build_optimize_tool
+```
+
+</details>
+
+<details>
+<summary>Android</summary>
+
+```bash
+export NDK_ROOT=$PWD/android-ndk-r22b
+./lite/tools/build_android.sh --arch=armv8 --with_extra=ON --toolchain=clang \
+--with_exception=ON --with_opencl=ON --with_java=OFF --android_api_level=24 --with_arm82_fp16=ON
+```
+
+build_android.sh: NUM_PROC=32
+
 </details>
 
 # tensorflow lite

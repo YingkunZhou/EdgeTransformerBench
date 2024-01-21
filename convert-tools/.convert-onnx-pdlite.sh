@@ -1,19 +1,17 @@
 # https://linux.cn/article-9718-1.html
 # parallel --jobs 16 < convert-tools/convert.sh
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert efficientformerv2_s0
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert efficientformerv2_s1
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert efficientformerv2_s2
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert SwiftFormer_XS
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert SwiftFormer_S
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert SwiftFormer_L1
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert edgenext_xx_small
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert edgenext_x_small
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert edgenext_small
+# Now, onnx2paddle support convert onnx model opset_verison [7, 8, 9, 10, 11, 12, 13, 14, 15]
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert efficientformerv2_s0 --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert efficientformerv2_s1 --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert efficientformerv2_s2 --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert edgenext_xx_small --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert edgenext_x_small --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert edgenext_small --opset-version 14
 OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert mobilevit_xx_small --opset-version 9
 OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert mobilevit_x_small --opset-version 9
 OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert mobilevit_small --opset-version 9
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert LeViT_128 --fuse
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert LeViT_192 --fuse
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert LeViT_256 --fuse
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert resnet50
-OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert mobilenetv3_large_100
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert LeViT_128 --fuse --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert LeViT_192 --fuse --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert LeViT_256 --fuse --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert resnet50 --opset-version 14
+OMP_NUM_THREADS=1 python python/convert.py --format onnx --only-convert mobilenetv3_large_100 --opset-version 14
