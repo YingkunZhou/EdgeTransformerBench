@@ -11,6 +11,10 @@ onnx_pdlite()
     ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp32/$MODEL
     mkdir -p .pdlite/opencl
     ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=opencl --optimize_out=.pdlite/opencl/$MODEL
+    #mkdir -p .pdlite/int16
+    #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int16/$MODEL --quant_model=true --quant_type=QUANT_INT16
+    #mkdir -p .pdlite/int8
+    #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL --quant_model=true --quant_type=QUANT_INT8
 }
 
 onnx_pdlite efficientformerv2_s0
