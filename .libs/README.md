@@ -3,6 +3,20 @@ export CC=/usr/bin/clang-16
 export CXX=/usr/bin/clang++-16
 ```
 
+<details>
+<summary>Android cross-compile details</summary>
+
+```bash
+# 6. (可选) 删除 debug 编译参数，减小二进制体积 参照 https://github.com/android/ndk/issues/243
+# 用编辑器打开 $ANDROID_NDK/build/cmake/android.toolchain.cmake 删除 "-g" 这行
+# 或者打开 $ANDROID_NDK/build/cmake/android-legacy.toolchain.cmake (Android NDK r23c及以上版本) 执行同样的操作
+list(APPEND ANDROID_COMPILER_FLAGS
+  -g
+  -DANDROID
+  ...
+```
+</details>
+
 # opencv
 
 just use apt install (Linux) or pkg install (Android)
@@ -343,6 +357,10 @@ cp -r ../include/tnn ../install/include
 # paddle lite
 
 https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/demo_guides/opencl.md
+
+Lite预测库分为**基础预测库**和**全量预测库(with_extra)**：基础预测库只包含基础CV算子（OP），体积较小；全量预测库包含所有Lite算子，体积较大，支持模型较多。
+
+编译时由编译选项 `build_extra`(默认为OFF)控制，`--build_extra=OFF`时编译**基础预测库**，`--build_extra=ON`时编译**全量预测库**。
 
 <details>
 <summary>Linux</summary>

@@ -1,21 +1,24 @@
 onnx_pdlite()
 {
     MODEL=$1
+    ### stage 1: onnx -> paddle
     # https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/user_guides/x2paddle.md
     #x2paddle --framework=onnx --model=.onnx/fp32/$MODEL.onnx --save_dir=.pdlite
-    #mv .pdlite/inference_model .pdlite/$MODEL
+    #mv .pdlite/inference_model .pdlite/paddle/$MODEL
     #rm .pdlite/model.pdparams .pdlite/x2paddle_code.py .pdlite/__pycache__ -rf
-    mkdir -p .pdlite/fp16
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp16/$MODEL --enable_fp16=true
-    mkdir -p .pdlite/fp32
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp32/$MODEL
-    mkdir -p .pdlite/opencl
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=opencl --optimize_out=.pdlite/opencl/$MODEL
-    #mkdir -p .pdlite/int16
+
+    ### stage 2: paddle -> paddle-lite
+    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp16/$MODEL --enable_fp16=true
+    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp32/$MODEL
+    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/quant/$MODEL  --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL
+    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=opencl --optimize_out=.pdlite/opencl/$MODEL
+
+    ### rubbish following
     #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int16/$MODEL --quant_model=true --quant_type=QUANT_INT16
-    #mkdir -p .pdlite/int8
     #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL --quant_model=true --quant_type=QUANT_INT8
 }
+
+mkdir -p .pdlite/paddle .pdlite/quant .pdlite/fp16 .pdlite/fp32 .pdlite/int8 .pdlite/opencl
 
 onnx_pdlite efficientformerv2_s0
 onnx_pdlite efficientformerv2_s1
@@ -26,21 +29,17 @@ onnx_pdlite efficientformerv2_s2
 #onnx_pdlite SwiftFormer_S
 #onnx_pdlite SwiftFormer_L1
 
-# Exception: The padding value is wrong!
-# Exception: convert failed node:_stage3_1_Pad_output_0, op_type is Pad
-#onnx_pdlite EMO_1M
-#onnx_pdlite EMO_2M
-#onnx_pdlite EMO_5M
-#onnx_pdlite EMO_6M
+onnx_pdlite EMO_1M
+onnx_pdlite EMO_2M
+onnx_pdlite EMO_5M
+onnx_pdlite EMO_6M
 
 onnx_pdlite edgenext_xx_small
 onnx_pdlite edgenext_x_small
 onnx_pdlite edgenext_small
 
 # [F  9/ 3  1:42:33.691 ...rk/work/Paddle-Lite/lite/core/op_lite.cc:176 AttachOutput] Check failed: is_dispensable || is_have_output:
-# FatalError: `Process abort signal` is detected by the operating system.
-#   [TimeInfo: *** Aborted at 1693676553 (unix time) try "date -d @1693676553" if you are using GNU date ***]
-#   [SignalInfo: *** SIGABRT (@0x3e800001a20) received by PID 6688 (TID 0x7fd501eaf740) from PID 6688 ***]
+# Aborted (core dumped)
 #onnx_pdlite mobilevitv2_050
 #onnx_pdlite mobilevitv2_075
 #onnx_pdlite mobilevitv2_100

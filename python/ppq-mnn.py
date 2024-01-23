@@ -53,10 +53,10 @@ if __name__ == '__main__':
 
         # NotImplementedError: Graph op: /stage4.1/Mod_2(Mod) has no backend implementation on target platform TargetPlatform.SOI.
         # Register this op to ppq.executor.base.py and ppq.executor.op first
-        #('EMO_1M', 224， False),
-        #('EMO_2M', 224， False),
-        #('EMO_5M', 224， False),
-        #('EMO_6M', 224， False),
+        #('EMO_1M', 224, False),
+        #('EMO_2M', 224, False),
+        #('EMO_5M', 224, False),
+        #('EMO_6M', 224, False),
 
         ('edgenext_xx_small', 256, False),
         ('edgenext_x_small' , 256, False),
