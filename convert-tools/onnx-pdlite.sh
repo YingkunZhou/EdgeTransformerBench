@@ -24,7 +24,8 @@ onnx_pdlite efficientformerv2_s0
 onnx_pdlite efficientformerv2_s1
 onnx_pdlite efficientformerv2_s2
 
-# [F  9/ 4  0: 3:25. 51 ...e-Lite/lite/kernels/host/cast_compute.cc:164 Run] other has not been implemented transform with dtype3 X, dtype0 Out
+### [F  9/ 4  0: 3:25. 51 ...e-Lite/lite/kernels/host/cast_compute.cc:164 Run] other has not been implemented transform with dtype3 X, dtype0 Out
+### failed on running time
 #onnx_pdlite SwiftFormer_XS
 #onnx_pdlite SwiftFormer_S
 #onnx_pdlite SwiftFormer_L1
@@ -38,8 +39,9 @@ onnx_pdlite edgenext_xx_small
 onnx_pdlite edgenext_x_small
 onnx_pdlite edgenext_small
 
-# [F  9/ 3  1:42:33.691 ...rk/work/Paddle-Lite/lite/core/op_lite.cc:176 AttachOutput] Check failed: is_dispensable || is_have_output:
-# Aborted (core dumped)
+## [F  9/ 3  1:42:33.691 ...rk/work/Paddle-Lite/lite/core/op_lite.cc:176 AttachOutput] Check failed: is_dispensable || is_have_output:
+## Aborted (core dumped)
+## failed on stage 2
 #onnx_pdlite mobilevitv2_050
 #onnx_pdlite mobilevitv2_075
 #onnx_pdlite mobilevitv2_100
@@ -62,8 +64,9 @@ onnx_pdlite LeViT_256
 onnx_pdlite resnet50
 onnx_pdlite mobilenetv3_large_100
 
-# Exception: The padding value is wrong!
-# Exception: convert failed node:_conv_stem_Pad_output_0, op_type is Pad
+## Exception: The padding value is wrong!
+## Exception: convert failed node:_conv_stem_Pad_output_0, op_type is Pad
+## failed on stage1
 #onnx_pdlite tf_efficientnetv2_b0
 #onnx_pdlite tf_efficientnetv2_b1
 #onnx_pdlite tf_efficientnetv2_b2
