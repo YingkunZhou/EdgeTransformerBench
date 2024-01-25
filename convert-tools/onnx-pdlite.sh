@@ -2,15 +2,23 @@ onnx_pdlite()
 {
     MODEL=$1
     ### stage 1: onnx -> paddle
-    # https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/user_guides/x2paddle.md
-    #x2paddle --framework=onnx --model=.onnx/fp32/$MODEL.onnx --save_dir=.pdlite
-    #mv .pdlite/inference_model .pdlite/paddle/$MODEL
-    #rm .pdlite/model.pdparams .pdlite/x2paddle_code.py .pdlite/__pycache__ -rf
+    if [ ! -d ".pdlite/paddle/$MODEL" ]
+    then
+        # https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/user_guides/x2paddle.md
+        #x2paddle --framework=onnx --model=.onnx/fp32/$MODEL.onnx --save_dir=.pdlite
+        mv .pdlite/inference_model .pdlite/paddle/$MODEL
+        rm .pdlite/model.pdparams .pdlite/x2paddle_code.py .pdlite/__pycache__ -rf
+    fi
 
     ### stage 2: paddle -> paddle-lite
     ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp16/$MODEL --enable_fp16=true
     ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp32/$MODEL
     ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/quant/$MODEL  --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL
+
+    if [ ! -d ".pdlite/quant/$MODEL" ]
+    then
+        python python/pdlite-int8.py
+    fi
     ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=opencl --optimize_out=.pdlite/opencl/$MODEL
 
     ### rubbish following
@@ -18,7 +26,9 @@ onnx_pdlite()
     #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL --quant_model=true --quant_type=QUANT_INT8
 }
 
-mkdir -p .pdlite/paddle .pdlite/quant .pdlite/fp16 .pdlite/fp32 .pdlite/int8 .pdlite/opencl
+cd .pdlite
+mkdir -p .paddle .quant .fp16 .fp32 .int8 .opencl
+cd ..
 
 onnx_pdlite efficientformerv2_s0
 onnx_pdlite efficientformerv2_s1
@@ -30,6 +40,7 @@ onnx_pdlite efficientformerv2_s2
 #onnx_pdlite SwiftFormer_S
 #onnx_pdlite SwiftFormer_L1
 
+### need emo.patch
 onnx_pdlite EMO_1M
 onnx_pdlite EMO_2M
 onnx_pdlite EMO_5M
