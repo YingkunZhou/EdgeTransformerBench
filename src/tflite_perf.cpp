@@ -19,7 +19,9 @@
 #ifdef USE_ARMNN
 #include <armnn_delegate.hpp>
 #endif
-#define USE_XNNPACK // always enable
+// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/xnnpack/README.md
+// XNNPACK engine used by TensorFlow Lite interpreter uses a single thread for inference by default.
+// Enable XNNPACK via low-level delegate API (not recommended)
 #ifdef USE_XNNPACK
 #include <tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h>
 #endif

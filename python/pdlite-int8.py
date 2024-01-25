@@ -60,6 +60,7 @@ def main():
         ('efficientformerv2_s1', 224, False),
         ('efficientformerv2_s2', 224, False),
 
+        ### need emo.patch
         ('EMO_1M', 224, False),
         ('EMO_2M', 224, False),
         ('EMO_5M', 224, False),

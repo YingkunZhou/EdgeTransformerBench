@@ -24,7 +24,7 @@ def get_args_parser():
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     # Dataset parameters
     parser.add_argument('--validation', action='store_true', default=False)
-    parser.add_argument('--data-path', default='.tflite/calibration', type=str, help='dataset path')
+    parser.add_argument('--data-path', default='.ncnn/calibration', type=str, help='dataset path')
 
     return parser
 
@@ -41,10 +41,11 @@ if __name__ == '__main__':
         ('SwiftFormer_S' , 224, False),
         ('SwiftFormer_L1', 224, False),
 
-        # ('EMO_1M', 224, False),  # cannot convert, even if converted, still cannnot run
-        # ('EMO_2M', 224, False),  # cannot convert, even if converted, still cannnot run
-        # ('EMO_5M', 224, False),  # cannot convert, even if converted, still cannnot run
-        # ('EMO_6M', 224, False),  # cannot convert, even if converted, still cannnot run
+        ### need emo.patch
+        ('EMO_1M', 224, False),
+        ('EMO_2M', 224, False),
+        ('EMO_5M', 224, False),
+        ('EMO_6M', 224, False),
 
         ('edgenext_xx_small', 256, False),
         ('edgenext_x_small' , 256, False),
@@ -82,38 +83,54 @@ if __name__ == '__main__':
         args.input_size = resolution
 
         converter = tf.lite.TFLiteConverter.from_saved_model(".tflite/"+name+".pb") # path to the SavedModel directory
+
+        # tell converter which type of optimization techniques to use
+        if args.format != "fp32":
+            converter.optimizations = [tf.lite.Optimize.DEFAULT] # EXPERIMENTAL_SPARSITY
+
+        if args.format == "fp16":
+            converter.target_spec.supported_types = [tf.float16]
+        """
+        elif args.format == "int16":
+            # convert: For full integer quantization, a `representative_dataset` must be specified.
+            # runtime: unsupported datatype "(INT16)" of tensor in XNNPACK delegate
+            converter.target_spec.supported_types = [tf.int16]
+        elif args.format == "int8":
+            # convert: Error code: ERROR_NEEDS_FLEX_OPS
+            converter.target_spec.supported_types = [tf.int8]
+        """
+
+        supported_ops = []
         if args.format == "int16":
-            converter.target_spec.supported_ops = [
-                tf.lite.OpsSet.TFLITE_BUILTINS,
-                tf.lite.OpsSet.SELECT_TF_OPS,
+            # runtime: unsupported datatype "(INT16)" of tensor in XNNPACK delegate
+            supported_ops = [
                 tf.lite.OpsSet.EXPERIMENTAL_TFLITE_BUILTINS_ACTIVATIONS_INT16_WEIGHTS_INT8
             ]
-        else:
-            converter.target_spec.supported_ops = [
-                tf.lite.OpsSet.TFLITE_BUILTINS,
-                tf.lite.OpsSet.SELECT_TF_OPS
+        """
+        elif args.format == "int8":
+            # convert: For full integer quantization, a `representative_dataset` must be specified.
+            supported_ops = [
+                tf.lite.OpsSet.TFLITE_BUILTINS_INT8
             ]
-        # tell converter which type of optimization techniques to use
+        """
+        converter.target_spec.supported_ops = supported_ops + [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS,
+        ]
 
-        dataset_val = build_dataset(args)
-        calibration_dataset = [torch.unsqueeze(i[0], dim=0) for i in dataset_val]
-        #calibration_dataset = calibration_dataset[:20]
+        """
+        dataset = build_dataset(args)
+        dataset = [i[0].detach().cpu().numpy() for i in dataset]
         def representative_dataset():
-            for i in calibration_dataset:
-                yield [i.numpy().astype(np.float32)]
+            for data in tf.data.Dataset.from_tensor_slices((dataset)).batch(1).take(100):
+                yield [tf.dtypes.cast(data, tf.float32)]
         #to view the best option for optimization read documentation of tflite about optimization
         #go to this link https://www.tensorflow.org/lite/guide/get_started#4_optimize_your_model_optional
         #https://www.tensorflow.org/lite/performance/post_training_quantization?hl=zh-cn
         #https://www.tensorflow.org/lite/performance/post_training_float16_quant?hl=zh-cn
-        if args.format != "fp32":
-            converter.optimizations = [tf.lite.Optimize.DEFAULT]
         if args.format == "int16" or args.format == "int8":
             converter.representative_dataset = representative_dataset
-        if args.format == "bf16":
-            converter.target_spec.supported_types = [tf.float16]
-        if args.format == "fp16":
-            converter.target_spec.supported_types = [tf.bfloat16]
-
+        """
         tf_lite_model = converter.convert()
         # Save the model.
         open(".tflite/"+args.format+"/"+name+'.tflite', 'wb').write(tf_lite_model)

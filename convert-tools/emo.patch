@@ -1,0 +1,31 @@
+diff --git a/python/sota/emo.py b/python/sota/emo.py
+index ebe3c9e..562a4d5 100644
+--- a/python/sota/emo.py
++++ b/python/sota/emo.py
+@@ -175,16 +175,7 @@ class iRMB(nn.Module):
+         x = self.norm(x)
+         B, C, H, W = x.shape
+         if self.attn_s:
+-            # padding
+-            if self.window_size <= 0:
+-                window_size_W, window_size_H = W, H
+-            else:
+-                window_size_W, window_size_H = self.window_size, self.window_size
+-            pad_l, pad_t = 0, 0
+-            pad_r = (window_size_W - W % window_size_W) % window_size_W
+-            pad_b = (window_size_H - H % window_size_H) % window_size_H
+-            x = F.pad(x, (pad_l, pad_r, pad_t, pad_b, 0, 0,))
+-            n1, n2 = (H + pad_b) // window_size_H, (W + pad_r) // window_size_W
++            n1, n2 = H // self.window_size, W // self.window_size
+             x = rearrange(x, 'b c (h1 n1) (w1 n2) -> (b n1 n2) c h1 w1', n1=n1, n2=n2).contiguous()
+             # attention
+             b, c, h, w = x.shape
+@@ -206,8 +197,6 @@ class iRMB(nn.Module):
+                 x_spa = rearrange(x_spa, 'b heads (h w) dim_head -> b (heads dim_head) h w', heads=self.num_head, h=h, w=w).contiguous()
+             # unpadding
+             x = rearrange(x_spa, '(b n1 n2) c h1 w1 -> b c (h1 n1) (w1 n2)', n1=n1, n2=n2).contiguous()
+-            if pad_r > 0 or pad_b > 0:
+-                x = x[:, :, :H, :W].contiguous()
+         else:
+             x = self.v(x)
+ 

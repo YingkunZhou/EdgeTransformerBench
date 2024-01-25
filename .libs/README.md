@@ -372,6 +372,9 @@ git clone https://github.com/PaddlePaddle/Paddle-Lite.git #--depth=1
 cd Paddle-Lite
 ./lite/tools/build_linux.sh --arch=armv8 --with_extra=ON --toolchain=clang \
 --with_exception=ON --with_opencl=ON --with_arm82_fp16=ON
+### for cortex-a73 and below
+./lite/tools/build_linux.sh --arch=armv8 --with_extra=ON --toolchain=clang \
+--with_exception=ON --with_opencl=ON #--with_arm82_fp16=ON
 ```
 
 ```diff
@@ -449,20 +452,6 @@ mkdir -p install/bin
 cp bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model_plus_flex install/bin
 ```
 
-```diff
-diff --git a/third_party/xla/third_party/tsl/tsl/platform/denormal.cc b/third_party/xla/third_party/tsl/tsl/platform/denormal.cc
-index 4f071109..02f64c09 100644
---- a/third_party/xla/third_party/tsl/tsl/platform/denormal.cc
-+++ b/third_party/xla/third_party/tsl/tsl/platform/denormal.cc
-@@ -17,6 +17,7 @@ limitations under the License.
-
- #include "tsl/platform/cpu_info.h"
- #include "tsl/platform/platform.h"
-+#include <cstdint>
-
- // If we're on gcc 4.8 or older, there's a known bug that prevents the use of
- // intrinsics when the architecture is not defined in the flags. See
-```
 </details>
 
 ## armnn
@@ -498,20 +487,17 @@ cd ComputeLibrary/
 scons arch=arm64-v8a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j`nproc`
 ```
 
+Here we use arm linux env natively.
+
 ```diff
-diff --git a/SConstruct b/SConstruct
-index 68c518a..05dfe9f 100644
 --- a/SConstruct
 +++ b/SConstruct
-@@ -381,7 +381,7 @@ if 'x86' not in env['arch']:
-             auto_toolchain_prefix = "armv7l-tizen-linux-gnueabi-"
-     elif env['estate'] == '64' and 'v8' in env['arch']:
+@@ -373,7 +373,7 @@ else: # NONE "multi_isa" builds
+-if 'x86' not in env['arch']:
++if 'arm' not in env['arch']:
+     if env['estate'] == '32':
          if env['os'] == 'linux':
--            auto_toolchain_prefix = "aarch64-linux-gnu-"
-+            auto_toolchain_prefix = ""
-         elif env['os'] == 'bare_metal':
-             auto_toolchain_prefix = "aarch64-elf-"
-         elif env['os'] == 'android':
+             auto_toolchain_prefix = "arm-linux-gnueabihf-" if 'v7' in env['arch'] else "armv8l-linux-gnueabihf-"
 ```
 
 ```bash
@@ -532,21 +518,6 @@ cmake .. -DARMCOMPUTE_ROOT=$BASEDIR/ComputeLibrary \
 make -j32
 ```
 
-```diff
-diff --git a/src/armnn/ExecutionFrame.cpp b/src/armnn/ExecutionFrame.cpp
-index 92a7990..118fa7e 100644
---- a/src/armnn/ExecutionFrame.cpp
-+++ b/src/armnn/ExecutionFrame.cpp
-@@ -39,7 +39,7 @@ void ExecutionFrame::RegisterDebugCallback(const DebugCallbackFunction& func)
-
- void ExecutionFrame::AddWorkloadToQueue(std::unique_ptr<IWorkload> workload)
- {
--    m_WorkloadQueue.push_back(move(workload));
-+    m_WorkloadQueue.push_back(std::move(workload));
- }
-
- void ExecutionFrame::SetNextExecutionFrame(IExecutionFrame* nextExecutionFrame)
-```
 </details>
 
 # onnxruntime
