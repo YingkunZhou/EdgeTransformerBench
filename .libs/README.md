@@ -444,9 +444,10 @@ find install/include/ ! \( -name '*.h*' \) -type f -exec rm -f {} +
 mkdir -p install/lib
 cp bazel-bin/tensorflow/lite/libtensorflowlite.so install/lib
 cp bazel-bin/tensorflow/lite/delegates/flex/libtensorflowlite_flex.so install/lib
+cp bazel-bin/libtensorflow_lite_all.so  install/lib
 cp -a $BASEDIR/armnn/build/libarmnn.so* install/lib
-cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so* install/lib
-
+cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
+cp -a $BASEDIR/flatbuffers/install/lib/libflatbuffers.so* install/lib
 ## optional
 mkdir -p install/bin
 cp bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model_plus_flex install/bin
@@ -476,7 +477,7 @@ cc_binary(
 bazel build --config=opt --config=monolithic --strip=always libtensorflow_lite_all.so
 cd $BASEDIR/flatbuffers
 mkdir build && cd build
-cmake .. -D CMAKE_INSTALL_PREFIX=../install
+cmake .. -D CMAKE_INSTALL_PREFIX=../install -D FLATBUFFERS_BUILD_SHAREDLIB=ON
 make install -j32
 cd $BASEDIR
 git clone https://review.mlplatform.org/ml/ComputeLibrary #--depth=1

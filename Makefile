@@ -123,7 +123,7 @@ GPU_FLAGS ?=
 NNAPI_FLAGS ?=
 ifeq ($(BACK),a)
 	ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
-	-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN
+	-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN -lflatbuffers
 endif
 
 ifeq ($(BACK),g)
@@ -146,11 +146,11 @@ tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
 bin/tflite-perf: src/tflite_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/tflite-perf src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	LD_LIBRARY_PATH=$(TFLITE_LIB) $(CXX) -O3 -o bin/tflite-perf src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	$(ARMNN_FLAGS) $(GPU_FLAGS) $(NNAPI_FLAGS)
 
 bin/tflite-perf-test: src/tflite_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/tflite-perf-test src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+	LD_LIBRARY_PATH=$(TFLITE_LIB) $(CXX) -O3 -DTEST -o bin/tflite-perf-test src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	$(ARMNN_FLAGS) $(GPU_FLAGS) $(NNAPI_FLAGS)
 
 run-tflite-perf: bin/tflite-perf
