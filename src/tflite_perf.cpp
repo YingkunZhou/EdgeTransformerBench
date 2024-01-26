@@ -162,11 +162,22 @@ int main(int argc, char* argv[])
             // https://www.tensorflow.org/lite/performance/gpu_advanced?hl=zh-cn
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/README.md
             // NEW: Prepare GPU delegate.
+            // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/delegate_options.cc
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
+            options.is_precision_loss_allowed = 1; // GPU performs FP16 calculation internally
+            /*
+            const TfLiteGpuDelegateOptionsV2 options = {
+                .is_precision_loss_allowed = 1, // GPU performs FP16 calculation internally
+                .wait_type = TFLGpuDelegateWaitTypeAggressive, // to avoid GPU sleep mode
+                .inference_preference = TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER
+            };
+            */
             // GPU 委托序列化
-            /*options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
+            /*
+            options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;
-            options.model_token = kModelToken;*/
+            options.model_token = kModelToken;
+            */
             delegate = TfLiteGpuDelegateV2Create(&options);
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/cl/testing/delegate_testing.cc
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {

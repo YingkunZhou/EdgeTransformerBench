@@ -429,8 +429,6 @@ cd tensorflow
 # choose clang, and use -O3 option
 bazel build --verbose_failures -c opt //tensorflow/lite:tensorflowlite --define tflite_with_xnnpack=true # --jobs 8
 bazel build --verbose_failures -c opt --config=monolithic tensorflow/lite/delegates/flex:tensorflowlite_flex --define tflite_with_xnnpack=true # --jobs 8
-## optional
-bazel build -c opt --config=monolithic tensorflow/lite/tools/benchmark:benchmark_model_plus_flex --jobs 8
 
 mkdir -p install/include/tensorflow
 cp -r tensorflow/lite install/include/tensorflow
@@ -448,7 +446,14 @@ cp bazel-bin/libtensorflow_lite_all.so  install/lib
 cp -a $BASEDIR/armnn/build/libarmnn.so* install/lib
 cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
 cp -a $BASEDIR/flatbuffers/install/lib/libflatbuffers.so* install/lib
+
+## gpu support
+# sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
+bazel build -s -c opt --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 tensorflow/lite/delegates/gpu:libtensorflowlite_gpu_delegate.so
+cp bazel-bin/tensorflow/lite/delegates/gpu/libtensorflowlite_gpu_delegate.so install/lib
+
 ## optional
+bazel build -c opt --config=monolithic tensorflow/lite/tools/benchmark:benchmark_model_plus_flex --jobs 8
 mkdir -p install/bin
 cp bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model_plus_flex install/bin
 ```

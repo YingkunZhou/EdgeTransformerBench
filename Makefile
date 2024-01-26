@@ -128,6 +128,11 @@ endif
 
 ifeq ($(BACK),g)
 	GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU
+	UNAME_S := $(shell uname -s)
+# sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
+	ifeq ($(UNAME_S),Linux)
+		GPU_FLAGS += -lGL -lEGL
+	endif
 endif
 
 ifeq ($(BACK),n)
