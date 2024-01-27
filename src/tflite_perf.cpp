@@ -173,8 +173,6 @@ int main(int argc, char* argv[])
                 continue;
                 return EXIT_FAILURE;
             }
-            // interpreter_builder.AddDelegate(delegate);
-            // if (interpreter_builder(&interpreter) != kTfLiteOk) return EXIT_FAILURE;
         }
         else
 #endif
