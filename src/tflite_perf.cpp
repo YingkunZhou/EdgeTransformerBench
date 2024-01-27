@@ -22,9 +22,7 @@
 // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/xnnpack/README.md
 // XNNPACK engine used by TensorFlow Lite interpreter uses a single thread for inference by default.
 // Enable XNNPACK via low-level delegate API (not recommended)
-#ifdef USE_XNNPACK
 #include <tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h>
-#endif
 
 #include "utils.h"
 using namespace tflite;
@@ -44,8 +42,7 @@ struct {
 #include "evaluate.tcc"
 #include "benchmark.tcc"
 
-TfLiteDelegate* delegate;
-void delete_delegate(char backend) {
+void delete_delegate(char backend, TfLiteDelegate* delegate) {
 #ifdef GPU
     if (backend == 'g') {
         TfLiteGpuDelegateV2Delete(delegate);
@@ -58,11 +55,9 @@ void delete_delegate(char backend) {
     }
     else
 #endif
-#ifdef XNNPACK
     if (backend == 'x') {
         TfLiteXNNPackDelegateDelete(delegate);
     }
-#endif
 }
 
 int main(int argc, char* argv[])
@@ -155,6 +150,7 @@ int main(int argc, char* argv[])
         InterpreterBuilder interpreter_builder(*tflite_model, resolver);
         interpreter_builder.SetNumThreads(num_threads);
         if (interpreter_builder(&interpreter) != kTfLiteOk) return EXIT_FAILURE;
+        TfLiteDelegate* delegate;
 
 #ifdef USE_GPU
         if (backend == 'g') {
@@ -165,15 +161,7 @@ int main(int argc, char* argv[])
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/delegate_options.cc
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
             options.is_precision_loss_allowed = 1; // GPU performs FP16 calculation internally
-            /*
-            const TfLiteGpuDelegateOptionsV2 options = {
-                .is_precision_loss_allowed = 1, // GPU performs FP16 calculation internally
-                .wait_type = TFLGpuDelegateWaitTypeAggressive, // to avoid GPU sleep mode
-                .inference_preference = TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER
-            };
-            */
-            // GPU 委托序列化
-            /*
+            /* GPU 委托序列化
             options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;
             options.model_token = kModelToken;
@@ -216,28 +204,34 @@ int main(int argc, char* argv[])
         if (backend == 'a') {
             std::cout << "INFO: Using ARMNN backend" << std::endl;
             //https://review.mlplatform.org/plugins/gitiles/ml/armnn/+/3b38eedb3cc8f1c95a9ce62ddfbe926708666e72/delegate/BuildGuideNative.md#delegate-build-guide-introduction
-            // Create the Arm NN Delegate
-            //armnnDelegate::DelegateOptions options = armnnDelegate::TfLiteArmnnDelegateOptionsDefault();
-            //std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
-            //    theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(options), armnnDelegate::TfLiteArmnnDelegateDelete);
+            //https://github.com/search?q=repo%3AARM-software%2Farmnn+TfLiteArmnnDelegateDelete&type=code
             //https://github.com/nxp-imx/armnn-imx/blob/lf-5.15.5_1.0.0/delegate/samples/armnn_delegate_example.cpp
-            std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc};
+            //https://github.com/ARM-software/armnn/blob/branches/armnn_23_11/samples/ObjectDetection/Readme.md
+            // Create the Arm NN Delegate
+            armnn::OptimizerOptionsOpaque optimizerOptions;
+            std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc, armnn::Compute::CpuRef};
             unsigned int numberOfThreads = num_threads; // the leagal name to pass thread number parameter
-            armnn::BackendOptions cpuAcc("CpuAcc",
+
+            /* enable fast math optimization */
+            //armnn::BackendOptions modelOptionGpu("GpuAcc", {{"FastMathEnabled", true}});
+            //optimizerOptions.AddModelOption(modelOptionGpu);
+            armnn::BackendOptions modelOptionCpu("CpuAcc",
                                         {
                                             { "FastMathEnabled", true },
                                             { "NumberOfThreads", numberOfThreads }
                                         });
-            armnn::OptimizerOptionsOpaque optimizerOptions;
-            optimizerOptions.AddModelOption(cpuAcc);
+            optimizerOptions.AddModelOption(modelOptionCpu);
+            /* enable reduce float32 to float16 optimization */
+            // https://community.arm.com/arm-community-blogs/b/ai-and-ml-blog/posts/making-the-most-of-arm-nn-for-gpu-inference
+            optimizerOptions.SetReduceFp32ToFp16(true);
             armnnDelegate::DelegateOptions delegateOptions(backends, optimizerOptions);
-
+            /* create delegate object */
             std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
-                        theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(delegateOptions),
-                                         armnnDelegate::TfLiteArmnnDelegateDelete);
+                theArmnnDelegate(armnnDelegate::TfLiteArmnnDelegateCreate(delegateOptions),
+                                 armnnDelegate::TfLiteArmnnDelegateDelete);
 
             // Instruct the Interpreter to use the armnnDelegate
-            if (interpreter->ModifyGraphWithDelegate(theArmnnDelegate.get()) != kTfLiteOk) {
+            if (interpreter->ModifyGraphWithDelegate(std::move(theArmnnDelegate)) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to Armnn!" << std::endl;
                 continue;
                 return EXIT_FAILURE;
@@ -245,7 +239,6 @@ int main(int argc, char* argv[])
         }
         else
 #endif
-#ifdef USE_XNNPACK
         if (backend == 'x') {
             std::cout << "INFO: Using XNNPACK backend" << std::endl;
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/xnnpack/README.md
@@ -261,9 +254,7 @@ int main(int argc, char* argv[])
                 return EXIT_FAILURE;
             }
         }
-#endif
-
-        if (interpreter->AllocateTensors() != kTfLiteOk) {
+        else if (interpreter->AllocateTensors() != kTfLiteOk) {
             std::cout << "Failed to allocate tensors!" << std::endl;
             return EXIT_FAILURE;
         }
@@ -275,8 +266,9 @@ int main(int argc, char* argv[])
             benchmark(interpreter);
         }
 
+        // IMPORTANT: release the interpreter before destroying the delegate
         interpreter.reset();
-        delete_delegate(backend);
+        delete_delegate(backend, delegate);
     }
     return EXIT_SUCCESS;
 }
