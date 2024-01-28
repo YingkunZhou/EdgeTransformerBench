@@ -92,7 +92,8 @@ if __name__ == '__main__':
             converter.target_spec.supported_types = [tf.float16]
             # The model's "reduced_precision_support" metadata indicates that the model is compatible with FP16 inference.
             # The metadata can be added during model conversion using the _experimental_supported_accumulation_type attribute of the tf.lite.TargetSpec object:
-            ## converter.target_spec._experimental_supported_accumulation_type = tf.dtypes.float16 # [x]
+            # Here we need fp16 model to act as fp32 model in order to reduce storage size and network transfer bandwidth
+            #converter.target_spec._experimental_supported_accumulation_type = tf.dtypes.float16 # [x]
             # To force FP16 inference, either build the delegate with --define xnnpack_force_float_precision=fp16 option, [x]
             # or add TFLITE_XNNPACK_DELEGATE_FLAG_FORCE_FP16 flag to the TfLiteXNNPackDelegateOptions.flags [-]
         elif args.format == "int16":
@@ -114,7 +115,7 @@ if __name__ == '__main__':
         dataset = build_dataset(args)
         dataset = [i[0].detach().cpu().numpy() for i in dataset]
         def representative_dataset():
-            for data in tf.data.Dataset.from_tensor_slices((dataset)).batch(1).take(100):
+            for data in tf.data.Dataset.from_tensor_slices((dataset)).batch(1).take(100): # 100 is better than 512 for accuracy
                 yield [tf.dtypes.cast(data, tf.float32)]
         #to view the best option for optimization read documentation of tflite about optimization
         #go to this link https://www.tensorflow.org/lite/guide/get_started#4_optimize_your_model_optional
