@@ -427,8 +427,8 @@ export BASEDIR=$PWD
 cd tensorflow
 ./configure
 # choose clang, and use -O3 option
-bazel build --verbose_failures -c opt //tensorflow/lite:tensorflowlite --define tflite_with_xnnpack=true # --jobs 8
-bazel build --verbose_failures -c opt --config=monolithic tensorflow/lite/delegates/flex:tensorflowlite_flex --define tflite_with_xnnpack=true # --jobs 8
+bazel build --verbose_failures -c opt //tensorflow/lite:tensorflowlite --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true # --jobs 8
+bazel build --verbose_failures -c opt --config=monolithic tensorflow/lite/delegates/flex:tensorflowlite_flex --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true # --jobs 8
 
 mkdir -p install/include/tensorflow
 cp -r tensorflow/lite install/include/tensorflow
@@ -442,9 +442,11 @@ find install/include/ ! \( -name '*.h*' \) -type f -exec rm -f {} +
 mkdir -p install/lib
 cp bazel-bin/tensorflow/lite/libtensorflowlite.so install/lib
 cp bazel-bin/tensorflow/lite/delegates/flex/libtensorflowlite_flex.so install/lib
+#armnn
 cp bazel-bin/libtensorflow_lite_all.so  install/lib
 cp -a $BASEDIR/armnn/build/libarmnn.so* install/lib
 cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
+#flatbuffer
 cp -a $BASEDIR/flatbuffers/install/lib/libflatbuffers.so* install/lib
 
 ## gpu support
@@ -491,6 +493,7 @@ cd ComputeLibrary/
 # The machine used for this guide only has a Neon CPU which is why I only have "neon=1" but if
 # your machine has an arm Gpu you can enable that by adding `opencl=1 embed_kernels=1 to the command below
 scons arch=arm64-v8a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j`nproc`
+scons arch=arm64-v8.2-a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j 32
 ```
 
 Here we use arm linux env natively.

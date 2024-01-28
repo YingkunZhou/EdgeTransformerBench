@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
             //https://github.com/ARM-software/armnn/blob/branches/armnn_23_11/samples/ObjectDetection/Readme.md
             // Create the Arm NN Delegate
             armnn::OptimizerOptionsOpaque optimizerOptions;
-            std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc, armnn::Compute::CpuRef};
+            std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc}; //armnn::Compute::CpuRef
             unsigned int numberOfThreads = num_threads; // the leagal name to pass thread number parameter
 
             /* enable fast math optimization */
@@ -245,6 +245,7 @@ int main(int argc, char* argv[])
             // structure.
             TfLiteXNNPackDelegateOptions options = TfLiteXNNPackDelegateOptionsDefault();
             options.num_threads = num_threads;
+            options.flags |= TFLITE_XNNPACK_DELEGATE_FLAG_FORCE_FP16;
             delegate = TfLiteXNNPackDelegateCreate(&options);
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to XNN!" << std::endl;

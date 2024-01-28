@@ -10,12 +10,11 @@ onnx_tf()
     ### stage 2: tensorflow -> tf-lite
     python python/tf-tflite.py --only-convert=$MODEL --format=fp32
     python python/tf-tflite.py --only-convert=$MODEL --format=fp16
+    python python/tf-tflite.py --only-convert=$MODEL --format=dynamic
     python python/tf-tflite.py --only-convert=$MODEL --format=int8
 }
 
-cd .tflite
-mkdir -p fp32 fp16 int8
-cd ..
+mkdir -p .tflite/fp32 .tflite/fp16 .tflite/int8 .tflite/dynamic
 
 onnx_tf efficientformerv2_s0
 onnx_tf efficientformerv2_s1

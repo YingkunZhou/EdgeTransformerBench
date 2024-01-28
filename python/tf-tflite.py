@@ -90,15 +90,15 @@ if __name__ == '__main__':
 
         if args.format == "fp16":
             converter.target_spec.supported_types = [tf.float16]
-        """
+            # The model's "reduced_precision_support" metadata indicates that the model is compatible with FP16 inference.
+            # The metadata can be added during model conversion using the _experimental_supported_accumulation_type attribute of the tf.lite.TargetSpec object:
+            ## converter.target_spec._experimental_supported_accumulation_type = tf.dtypes.float16 # [x]
+            # To force FP16 inference, either build the delegate with --define xnnpack_force_float_precision=fp16 option, [x]
+            # or add TFLITE_XNNPACK_DELEGATE_FLAG_FORCE_FP16 flag to the TfLiteXNNPackDelegateOptions.flags [-]
         elif args.format == "int16":
             # convert: For full integer quantization, a `representative_dataset` must be specified.
             # runtime: unsupported datatype "(INT16)" of tensor in XNNPACK delegate
             converter.target_spec.supported_types = [tf.int16]
-        elif args.format == "int8":
-            # convert: Error code: ERROR_NEEDS_FLEX_OPS
-            converter.target_spec.supported_types = [tf.int8]
-        """
 
         supported_ops = []
         if args.format == "int16":
@@ -106,19 +106,11 @@ if __name__ == '__main__':
             supported_ops = [
                 tf.lite.OpsSet.EXPERIMENTAL_TFLITE_BUILTINS_ACTIVATIONS_INT16_WEIGHTS_INT8
             ]
-        """
-        elif args.format == "int8":
-            # convert: For full integer quantization, a `representative_dataset` must be specified.
-            supported_ops = [
-                tf.lite.OpsSet.TFLITE_BUILTINS_INT8
-            ]
-        """
         converter.target_spec.supported_ops = supported_ops + [
             tf.lite.OpsSet.TFLITE_BUILTINS,
             tf.lite.OpsSet.SELECT_TF_OPS,
         ]
 
-        """
         dataset = build_dataset(args)
         dataset = [i[0].detach().cpu().numpy() for i in dataset]
         def representative_dataset():
@@ -130,7 +122,6 @@ if __name__ == '__main__':
         #https://www.tensorflow.org/lite/performance/post_training_float16_quant?hl=zh-cn
         if args.format == "int16" or args.format == "int8":
             converter.representative_dataset = representative_dataset
-        """
         tf_lite_model = converter.convert()
         # Save the model.
         open(".tflite/"+args.format+"/"+name+'.tflite', 'wb').write(tf_lite_model)
