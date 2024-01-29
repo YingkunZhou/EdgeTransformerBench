@@ -214,11 +214,10 @@ int main(int argc, char* argv[])
             armnn::OptimizerOptionsOpaque optimizerOptions;
             std::vector<armnn::BackendId> backends; // armnn::Compute::CpuRef
             if (backend == 'a') {
-                    backends = {armnn::Compute::CpuAcc};
+                backends = {armnn::Compute::CpuAcc};
             }
             else {
-                std::vector<armnn::BackendId> backends =
-                    backends = {armnn::Compute::GpuAcc, armnn::Compute::CpuAcc};
+                backends = {armnn::Compute::GpuAcc, armnn::Compute::CpuAcc};
             }
             // the leagal name to pass thread number parameter
             unsigned int numberOfThreads = num_threads;
