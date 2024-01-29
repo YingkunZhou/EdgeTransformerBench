@@ -2,7 +2,7 @@ MODEL ?= s1
 # make sure no real backend use "z", so that can fall back to CPU exection
 BACK ?= z
 THREADS ?=1
-FP16 ?=
+FP ?= 32
 
 all: ncnn-perf mnn-perf tnn-perf pdlite-perf tflite-perf onnxruntime-perf torch-perf
 run-all: run-ncnn-perf run-mnn-perf run-tnn-perf run-pdlite-perf run-tflite-perf run-onnxruntime-perf run-torch-perf
@@ -144,15 +144,15 @@ bin/tflite-perf-test: src/tflite_perf.cpp $(DEPS)
 
 run-tflite-perf: bin/tflite-perf
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) $(FP16)
+	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-tflite: bin/tflite-perf
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) $(FP16)
+	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP)
 
 test-tflite-perf: bin/tflite-perf-test
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) $(FP16)
+	bin/tflite-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 ########################
 ### onnxruntime part ###
