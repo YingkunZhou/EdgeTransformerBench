@@ -1,31 +1,54 @@
 download_model()
 {
-    gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov- # tflite-fp32-models.tar.gz
-    gdown 18ZJBnwhBLac9mprisHIM_9D2w0mSXHog # tflite-onnx-models.tar.gz
-    gdown 1q5gdahzHoBQSSGXEKjPsybFgHg-yOSbR # tflite-tinynn-models.tar.gz
-    tar xf tflite-fp32-models.tar.gz; \
-    tar xf tflite-onnx-models.tar.gz; \
-    tar xf tflite-tinynn-models.tar.gz
+    if [ ! -d ".tflite" ]
+    then
+        if [ ! -f "tflite-fp32-models.tar.gz" ]
+        then
+            echo "download tflite-fp32-models.tar.gz"
+            gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov- # tflite-fp32-models.tar.gz
+        fi
+        if [ ! -f "tflite-onnx-models.tar.gz" ]
+        then
+            echo "download tflite-onnx-models.tar.gz"
+            gdown 18ZJBnwhBLac9mprisHIM_9D2w0mSXHog # tflite-onnx-models.tar.gz
+        fi
+        if [ ! -f "tflite-tinynn-models.tar.gz" ]
+        then
+            echo "download tflite-tinynn-models.tar.gz"
+            gdown 1q5gdahzHoBQSSGXEKjPsybFgHg-yOSbR # tflite-tinynn-models.tar.gz
+        fi
+        tar xf tflite-fp32-models.tar.gz; \
+        tar xf tflite-onnx-models.tar.gz; \
+        tar xf tflite-tinynn-models.tar.gz
+    fi
 }
 
 download_library()
 {
     cd .libs
-    tar xf tensorflow.tar.gz
-    if clinfo
+    if [ ! -d "tensorflow" ]
     then
-        if cat /proc/cpuinfo | grep asimdhp
+        [ -f "tensorflow.tar.gz"] && wget tensorflow.tar.gz
+        tar xf tensorflow.tar.gz
+        if clinfo
         then
-            tar xf armnn-v8.2-cl.tar.gz
+            if cat /proc/cpuinfo | grep asimdhp
+            then
+                [ -f "armnn-v8.2-cl.tar.gz"] && wget armnn-v8.2-cl.tar.gz
+                tar xf armnn-v8.2-cl.tar.gz
+            else
+                [ -f "armnn-v8-cl.tar.gz"] && wget armnn-v8-cl.tar.gz
+                tar xf armnn-v8-cl.tar.gz
+            fi
         else
-            tar xf armnn-v8-cl.tar.gz
-        fi
-    else
-        if cat /proc/cpuinfo | grep asimdhp
-        then
-            tar xf armnn-v8.2.tar.gz
-        else
-            tar xf armnn-v8.tar.gz
+            if cat /proc/cpuinfo | grep asimdhp
+            then
+                [ -f "armnn-v8.2.tar.gz"] && wget armnn-v8.2.tar.gz
+                tar xf armnn-v8.2.tar.gz
+            else
+                [ -f "armnn-v8.tar.gz"] && wget armnn-v8.tar.gz
+                tar xf armnn-v8.tar.gz
+            fi
         fi
     fi
     cd ..
