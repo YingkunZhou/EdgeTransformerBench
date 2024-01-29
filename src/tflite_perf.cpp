@@ -70,11 +70,13 @@ int main(int argc, char* argv[])
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
+    bool use_fp16 = false;
 
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"fp16", no_argument, 0, 'f'},
         {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
@@ -120,6 +122,9 @@ int main(int argc, char* argv[])
             case 't':
                 num_threads = atoi(optarg);
                 break;
+            case 'f':
+                use_fp16 = true;
+                break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
                 break;
@@ -160,7 +165,7 @@ int main(int argc, char* argv[])
             // NEW: Prepare GPU delegate.
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/delegate_options.cc
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
-            options.is_precision_loss_allowed = 1; // GPU performs FP16 calculation internally
+            if (use_fp16) options.is_precision_loss_allowed = 1; // GPU performs FP16 calculation internally
             /* GPU 委托序列化
             options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;
@@ -199,7 +204,7 @@ int main(int argc, char* argv[])
         else
 #endif
 #ifdef USE_ARMNN
-        if (backend == 'a') {
+        if (backend == 'a' || backend == 'm') { // a: cpu; m: mali gpu
             std::cout << "INFO: Using ARMNN backend" << std::endl;
             //https://review.mlplatform.org/plugins/gitiles/ml/armnn/+/3b38eedb3cc8f1c95a9ce62ddfbe926708666e72/delegate/BuildGuideNative.md#delegate-build-guide-introduction
             //https://github.com/search?q=repo%3AARM-software%2Farmnn+TfLiteArmnnDelegateDelete&type=code
@@ -207,12 +212,23 @@ int main(int argc, char* argv[])
             //https://github.com/ARM-software/armnn/blob/branches/armnn_23_11/samples/ObjectDetection/Readme.md
             // Create the Arm NN Delegate
             armnn::OptimizerOptionsOpaque optimizerOptions;
-            std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc}; //armnn::Compute::CpuRef
-            unsigned int numberOfThreads = num_threads; // the leagal name to pass thread number parameter
+            std::vector<armnn::BackendId> backends; // armnn::Compute::CpuRef
+            if (backend == 'a') {
+                    backends = {armnn::Compute::CpuAcc};
+            }
+            else {
+                std::vector<armnn::BackendId> backends =
+                    backends = {armnn::Compute::GpuAcc, armnn::Compute::CpuAcc};
+            }
+            // the leagal name to pass thread number parameter
+            unsigned int numberOfThreads = num_threads;
 
             /* enable fast math optimization */
-            //armnn::BackendOptions modelOptionGpu("GpuAcc", {{"FastMathEnabled", true}});
-            //optimizerOptions.AddModelOption(modelOptionGpu);
+            if (backend == 'm') {
+                armnn::BackendOptions modelOptionGpu("GpuAcc", {{"FastMathEnabled", true}});
+                optimizerOptions.AddModelOption(modelOptionGpu);
+            }
+
             armnn::BackendOptions modelOptionCpu("CpuAcc",
                                         {
                                             { "FastMathEnabled", true },
@@ -221,7 +237,7 @@ int main(int argc, char* argv[])
             optimizerOptions.AddModelOption(modelOptionCpu);
             /* enable reduce float32 to float16 optimization */
             // https://community.arm.com/arm-community-blogs/b/ai-and-ml-blog/posts/making-the-most-of-arm-nn-for-gpu-inference
-            optimizerOptions.SetReduceFp32ToFp16(true);
+            if (use_fp16) optimizerOptions.SetReduceFp32ToFp16(true);
             armnnDelegate::DelegateOptions delegateOptions(backends, optimizerOptions);
             /* create delegate object */
             std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
@@ -245,7 +261,7 @@ int main(int argc, char* argv[])
             // structure.
             TfLiteXNNPackDelegateOptions options = TfLiteXNNPackDelegateOptionsDefault();
             options.num_threads = num_threads;
-            options.flags |= TFLITE_XNNPACK_DELEGATE_FLAG_FORCE_FP16;
+            if (use_fp16) options.flags |= TFLITE_XNNPACK_DELEGATE_FLAG_FORCE_FP16;
             delegate = TfLiteXNNPackDelegateCreate(&options);
             if (interpreter->ModifyGraphWithDelegate(delegate) != kTfLiteOk) {
                 std::cout << "Failed to ModifyGraphWithDelegate to XNN!" << std::endl;

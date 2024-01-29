@@ -492,8 +492,10 @@ cd ComputeLibrary/
 # git checkout <tag_name> # e.g. v20.11
 # The machine used for this guide only has a Neon CPU which is why I only have "neon=1" but if
 # your machine has an arm Gpu you can enable that by adding `opencl=1 embed_kernels=1 to the command below
-scons arch=arm64-v8a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j`nproc`
+scons arch=arm64-v8a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j 32
 scons arch=arm64-v8.2-a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j 32
+scons arch=arm64-v8a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j 32
+scons arch=arm64-v8.2-a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j 32
 ```
 
 Here we use arm linux env natively.
@@ -510,6 +512,7 @@ Here we use arm linux env natively.
 ```
 
 ```bash
+conda activate # bazel env will give java support!
 cd $BASEDIR
 git clone "https://review.mlplatform.org/ml/armnn" --depth=1
 cd armnn
@@ -517,13 +520,13 @@ cd armnn
 mkdir build && cd build
 # if you've got an arm Gpu add `-DARMCOMPUTECL=1` to the command below
 cmake .. -DARMCOMPUTE_ROOT=$BASEDIR/ComputeLibrary \
-         -DARMCOMPUTENEON=1 \
          -DBUILD_UNIT_TESTS=0 \
          -DBUILD_ARMNN_TFLITE_DELEGATE=1 \
          -DTENSORFLOW_ROOT=$BASEDIR/tensorflow \
          -DTFLITE_LIB_ROOT=$BASEDIR/tensorflow/bazel-bin \
          -DFLATBUFFERS_ROOT=$BASEDIR/flatbuffers/install \
-         -D CMAKE_CXX_FLAGS="-Wno-error=missing-field-initializers -Wno-error=deprecated-declarations"
+         -DCMAKE_CXX_FLAGS="-Wno-error=missing-field-initializers -Wno-error=deprecated-declarations" \
+         -DARMCOMPUTENEON=1 -DARMCOMPUTECL=1
 make -j32
 ```
 

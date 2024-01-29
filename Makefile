@@ -2,6 +2,7 @@ MODEL ?= s1
 # make sure no real backend use "z", so that can fall back to CPU exection
 BACK ?= z
 THREADS ?=1
+FP16 ?=
 
 all: ncnn-perf mnn-perf tnn-perf pdlite-perf tflite-perf onnxruntime-perf torch-perf
 run-all: run-ncnn-perf run-mnn-perf run-tnn-perf run-pdlite-perf run-tflite-perf run-onnxruntime-perf run-torch-perf
@@ -118,34 +119,17 @@ test-pdlite-perf: bin/pdlite-perf-test
 TFLITE_INC ?= $(PWD)/.libs/tensorflow/install/include
 TFLITE_LIB ?= $(PWD)/.libs/tensorflow/install/lib
 
-ARMNN_FLAGS ?=
-GPU_FLAGS ?=
+# TODO: must first check use nnapi or not
 NNAPI_FLAGS ?=
-ifeq ($(BACK),a)
-	ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
-	-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN -lflatbuffers
-endif
-
-ifeq ($(BACK),g)
-	GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU
-	UNAME_S := $(shell uname -s)
-# sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
-	ifeq ($(UNAME_S),Linux)
-		GPU_FLAGS += -lGL -lEGL
-	endif
-endif
-
 ifeq ($(BACK),n)
-	GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU
 	NNAPI_FLAGS = -lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DUSE_NNAPI
 endif
 
-ifeq ($(BACK),ALL)
-	ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
-	-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN
-	GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU
-	NNAPI_FLAGS = -lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DUSE_NNAPI
-endif
+ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
+-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN -lflatbuffers
+
+# sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
+GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU -lGL -lEGL
 
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
@@ -160,15 +144,15 @@ bin/tflite-perf-test: src/tflite_perf.cpp $(DEPS)
 
 run-tflite-perf: bin/tflite-perf
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
+	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) $(FP16)
 
 validation-tflite: bin/tflite-perf
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS)
+	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) $(FP16)
 
 test-tflite-perf: bin/tflite-perf-test
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
+	bin/tflite-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) $(FP16)
 
 ########################
 ### onnxruntime part ###
