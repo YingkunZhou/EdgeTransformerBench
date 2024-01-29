@@ -134,10 +134,10 @@ GPU_testsuite()
 
     ### fp16
     # make sure all opencl/gpu support fp16
-    echo ">>>>>>>>>>>xnnpack: tfconvert fp32/fp16 model + fp16 arith<<<<<<<<<"
+    echo ">>>>>>>>>>>gpu: tfconvert fp32/fp16 model + fp16 arith<<<<<<<<<"
     testsuite fp16 g 16 1
 
-    echo ">>>>>>>>>>>xnnpack: tinynn fp32 model + fp16 arith<<<<<<<<<"
+    echo ">>>>>>>>>>>gpu: tinynn fp32 model + fp16 arith<<<<<<<<<"
     testsuite tinynn-32 g 16 1
 
     echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
