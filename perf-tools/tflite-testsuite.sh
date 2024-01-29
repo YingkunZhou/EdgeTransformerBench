@@ -33,14 +33,14 @@ download_library()
 
 testsuite()
 {
-    cd .tflite; rm *.tflite; ln -sf $1/* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/* .; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     echo " "
 }
 
 testsuite_onebyone()
 {
-    cd .tflite; ln -sf $1/* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/* .; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=orm make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=sma make run-tflite-perf 2>/dev/null
@@ -53,7 +53,6 @@ testsuite_onebyone()
     BACK=$2 FP=$3 THREADS=$4 MODEL=200 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=LeV make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=res make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=e_1 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=tf_ make run-tflite-perf 2>/dev/null
     echo " "
 }
@@ -61,7 +60,7 @@ testsuite_onebyone()
 # under 2GB memory
 testsuite_low_memory()
 {
-    cd .tflite; ln -sf $1/* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/* .; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=orm make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=sma make run-tflite-perf 2>/dev/null
@@ -79,10 +78,10 @@ CPU_testsuite()
 {
     ### fp32
     echo ">>>>>>>>>>>xnnpack: tfconvert fp32/fp16 model + fp32 arith<<<<<<<<<"
-    testsuite fp16 x 32 $1
+    testsuite fp16 z 32 $1
 
     echo ">>>>>>>>>>>xnnpack: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite tinynn-32 x 32 $1
+    testsuite tinynn-32 z 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
     testsuite_low_memory fp32 a 32 $1
@@ -108,10 +107,10 @@ CPU_testsuite()
 
     ### int8
     echo ">>>>>>>>>>>xnnpack: tfconvert PTQ static int8 model<<<<<<<<<"
-    testsuite int8 x 32 $1
+    testsuite int8 z 32 $1
 
     echo ">>>>>>>>>>>xnnpack: tinynn dynamic int8 model<<<<<<<<<"
-    testsuite_onebyone tinynn-d8 x 32 $1
+    testsuite_onebyone tinynn-d8 z 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert ptq static int8 model<<<<<<<<<"
     testsuite int8 a 32 $1
