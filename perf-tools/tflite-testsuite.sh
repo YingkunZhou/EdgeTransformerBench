@@ -79,10 +79,10 @@ CPU_testsuite()
 {
     ### fp32
     echo ">>>>>>>>>>>xnnpack: tfconvert fp32/fp16 model + fp32 arith<<<<<<<<<"
-    testsuite fp16 z 32 $1
+    testsuite fp16 x 32 $1
 
     echo ">>>>>>>>>>>xnnpack: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite tinynn-32 z 32 $1
+    testsuite tinynn-32 x 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
     testsuite_low_memory fp32 a 32 $1
@@ -94,10 +94,10 @@ CPU_testsuite()
     if cat /proc/cpuinfo | grep asimdhp
     then
         echo ">>>>>>>>>>>xnnpack: tfconvert fp32/fp16 model + fp16 arith<<<<<<<<<"
-        testsuite fp16 z 16 $1
+        testsuite fp16 x 16 $1
 
         echo ">>>>>>>>>>>xnnpack: tinynn fp32 model + fp16 arith<<<<<<<<<"
-        testsuite tinynn-32 z 16 $1
+        testsuite tinynn-32 x 16 $1
 
         echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
         testsuite_low_memory fp32 a 16 $1
@@ -108,10 +108,10 @@ CPU_testsuite()
 
     ### int8
     echo ">>>>>>>>>>>xnnpack: tfconvert PTQ static int8 model<<<<<<<<<"
-    testsuite int8 z 32 $1
+    testsuite int8 x 32 $1
 
     echo ">>>>>>>>>>>xnnpack: tinynn dynamic int8 model<<<<<<<<<"
-    testsuite_onebyone tinynn-d8 z 32 $1
+    testsuite_onebyone tinynn-d8 x 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert ptq static int8 model<<<<<<<<<"
     testsuite int8 a 32 $1
