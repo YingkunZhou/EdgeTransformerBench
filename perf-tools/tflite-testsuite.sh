@@ -1,3 +1,4 @@
+# USAGE: taskset -c 4-7 bash perf-tools/tflite-testsuite.sh
 download_model()
 {
     if [ ! -d ".tflite" ]
@@ -20,7 +21,7 @@ download_library()
         tar xf tensorflow.tar.gz
         if clinfo
         then
-            if cat /proc/cpuinfo | grep asimdhp
+            if cat /proc/cpuinfo | grep -q asimdhp
             then
                 [ -f "armnn-v8.2-cl.tar.gz"] && wget armnn-v8.2-cl.tar.gz
                 tar xf armnn-v8.2-cl.tar.gz
@@ -29,7 +30,7 @@ download_library()
                 tar xf armnn-v8-cl.tar.gz
             fi
         else
-            if cat /proc/cpuinfo | grep asimdhp
+            if cat /proc/cpuinfo | grep -q asimdhp
             then
                 [ -f "armnn-v8.2.tar.gz"] && wget armnn-v8.2.tar.gz
                 tar xf armnn-v8.2.tar.gz
@@ -117,7 +118,7 @@ CPU_testsuite()
     testsuite_onebyone tinynn-32 a 32 $1
 
     ### fp16
-    if cat /proc/cpuinfo | grep asimdhp
+    if cat /proc/cpuinfo | grep -q asimdhp
     then
         echo ">>>>>>>>>>>xnnpack: tfconvert fp32/fp16 model + fp16 arith<<<<<<<<<"
         testsuite fp16 x 16 $1
@@ -182,7 +183,7 @@ GPU_testsuite()
     echo ">>>>>>>>>>>gpu: tinynn dynamic int8 model<<<<<<<<<"
     testsuite_mobilevitv2 tinynn-d8 g 16 1
 
-    echo ">>>>>>>>>>>armnn CPU: tfconvert ptq static int8 model<<<<<<<<<"
+    echo ">>>>>>>>>>>armnn GPU: tfconvert ptq static int8 model<<<<<<<<<"
     testsuite int8 m 32 1 # no difference with fp16
 }
 
@@ -207,7 +208,7 @@ NNAPI_testsuite()
 download_model
 download_library
 
-if pwd | grep termux
+if uname -a | grep -q Android
 then
     NNAPI_testsuite
 fi

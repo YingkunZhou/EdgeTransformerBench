@@ -119,17 +119,24 @@ test-pdlite-perf: bin/pdlite-perf-test
 TFLITE_INC ?= $(PWD)/.libs/tensorflow/install/include
 TFLITE_LIB ?= $(PWD)/.libs/tensorflow/install/lib
 
-# TODO: must first check use nnapi or not
-NNAPI_FLAGS ?=
-ifeq ($(BACK),n)
-	NNAPI_FLAGS = -lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DUSE_NNAPI
+ANDROID := $(shell uname -a | grep -q Android; echo $$?)
+
+NNAPI_FLAGS =
+ifeq ($(ANDROID),0)
+	NNAPI_FLAGS += -lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DUSE_NNAPI
 endif
 
 ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
--I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN -lflatbuffers
+-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN
+ifneq ($(ANDROID),0)
+	ARMNN_FLAGS += -lflatbuffers
+endif
 
 # sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
 GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU -lGL -lEGL
+ifneq ($(ANDROID),0)
+	ARMNN_FLAGS += -lEGL
+endif
 
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
