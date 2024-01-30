@@ -414,6 +414,8 @@ build_android.sh: NUM_PROC=32
 
 # tensorflow lite
 
+python 3.10 conda install bazel
+
 <details>
 <summary>Linux</summary>
 
@@ -528,6 +530,113 @@ cmake .. -DARMCOMPUTE_ROOT=$BASEDIR/ComputeLibrary \
          -DCMAKE_CXX_FLAGS="-Wno-error=missing-field-initializers -Wno-error=deprecated-declarations" \
          -DARMCOMPUTENEON=1 -DARMCOMPUTECL=1
 make -j32
+```
+
+</details>
+
+
+<details>
+<summary>Android</summary>
+
+For armnn, pre-download all repos latest
+
+```diff
+diff --git a/scripts/build_android_ndk_guide.sh b/scripts/build_android_ndk_guide.sh
+index a364d4d..d260528 100755
+--- a/scripts/build_android_ndk_guide.sh
++++ b/scripts/build_android_ndk_guide.sh
+@@ -110,14 +110,14 @@ function GetAndBuildCmake319 {
+ function GetAndBuildFlatbuffers {
+     cd $WORKING_DIR
+
+-    if [[ ! -d flatbuffers-23.5.26 ]]; then
++    if [[ ! -d flatbuffers ]]; then
+         echo "+++ Getting Flatbuffers"
+         wget https://github.com/google/flatbuffers/archive/v23.5.26.tar.gz
+         tar xf v23.5.26.tar.gz
+     fi
+     #Build FlatBuffers
+     echo "+++ Building x86 Flatbuffers library"
+-    cd $WORKING_DIR/flatbuffers-23.5.26
++    cd $WORKING_DIR/flatbuffers
+
+     rm -f CMakeCache.txt
+
+@@ -135,7 +135,7 @@ function GetAndBuildFlatbuffers {
+     make all install -j16
+
+     echo "+++ Building Android Flatbuffers library"
+-    cd $WORKING_DIR/flatbuffers-23.5.26
++    cd $WORKING_DIR/flatbuffers
+
+     rm -f CMakeCache.txt
+
+@@ -211,7 +211,7 @@ function GetAndBuildComputeLibrary {
+     cd $WORKING_DIR/ComputeLibrary
+
+     echo "+++ Building Compute Library"
+-    scons toolchain_prefix=llvm- compiler_prefix=aarch64-linux-android$ANDROID_API- arch=arm64-v8a neon=$ACL_NEON opencl=$ACL_CL embed_kernels=$ACL_CL extra_cxx_flags="-fPIC" \
++    scons toolchain_prefix=llvm- compiler_prefix=aarch64-linux-android$ANDROID_API- arch=arm64-v8.2-a neon=$ACL_NEON opencl=$ACL_CL embed_kernels=$ACL_CL extra_cxx_flags="-fPIC" \
+     benchmark_tests=0 validation_tests=0 os=android -j16
+ }
+
+```
+
+```bash
+./armnn/scripts/build_android_ndk_guide.sh
+```
+
+For tflite
+
+```bash
+# prepare ndk
+wget https://dl.google.com/android/repository/android-ndk-r25-linux.zip
+unzip android-ndk-r25-linux.zip
+wget https://mirrors.cloud.tencent.com/AndroidSDK/commandlinetools-linux-8512546_latest.zip
+unzip commandlinetools-linux-8512546_latest.zip
+mkdir android-sdk && cd android-sdk
+mkdir cmdline-tools
+mv ../cmdline-tools/ cmdline-tools/latest
+./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;34.0.0"
+# prepare sdk
+cd tensorflow
+./configure
+# compiler use gcc, if use clang, some normal headers cannot find!!!
+# api choose 30
+
+## build xnnpack
+bazel build --verbose_failures -c opt --config=android_arm64 //tensorflow/lite:tensorflowlite --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true
+bazel build --verbose_failures -c opt --config=android_arm64 --config=monolithic tensorflow/lite/delegates/flex:tensorflowlite_flex --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true
+
+## build gpu
+bazel build -c opt --config=android_arm64 tensorflow/lite/delegates/gpu:libtensorflowlite_gpu_delegate.so
+
+## build nnapi
+bazel build -c opt --config=android_arm64 //tensorflow/lite/nnapi:nnapi_util
+bazel build -c opt --config=android_arm64 //tensorflow/lite/nnapi:nnapi_implementation
+bazel build -c opt --config=android_arm64 //tensorflow/lite/delegates/nnapi:nnapi_delegate_no_nnapi_implementation
+
+mkdir -p install/include/tensorflow
+cp -r tensorflow/lite install/include/tensorflow
+cp -r tensorflow/core install/include/tensorflow # for armnn
+cp -r $BASEDIR/flatbuffers/include/flatbuffers install/include
+mkdir -p install/include/armnn
+cp -r $BASEDIR/armnn/include  install/include/armnn
+cp -r $BASEDIR/armnn/delegate install/include/armnn
+find install/include/ ! \( -name '*.h*' \) -type f -exec rm -f {} +
+
+mkdir -p install/lib
+cp bazel-bin/tensorflow/lite/libtensorflowlite.so install/lib
+cp bazel-bin/tensorflow/lite/delegates/flex/libtensorflowlite_flex.so install/lib
+cp bazel-bin/tensorflow/lite/delegates/gpu/libtensorflowlite_gpu_delegate.so install/lib
+cp bazel-bin/tensorflow/lite/nnapi/libnnapi_implementation.so install/lib
+cp bazel-bin/tensorflow/lite/nnapi/libnnapi_util.so install/lib
+cp bazel-bin/tensorflow/lite/delegates/nnapi/libnnapi_delegate_no_nnapi_implementation.so install/lib
+
+#armnn
+cp -a $BASEDIR/armnn/build/libarmnn.so* install/lib
+cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
+
 ```
 
 </details>
@@ -845,3 +954,6 @@ index 1ec545d..63675a5 100644
 
 ```
 </details>
+
+pkg install python-pip
+pip install gdown

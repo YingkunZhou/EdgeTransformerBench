@@ -2,9 +2,9 @@ download_model()
 {
     if [ ! -d ".tflite" ]
     then
-        [ -f "tflite-fp32-models.tar.gz" ] && wget tflite-fp32-models.tar.gz
-        [ -f "tflite-onnx-models.tar.gz" ] && wget tflite-onnx-models.tar.gz
-        [ -f "tflite-tinynn-models.tar.gz" ] && wget tflite-tinynn-models.tar.gz
+        [ -f "tflite-fp32-models.tar.gz" ]   && gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov-
+        [ -f "tflite-onnx-models.tar.gz" ]   && gdown 18ZJBnwhBLac9mprisHIM_9D2w0mSXHog
+        [ -f "tflite-tinynn-models.tar.gz" ] && gdown 1q5gdahzHoBQSSGXEKjPsybFgHg-yOSbR
         tar xf tflite-fp32-models.tar.gz; \
         tar xf tflite-onnx-models.tar.gz; \
         tar xf tflite-tinynn-models.tar.gz
@@ -173,23 +173,35 @@ GPU_testsuite()
     testsuite_onebyone tinynn-32 m 16 1
 
     ### int8
-    #TODO: use 16 is better or not?
     echo ">>>>>>>>>>>gpu: tfconvert dynamic int8 model<<<<<<<<<"
-    testsuite dynamic g 32 1
+    testsuite dynamic g 16 1
 
     echo ">>>>>>>>>>>gpu: tfconvert PTQ static int8 model<<<<<<<<<"
-    testsuite int8 g 32 1
+    testsuite int8 g 16 1
 
     echo ">>>>>>>>>>>gpu: tinynn dynamic int8 model<<<<<<<<<"
-    testsuite_mobilevitv2 tinynn-d8 g 32 1
+    testsuite_mobilevitv2 tinynn-d8 g 16 1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert ptq static int8 model<<<<<<<<<"
-    testsuite int8 m 32 1
+    testsuite int8 m 32 1 # no difference with fp16
 }
 
 NNAPI_testsuite()
 {
-    exit
+    echo ">>>>>>>>>>>nnapi: tfconvert fp32/fp16 model<<<<<<<<<"
+    testsuite fp16 n 32 1
+
+    echo ">>>>>>>>>>>nnapi: tinynn fp32 model<<<<<<<<<"
+    testsuite tinynn-32 n 32 1
+
+    echo ">>>>>>>>>>>nnapi: tfconvert dynamic int8 model<<<<<<<<<"
+    testsuite dynamic g 32 1
+
+    echo ">>>>>>>>>>>nnapi: tfconvert PTQ static int8 model<<<<<<<<<"
+    testsuite int8 g 32 1
+
+    echo ">>>>>>>>>>>nnapi: tinynn dynamic int8 model<<<<<<<<<"
+    testsuite_mobilevitv2 tinynn-d8 g 32 1
 }
 
 download_model
