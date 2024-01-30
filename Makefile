@@ -133,9 +133,9 @@ ifneq ($(ANDROID),0)
 endif
 
 # sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
-GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU -lGL -lEGL
+GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU -lEGL
 ifneq ($(ANDROID),0)
-	ARMNN_FLAGS += -lEGL
+	ARMNN_FLAGS += -lGL
 endif
 
 tflite-perf: bin/tflite-perf
