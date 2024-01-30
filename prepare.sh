@@ -1,1 +1,0 @@
-mkdir -p .onnx/fp32 .pt/fp32 .mnn .ncnn .tnn .pdlite .tflite .libs

@@ -47,3 +47,4 @@ warning.log
 .tnn/
 .onnx/
 bin/
+*.tar.gz

@@ -3,6 +3,7 @@ Modified from
 https://github.com/facebookresearch/LeViT/blob/main/speed_test.py
 """
 
+import os
 import argparse
 import torch
 from timm.models import create_model
@@ -136,6 +137,8 @@ if __name__ == '__main__':
         )
 
         if not args.format or args.format == 'onnx':
+            if not os.path.exists(".onnx/fp32"):
+                os.makedirs(".onnx/fp32")
             torch.onnx.export(
                 model,
                 inputs,
@@ -147,6 +150,8 @@ if __name__ == '__main__':
                 opset_version=args.opset_version
             )
         if not args.format or args.format == 'pt':
+            if not os.path.exists(".pt/fp32"):
+                os.makedirs(".pt/fp32")
             if args.mobile:
                 if args.mobile == "nnapi":
                     inputs = inputs.contiguous(memory_format=torch.channels_last)

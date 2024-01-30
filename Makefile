@@ -9,9 +9,6 @@ run-all: run-ncnn-perf run-mnn-perf run-tnn-perf run-pdlite-perf run-tflite-perf
 test-all: test-ncnn-perf test-mnn-perf test-tnn-perf test-pdlite-perf test-tflite-perf test-onnxruntime-perf test-torch-perf
 validation-all: validation-ncnn validation-mnn validation-tnn validation-pdlite validation-tflite validation-onnxruntime validation-torch
 
-init:
-	./prepare.sh
-
 DEPS = src/utils.cpp src/evaluate.tcc src/benchmark.tcc src/PillowResize.cc
 # DEF="-DUSE_HWC" make tflite-perf-test
 DEF ?=
