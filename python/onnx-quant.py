@@ -1,154 +1,161 @@
-"""
-Reference doc:
-    - https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/run.py
-    - https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/python/tools/quantization/calibrate.py
-    - https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/python/tools/quantization/quantize.py
-    - https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/notebooks/bert/Bert-GLUE_OnnxRuntime_quantization.ipynb
-"""
-
-import numpy
+# https://medium.com/@hdpoorna/pytorch-to-quantized-onnx-model-18cf2384ec27
+import os
 import argparse
-import onnxruntime
-from onnxruntime.quantization import CalibrationDataReader, QuantFormat, QuantType, quantize_static, quantize_dynamic, CalibrationMethod
+import torch
 import onnx
 from onnxconverter_common import float16
+from onnxruntime.transformers.optimizer import optimize_model
+from onnxruntime import quantization
 from main import build_dataset
 
-class DataReader(CalibrationDataReader):
-    def __init__(self, calibration_image_folder:str, model_name: str):
-        self.enum_data = None
+class QuntizationDataReader(quantization.CalibrationDataReader):
+    def __init__(self, torch_ds, batch_size, input_name):
 
-        # Use inference session to get input shape.
-        use_prep = "prep"
-        if "edgenext" in name or "EMO" in name or "LeViT" in name:
-            use_prep = "fp32"
+        self.torch_dl = torch.utils.data.DataLoader(torch_ds, batch_size=batch_size, shuffle=False)
 
-        session = onnxruntime.InferenceSession(".onnx/"+use_prep+"/"+name+".onnx", None)
-        (_, _, height, _) = session.get_inputs()[0].shape
+        self.input_name = input_name
+        self.datasize = len(self.torch_dl)
+        self.enum_data = iter(self.torch_dl)
 
-        # Convert image to input data
-        args.data_path = calibration_image_folder
-        args.model = model_name
-        args.input_size = height
-        print(height)
-        args.usi_eval = model_name == "edgenext_small"
-        dataset_val = build_dataset(args)
-        dataset_val = [numpy.expand_dims(i[0], axis=0) for i in dataset_val]
-        self.nhwc_data_list = numpy.concatenate(
-            numpy.expand_dims(dataset_val, axis=0), axis=0
-        )
-        self.input_name = session.get_inputs()[0].name
-        self.datasize = len(self.nhwc_data_list)
+    def to_numpy(self, pt_tensor):
+        return pt_tensor.detach().cpu().numpy() if pt_tensor.requires_grad else pt_tensor.cpu().numpy()
 
     def get_next(self):
-        if self.enum_data is None:
-            self.enum_data = iter(
-                [{self.input_name: nhwc_data} for nhwc_data in self.nhwc_data_list]
-            )
-        return next(self.enum_data, None)
+        batch = next(self.enum_data, None)
+        if batch is not None:
+          return {self.input_name: self.to_numpy(batch[0])}
+        else:
+          return None
 
     def rewind(self):
-        self.enum_data = None
+        self.enum_data = iter(self.torch_dl)
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
         'onnx model quantization script', add_help=False)
+    parser.add_argument('--batch-size', default=1, type=int)
+    parser.add_argument('--format', default='int8', type=str, help='model datatype')
     # Model parameters
-    parser.set_defaults(pretrained=True)
-    parser.add_argument('--test', action='store_true', default=False)
-    parser.add_argument('--format', default='fp32', type=str, help='model datatype')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     # Dataset parameters
-    parser.add_argument('--data-path', default='.onnx/calibration/', type=str, help='dataset path')
-    parser.add_argument(
-        "--quant_format",
-        default=QuantFormat.QDQ,
-        type=QuantFormat.from_string,
-        choices=list(QuantFormat),
-    )
-    parser.add_argument("--per_channel", default=True, type=bool)
+    """
+    mkdir -p .onnx/calibration/subset && cd .onnx/calibration/subset
+    ln -sf ../../../.ncnn/calibration/imagenet-sample-images/n01[4567]* . # seems best?
+    """
+    parser.add_argument('--data-path', default='.onnx/calibration', type=str, help='dataset path')
 
     return parser
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('onnx model quantization scrip', parents=[get_args_parser()])
+    parser = argparse.ArgumentParser('onnx model quantization script', parents=[get_args_parser()])
     args = parser.parse_args()
 
-    for name in [
-        ('efficientformerv2_s0'),
-        ('efficientformerv2_s1'),
-        ('efficientformerv2_s2'),
+    for name, resolution, usi_eval, per_channel in [
+        ('efficientformerv2_s0', 224, False, True),
+        ('efficientformerv2_s1', 224, False, True),
+        ('efficientformerv2_s2', 224, False, True),
 
-        ('SwiftFormer_XS'),
-        ('SwiftFormer_S' ),
-        ('SwiftFormer_L1'),
+        ('SwiftFormer_XS', 224, False, True),
+        ('SwiftFormer_S' , 224, False, True),
+        ('SwiftFormer_L1', 224, False, True),
 
-        ('EMO_1M'), # cannot convert, even if converted, still cannnot run
-        ('EMO_2M'), # cannot convert, even if converted, still cannnot run
-        ('EMO_5M'), # cannot convert, even if converted, still cannnot run
-        ('EMO_6M'), # cannot convert, even if converted, still cannnot run
+        ('EMO_1M', 224, False, False),
+        ('EMO_2M', 224, False, False),
+        ('EMO_5M', 224, False, False),
+        ('EMO_6M', 224, False, False),
 
-        ('edgenext_xx_small'),
-        ('edgenext_x_small' ),
-        ('edgenext_small'   ),
+        ('edgenext_xx_small', 256, False, False),
+        ('edgenext_x_small' , 256, False, False),
+        ('edgenext_small'   , 256, True , False),
 
-        ('mobilevitv2_050'),
-        ('mobilevitv2_075'),
-        ('mobilevitv2_100'),
-        ('mobilevitv2_125'),
-        ('mobilevitv2_150'),
-        ('mobilevitv2_175'),
-        ('mobilevitv2_200'),
+        ('mobilevitv2_050', 256, False, True),
+        ('mobilevitv2_075', 256, False, True),
+        ('mobilevitv2_100', 256, False, True),
+        ('mobilevitv2_125', 256, False, True),
+        ('mobilevitv2_150', 256, False, True),
+        ('mobilevitv2_175', 256, False, True),
+        ('mobilevitv2_200', 256, False, True),
 
-        ('mobilevit_xx_small'),
-        ('mobilevit_x_small' ),
-        ('mobilevit_small'   ),
+        ('mobilevit_xx_small', 256, False, False),
+        ('mobilevit_x_small' , 256, False, False),
+        ('mobilevit_small'   , 256, False, False),
 
-        ('LeViT_128S'),
-        ('LeViT_128' ),
-        ('LeViT_192' ),
-        ('LeViT_256' ),
+        ('LeViT_128S', 224, False, True),
+        ('LeViT_128' , 224, False, True),
+        ('LeViT_192' , 224, False, True),
+        ('LeViT_256' , 224, False, True),
 
-        ('resnet50'),
-        ('mobilenetv3_large_100'),
-        ('tf_efficientnetv2_b0' ),
-        ('tf_efficientnetv2_b1' ),
-        ('tf_efficientnetv2_b2' ),
-        ('tf_efficientnetv2_b3' ),
+        ('resnet50', 224, False, True),
+        ('mobilenetv3_large_100', 224, False, True),
+        ('tf_efficientnetv2_b0' , 224, False, True),
+        ('tf_efficientnetv2_b1' , 240, False, True),
+        ('tf_efficientnetv2_b2' , 260, False, True),
+        ('tf_efficientnetv2_b3' , 300, False, True),
     ]:
         if args.only_convert and args.only_convert not in name:
             continue
 
-        print(name)
-        use_prep = "prep"
-        if "edgenext" in name or "EMO" in name or "LeViT" in name:
-            use_prep = "fp32"
+        args.usi_eval = usi_eval
+        args.model = name
+        args.input_size = resolution
+
+        model_fp32_path = '.onnx/fp32/'+args.model+'.onnx'
+        model_prep_path = model_fp32_path
+        # model_prep_path = '.onnx/'+args.model+'_prep.onnx'
+        # quantization.shape_inference.quant_pre_process(model_fp32_path, model_prep_path, skip_symbolic_shape=False)
 
         if args.format == "fp16":
-            model = onnx.load(".onnx/fp32/"+name+".onnx")
-            model_fp16 = float16.convert_float_to_float16(model, keep_io_types=True)
-            onnx.save(model_fp16, ".onnx/fp16/"+name+".onnx")
+            # https://github.com/huggingface/diffusers/issues/489#issuecomment-1261577250
+            """
+            To use ONNX Runtime only and no Python fusion logic, use only_onnxruntime flag and a positive opt_level like
+            optimize_model(input, opt_level=1, use_gpu=False, only_onnxruntime=True)
+            When opt_level is None, we will choose default optimization level according to model type.
+            When opt_level is 0 and only_onnxruntime is False, only python fusion logic is used and onnxruntime is disabled.
+            """
+            model_fp16 = optimize_model(
+                model_fp32_path,
+                # opt_level=1,
+                # only_onnxruntime=True,
+            )
+            model_fp16.convert_float_to_float16(keep_io_types=True)
+
+            if not os.path.exists(".onnx/fp16"):
+                os.makedirs(".onnx/fp16")
+            onnx.save(model_fp16.model, ".onnx/fp16/"+args.model+".onnx")
+
         elif args.format == "int8":
-            dr = DataReader(
-                args.data_path, name
+            qdr = QuntizationDataReader(build_dataset(args), batch_size=args.batch_size, input_name='input')
+
+            # If model is targeted to GPU/TRT, symmetric activation and weight are required.
+            # If model is targeted to CPU, asymmetric activation and symmetric weight are
+            # recommended for balance of performance and accuracy.
+            q_static_opts = {"ActivationSymmetric":False, # True for GPU
+                             "WeightSymmetric":True}
+
+            if not os.path.exists(".onnx/int8"):
+                os.makedirs(".onnx/int8")
+
+            quantization.quantize_static(
+                model_input=model_prep_path,
+                model_output='.onnx/int8/'+args.model+'.onnx',
+                calibration_data_reader=qdr,
+                extra_options=q_static_opts,
+                per_channel=per_channel, # for better accuracy
+                reduce_range=False,
+                # https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/python/tools/quantization/calibrate.py#L132
+                calibrate_method=quantization.CalibrationMethod.MinMax, # == Entropy?
+                # MinMax, Entropy, Percentile, Distribution
             )
-            # Calibrate and quantize model
-            # Turn off model optimization during quantization
-            quantize_static(
-                ".onnx/"+use_prep+"/"+name+".onnx",
-                ".onnx/int8/"+name+".onnx",
-                dr,
-                quant_format=args.quant_format,
-                per_channel=args.per_channel,
-                activation_type=QuantType.QInt8,
-                weight_type=QuantType.QInt8,
-                calibrate_method=CalibrationMethod.MinMax,
-            )
+
+
         elif args.format == "dynamic":
+            if not os.path.exists(".onnx/dynamic"):
+                os.makedirs(".onnx/dynamic")
             # https://github.com/microsoft/onnxruntime/issues/15888
-            # I have the same problem. I am finding that onnxruntime does not support the ConvInteger layer unfortunately, that means dynamic quantization is not working in onnxruntime if initial model has CNNs inside. Very sad!
-            quantize_dynamic(
-                ".onnx/"+use_prep+"/"+name+".onnx",
-                ".onnx/dynamic/"+name+".onnx",
-                weight_type=QuantType.QInt8,
+            # I have the same problem. I am finding that onnxruntime does not support the ConvInteger layer unfortunately,
+            # that means dynamic quantization is not working in onnxruntime if initial model has CNNs inside. Very sad!
+            quantization.quantize_dynamic(
+                model_input=model_prep_path,
+                model_output=".onnx/dynamic/"+args.model+".onnx",
+                weight_type=quantization.QuantType.QInt8,
             )

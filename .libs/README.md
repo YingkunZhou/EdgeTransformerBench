@@ -647,21 +647,122 @@ cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
 <summary>Linux</summary>
 
 ```bash
+export BASEDIR=$PWD
 git clone https://github.com/microsoft/onnxruntime.git --depth=1
 cd onnxruntime
 #git submodule sync
 git submodule update --init --recursive
-# ./build.sh --config RelWithDebInfo --build_shared_lib --parallel --compile_no_warning_as_error --skip_tests
-./build.sh --config Release --build_shared_lib --parallel --compile_no_warning_as_error --skip_tests
+./build.sh --config Release --use_xnnpack --build_shared_lib --parallel --compile_no_warning_as_error --skip_tests # --use_dnnl
 cd build/Linux/Release
 ## TO keep the directory structure the same as github release tar pacakge
-DESTDIR=../install make install -j`nproc`
-cd ../install
+DESTDIR=../onnxruntime make install -j`nproc`
+cd ../onnxruntime
 mv usr/local/include/onnxruntime/ include
 mv usr/local/lib .
+rm -rf usr
+
+## onednn
+# cp ../../../include/onnxruntime/core/providers/dnnl/dnnl_provider_options.h include
+# cp -a ../Release/dnnl/install/* .
+
+## acl
+cd $BASEDIR
+git clone https://github.com/ARM-software/ComputeLibrary.git -b v23.08 --depth 1 --shallow-submodules
+scons arch=arm64-v8.2-a neon=1 extra_cxx_flags="-fPIC" benchmark_tests=0 validation_tests=0 -j 32 debug=0
+cd -
+./build.sh --config Release --use_xnnpack --use_acl --acl_home $BASEDIR/ComputeLibrary --acl_libs $BASEDIR/ComputeLibrary/build --build_shared_lib --parallel --compile_no_warning_as_error --skip_tests
+cp -a ../../../../ComputeLibrary/build/*.so lib
+cp ../../../include/onnxruntime/core/providers/acl/acl_provider_factory.h include
 ```
+
+```diff
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 34e7687..282123a 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -1134,18 +1134,13 @@ if (onnxruntime_USE_ACL OR onnxruntime_USE_ACL_1902 OR onnxruntime_USE_ACL_1905
+         IMPORTED_NO_SONAME 1
+         IMPORTED_LOCATION "${onnxruntime_ACL_LIBS}/libarm_compute.so")
+
+-    add_library(arm_compute_core SHARED IMPORTED)
+-    set_target_properties(arm_compute_core PROPERTIES
+-        IMPORTED_NO_SONAME 1
+-        IMPORTED_LOCATION "${onnxruntime_ACL_LIBS}/libarm_compute_core.so")
+-
+     add_library(arm_compute_graph SHARED IMPORTED)
+     set_target_properties(arm_compute_graph PROPERTIES
+         IMPORTED_NO_SONAME 1
+         IMPORTED_LOCATION "${onnxruntime_ACL_LIBS}/libarm_compute_graph.so")
+   endif()
+
+-  list(APPEND onnxruntime_EXTERNAL_LIBRARIES arm_compute arm_compute_core arm_compute_graph)
++  list(APPEND onnxruntime_EXTERNAL_LIBRARIES arm_compute arm_compute_graph)
+
+ endif()
+
+@@ -1164,11 +1159,6 @@ if (onnxruntime_USE_ARMNN)
+         IMPORTED_NO_SONAME 1
+         IMPORTED_LOCATION "${onnxruntime_ACL_LIBS}/libarm_compute.so")
+
+-    add_library(arm_compute_core SHARED IMPORTED)
+-    set_target_properties(arm_compute_core PROPERTIES
+-        IMPORTED_NO_SONAME 1
+-        IMPORTED_LOCATION "${onnxruntime_ACL_LIBS}/libarm_compute_core.so")
+-
+     add_library(arm_compute_graph SHARED IMPORTED)
+     set_target_properties(arm_compute_graph PROPERTIES
+         IMPORTED_NO_SONAME 1
+@@ -1182,7 +1172,7 @@ if (onnxruntime_USE_ARMNN)
+         IMPORTED_LOCATION "${onnxruntime_ARMNN_LIBS}/libarmnn.so")
+   endif()
+
+-  list(APPEND onnxruntime_EXTERNAL_LIBRARIES armnn arm_compute arm_compute_core arm_compute_graph)
++  list(APPEND onnxruntime_EXTERNAL_LIBRARIES armnn arm_compute arm_compute_graph)
+ endif()
+
+ if (onnxruntime_USE_DNNL)
+diff --git a/tools/ci_build/build.py b/tools/ci_build/build.py
+index b2040b2..691b948 100644
+--- a/tools/ci_build/build.py
++++ b/tools/ci_build/build.py
+@@ -638,8 +638,8 @@ def parse_arguments():
+     parser.add_argument(
+         "--use_acl",
+         nargs="?",
+-        const="ACL_1905",
+-        choices=["ACL_1902", "ACL_1905", "ACL_1908", "ACL_2002", "ACL_2308"],
++        const="ACL_2308",
++        choices=["ACL_2308"],
+         help="Build with ACL for ARM architectures.",
+     )
+     parser.add_argument("--acl_home", help="Path to ACL home dir")
+```
+
 </details>
 
+
+<details>
+<summary>Android</summary>
+
+```bash
+export BASEDIR=$PWD
+export ANDROID_NDK=$BASEDIR/android-ndk-r26b
+export ANDROID_SDK=$BASEDIR/android-sdk
+cd onnxruntime
+./build.sh --use_nnapi --use_xnnpack --use_acl --acl_home $BASEDIR/ComputeLibrary --acl_libs $BASEDIR/ComputeLibrary/build --use_qnn --qnn_home /opt/qcom --config Release --android --android_sdk_path $ANDROID_SDK --android_ndk_path $ANDROID_NDK --android_abi arm64-v8a --android_api 30 --build_shared_lib --parallel --compile_no_warning_as_error --skip_submodule_sync --skip_tests
+cd build/Android/Release
+## TO keep the directory structure the same as github release tar pacakge
+DESTDIR=../onnxruntime make install -j`nproc`
+cd ../onnxruntime
+mv usr/local/include/onnxruntime/ include
+mv usr/local/lib .
+rm -rf usr
+cp -a ../../../../ComputeLibrary/build/*.so lib
+cp ../../../include/onnxruntime/core/providers/acl/acl_provider_factory.h include
+cp ../../../include/onnxruntime/core/providers/nnapi/nnapi_provider_factory.h include
+```
+
+</details>
 
 # torch
 
@@ -744,27 +845,6 @@ export LD_LIBRARY_PATH=$PWD/usr/lib
 ```
 3. here we use libopenblas.so which contains in [torch-2.1.0.dev20230825-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl](https://github.com/YingkunZhou/EdgeTransformerPerf/releases/download/v0.0/torch-2.1.0.dev20230825-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl)
 
-
-<details>
-<summary>
-don't read below
-</summary>
-
-~~use conda compiler toolchain~~
-
-```bash
-LLVM_VERSION=14.0.6
-conda install clangxx==$LLVM_VERSION llvm-openmp==$LLVM_VERSION libclang==$LLVM_VERSION \
-  clangdev==$LLVM_VERSION llvm==$LLVM_VERSION llvmdev==$LLVM_VERSION \
-  llvm-tools==$LLVM_VERSION libclang-cpp==$LLVM_VERSION \
-  gxx==10.3.0 scons --yes # here we use gcc-10.3.0 to build acl
-
-# conda install numactl
-export LD_LIBRARY_PATH=$HOME/miniforge3/envs/pytorch/lib
-export CPLUS_INCLUDE_PATH=$HOME/miniforge3/envs/pytorch/include
-```
-</details>
-
 ## build with ACL acc
 
 ```bash
@@ -797,9 +877,6 @@ https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
     ]
 }
 ```
-
-export https_proxy=http://xxx:xxx
-export http_proxy=http://xxx:xxx
 
 - [Setup the proxy for Dockerfile building](https://dev.to/zyfa/setup-the-proxy-for-dockerfile-building--4jc8)
 ```diff
@@ -954,6 +1031,3 @@ index 1ec545d..63675a5 100644
 
 ```
 </details>
-
-pkg install python-pip
-pip install gdown

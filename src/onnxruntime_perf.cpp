@@ -1,5 +1,6 @@
-// https://github.com/microsoft/onnxruntime/blob/v1.8.2/csharp/test/Microsoft.ML.OnnxRuntime.EndToEndTests.Capi/CXX_Api_Sample.cpp
-// https://github.com/microsoft/onnxruntime/blob/v1.8.2/include/onnxruntime/core/session/onnxruntime_cxx_api.h
+// https://leimao.github.io/blog/ONNX-Runtime-CPP-Inference/
+// https://github.com/leimao/ONNX-Runtime-Inference/blob/main/src/inference.cpp
+// https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc
 
 #include <iostream>
 #include <numeric>
@@ -11,107 +12,18 @@
 #include <algorithm>
 
 #include <onnxruntime_cxx_api.h>
-#ifdef NNAPI
+#if USE_DNNL
+#include <dnnl_provider_options.h>
+#endif
+#ifdef USE_NNAPI
 #include <nnapi_provider_factory.h>
 #endif
+#include <acl_provider_factory.h>
+
 #include "utils.h"
 
 #include <chrono>
 using namespace std::chrono;
-
-/**
- * @brief Operator overloading for printing vectors
- * @tparam T
- * @param os
- * @param v
- * @return std::ostream&
- */
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
-{
-    os << "[";
-    for (int i = 0; i < v.size(); ++i)
-    {
-        os << v[i];
-        if (i != v.size() - 1)
-        {
-            os << ", ";
-        }
-    }
-    os << "]";
-    return os;
-}
-
-/**
- * @brief Print ONNX tensor data type
- * https://github.com/microsoft/onnxruntime/blob/rel-1.6.0/include/onnxruntime/core/session/onnxruntime_c_api.h#L93
- * @param os
- * @param type
- * @return std::ostream&
- */
-std::ostream& operator<<(std::ostream& os,
-                         const ONNXTensorElementDataType& type)
-{
-    switch (type)
-    {
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED:
-            os << "undefined";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
-            os << "float";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8:
-            os << "uint8_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8:
-            os << "int8_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16:
-            os << "uint16_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_INT16:
-            os << "int16_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32:
-            os << "int32_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64:
-            os << "int64_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING:
-            os << "std::string";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL:
-            os << "bool";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
-            os << "float16";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE:
-            os << "double";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT32:
-            os << "uint32_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT64:
-            os << "uint64_t";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64:
-            os << "float real + float imaginary";
-            break;
-        case ONNXTensorElementDataType::
-            ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128:
-            os << "double real + float imaginary";
-            break;
-        case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16:
-            os << "bfloat16";
-            break;
-        default:
-            break;
-    }
-
-    return os;
-}
 
 struct {
   std::string model;
@@ -200,54 +112,88 @@ int main(int argc, char* argv[])
     std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
 
     std::string instanceName{"image-classification-inference"};
+    //{ORT_LOGGING_LEVEL_ERROR, ORT_LOGGING_LEVEL_WARNING, ORT_LOGGING_LEVEL_VERBOSE}
     Ort::Env env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
                  instanceName.c_str());
-    Ort::SessionOptions sessionOptions;
+
+    Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(num_threads);
+    //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L676
+    session_options.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
+    session_options.SetInterOpNumThreads(num_threads);
+    // Sets graph optimization level
+    // Available levels are
+    // ORT_DISABLE_ALL -> To disable all optimizations
+    // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node removals)
+    // ORT_ENABLE_EXTENDED -> To enable extended optimizations
+    // (Includes level 1 + more complex optimizations like node fusions)
+    // ORT_ENABLE_ALL -> To Enable All possible optimizations
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+
 #ifdef USE_NNAPI
     if (backend == 'n') {
         std::cout << "INFO: Using NNAPI backend" << std::endl;
-        // https://onnxruntime.ai/docs/execution-providers/NNAPI-ExecutionProvider
+        //https://onnxruntime.ai/docs/execution-providers/NNAPI-ExecutionProvider
+        //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L449
         uint32_t nnapi_flags = 0;
         //nnapi_flags |= NNAPI_FLAG_USE_FP16;
         //nnapi_flags |= NNAPI_FLAG_USE_NCHW;
         //nnapi_flags |= NNAPI_FLAG_CPU_DISABLED;
         //nnapi_flags |= NNAPI_FLAG_CPU_ONLY;
-        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(sessionOptions, nnapi_flags));
+        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
+    }
+    else
+#endif
+#if USE_DNNL
+    if (backend == 'd') {
+        std::cout << "INFO: Using ONEDNN backend" << std::endl;
+        //https://onnxruntime.ai/docs/execution-providers/oneDNN-ExecutionProvider.html
+        //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L50
+        // Generate provider options
+        OrtDnnlProviderOptions dnnl_options;
+        dnnl_options.use_arena = 1;
+        dnnl_options.threadpool_args = static_cast<void*>(&num_threads);;
+        session_options.AppendExecutionProvider_Dnnl(dnnl_options);
     }
     else
 #endif
     if (backend == 'q') {
         std::cout << "INFO: Using QNN backend" << std::endl;
-        // https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html
+        //https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html
+        //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L323
         std::unordered_map<std::string, std::string> qnn_options;
         // qnn_options["backend_path"] = "libQnnCpu.so";
         qnn_options["backend_path"] = "libQnnHtp.so";
-        Ort::SessionOptions session_options;
+        qnn_options["profiling_level"] = "off"; //{"off", "basic", "detailed"};
+        //"burst", "balanced", "default", "high_performance",
+        //"high_power_saver", "low_balanced", "extreme_power_saver",
+        //"low_power_saver", "power_saver", "sustained_high_performance"
+        qnn_options["htp_performance_mode"] = "high_performance";
+        qnn_options["htp_graph_finalization_optimization_mode"] = 3; //{"0", "1", "2", "3"};
+        qnn_options["qnn_context_priority"] = "high"; //{"low", "normal", "normal_high", "high"};
+        qnn_options["htp_arch"] = "0"; //{"0", "68", "69", "73", "75"};
+        //key == "rpc_control_latency" || key == "vtcm_mb" || key == "soc_model" || key == "device_id"
         session_options.AppendExecutionProvider("QNN", qnn_options);
     }
-    else
-    {
+    else if (backend == 'a') {
+        std::cout << "INFO: Using ACL backend" << std::endl;
+        bool enable_cpu_mem_arena = true;
+        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_ACL(session_options, enable_cpu_mem_arena));
+    }
+    else if (backend == 'x') {
+        std::cout << "INFO: Using XNNPACK backend" << std::endl;
+        //https://onnxruntime.ai/docs/execution-providers/Xnnpack-ExecutionProvider.html
+        //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L586
+        session_options.AddConfigEntry("session.intra_op.allow_spinning", "0");
+        session_options.AppendExecutionProvider(
+        "XNNPACK", {{"intra_op_num_threads", std::to_string(num_threads)}});
+    }
+    else {
         std::cout << "INFO: Using CPU backend" << std::endl;
-        sessionOptions.SetIntraOpNumThreads(num_threads);
-        // Sets graph optimization level
-        // Available levels are
-        // ORT_DISABLE_ALL -> To disable all optimizations
-        // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node
-        // removals) ORT_ENABLE_EXTENDED -> To enable extended optimizations
-        // (Includes level 1 + more complex optimizations like node fusions)
-        // ORT_ENABLE_ALL -> To Enable All possible optimizations
-        sessionOptions.SetGraphOptimizationLevel(
-            GraphOptimizationLevel::ORT_ENABLE_ALL);
-
-        sessionOptions.SetExecutionMode(
-            ExecutionMode::ORT_PARALLEL);
-
-        int inter_threads = num_threads; // TODO
-        sessionOptions.SetInterOpNumThreads(inter_threads);
     }
 
     Ort::AllocatorWithDefaultOptions allocator;
-    Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu( //TODO: cpu?
+    Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
 
     for (const auto & model: test_models) {
@@ -264,7 +210,7 @@ int main(int argc, char* argv[])
         }
         // create a session
         std::cout << "Creating onnx runtime session: " << args.model << std::endl;
-        Ort::Session session(env, model_file.c_str(), sessionOptions);
+        Ort::Session session(env, model_file.c_str(), session_options);
         //// input
         Ort::TypeInfo inputTypeInfo = session.GetInputTypeInfo(0);
         auto inputTensorInfo = inputTypeInfo.GetTensorTypeAndShapeInfo();
@@ -280,7 +226,8 @@ int main(int argc, char* argv[])
         std::vector<float> input_tensor(inputTensorSize);
         std::vector<Ort::Value> inputTensors;
         args.input.clear();
-        args.input.push_back(Ort::Value::CreateTensor<float>(memoryInfo,
+        args.input.push_back(Ort::Value::CreateTensor<float>(
+            memoryInfo,
             input_tensor.data(), inputTensorSize,
             inputDims.data(), inputDims.size()));
 
@@ -303,7 +250,8 @@ int main(int argc, char* argv[])
         std::vector<float> output_tensor(outputTensorSize);
         std::vector<Ort::Value> outputTensors;
         args.output.clear();
-        args.output.push_back(Ort::Value::CreateTensor<float>(memoryInfo,
+        args.output.push_back(Ort::Value::CreateTensor<float>(
+            memoryInfo,
             output_tensor.data(), outputTensorSize,
             outputDims.data(), outputDims.size()));
 
@@ -311,19 +259,19 @@ int main(int argc, char* argv[])
         args.output_name.clear();
         args.output_name.push_back(&*outputName);
 
-        if (debug) {
-            //print basic model I/O info
-            std::cout << "Number of Input Nodes: " << session.GetInputCount() << std::endl;
-            std::cout << "Number of Output Nodes: " << session.GetOutputCount() << std::endl;
+#if 0
+        //print basic model I/O info
+        std::cout << "Number of Input Nodes: " << session.GetInputCount() << std::endl;
+        std::cout << "Number of Output Nodes: " << session.GetOutputCount() << std::endl;
 
-            std::cout << "Input Name: " << args.input_name << std::endl;
-            std::cout << "Input Type: " << inputTensorInfo.GetElementType() << std::endl;
-            std::cout << "Input Dimensions: " << inputDims << std::endl;
+        std::cout << "Input Name: " << args.input_name << std::endl;
+        std::cout << "Input Type: " << inputTensorInfo.GetElementType() << std::endl;
+        std::cout << "Input Dimensions: " << inputDims << std::endl;
 
-            std::cout << "Output Name: " << args.output_name << std::endl;
-            std::cout << "Output Type: " << outputTensorInfo.GetElementType() << std::endl;
-            std::cout << "Output Dimensions: " << outputDims << std::endl;
-        }
+        std::cout << "Output Name: " << args.output_name << std::endl;
+        std::cout << "Output Type: " << outputTensorInfo.GetElementType() << std::endl;
+        std::cout << "Output Dimensions: " << outputDims << std::endl;
+#endif
 
         if (args.validation) {
             evaluate(session, input_tensor, output_tensor);

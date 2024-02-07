@@ -219,7 +219,7 @@ def main(args):
                 )
 
                 context.train_loader = data_loader_val
-                context.max_iteration = 20
+                context.max_iteration = 100
                 # Post quantization calibration
                 ptq_model.apply(torch_q.disable_fake_quant)
                 ptq_model.apply(torch_q.enable_observer)

@@ -3,6 +3,7 @@ MODEL ?= s1
 BACK ?= z
 THREADS ?=1
 FP ?= 32
+ANDROID := $(shell uname -a | grep -q Android; echo $$?)
 
 all: ncnn-perf mnn-perf tnn-perf pdlite-perf tflite-perf onnxruntime-perf torch-perf
 run-all: run-ncnn-perf run-mnn-perf run-tnn-perf run-pdlite-perf run-tflite-perf run-onnxruntime-perf run-torch-perf
@@ -116,8 +117,6 @@ test-pdlite-perf: bin/pdlite-perf-test
 TFLITE_INC ?= $(PWD)/.libs/tensorflow/install/include
 TFLITE_LIB ?= $(PWD)/.libs/tensorflow/install/lib
 
-ANDROID := $(shell uname -a | grep -q Android; echo $$?)
-
 NNAPI_FLAGS =
 ifeq ($(ANDROID),0)
 	NNAPI_FLAGS += -lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DUSE_NNAPI
@@ -163,16 +162,20 @@ test-tflite-perf: bin/tflite-perf-test
 ########################
 ONNXRT_INC ?= $(PWD)/.libs/onnxruntime/include
 ONNXRT_LIB ?= $(PWD)/.libs/onnxruntime/lib
-MORE_FLAGS ?=
+
+NNAPI_FLAGS =
+ifeq ($(ANDROID),0)
+	NNAPI_FLAGS += -DUSE_NNAPI
+endif
 
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
 bin/onnxruntime-perf: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(MORE_FLAGS)
+	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS)
 
 bin/onnxruntime-perf-test: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(MORE_FLAGS)
+	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS)
 
 run-onnxruntime-perf: bin/onnxruntime-perf
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
