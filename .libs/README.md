@@ -757,6 +757,7 @@ cd ../onnxruntime
 mv usr/local/include/onnxruntime/ include
 mv usr/local/lib .
 rm -rf usr
+cp -a /opt/qcom/aistack/qnn/2.19.0.240124/lib/aarch64-android/* lib
 cp -a ../../../../ComputeLibrary/build/*.so lib
 cp ../../../include/onnxruntime/core/providers/acl/acl_provider_factory.h include
 cp ../../../include/onnxruntime/core/providers/nnapi/nnapi_provider_factory.h include

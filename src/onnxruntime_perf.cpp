@@ -162,16 +162,16 @@ int main(int argc, char* argv[])
         //https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html
         //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L323
         std::unordered_map<std::string, std::string> qnn_options;
-        // qnn_options["backend_path"] = "libQnnCpu.so";
-        qnn_options["backend_path"] = "libQnnHtp.so";
-        qnn_options["profiling_level"] = "off"; //{"off", "basic", "detailed"};
+        qnn_options["backend_path"] = ".libs/onnxruntime/libQnnCpu.so";
+        // qnn_options["backend_path"] = ".libs/onnxruntime/libQnnHtp.so";
+        // qnn_options["profiling_level"] = "off"; //{"off", "basic", "detailed"};
         //"burst", "balanced", "default", "high_performance",
         //"high_power_saver", "low_balanced", "extreme_power_saver",
         //"low_power_saver", "power_saver", "sustained_high_performance"
-        qnn_options["htp_performance_mode"] = "high_performance";
-        qnn_options["htp_graph_finalization_optimization_mode"] = 3; //{"0", "1", "2", "3"};
-        qnn_options["qnn_context_priority"] = "high"; //{"low", "normal", "normal_high", "high"};
-        qnn_options["htp_arch"] = "0"; //{"0", "68", "69", "73", "75"};
+        // qnn_options["htp_performance_mode"] = "high_performance";
+        // qnn_options["htp_graph_finalization_optimization_mode"] = "3"; //{"0", "1", "2", "3"};
+        // qnn_options["qnn_context_priority"] = "high"; //{"low", "normal", "normal_high", "high"};
+        // qnn_options["htp_arch"] = "0"; //{"0", "68", "69", "73", "75"};
         //key == "rpc_control_latency" || key == "vtcm_mb" || key == "soc_model" || key == "device_id"
         session_options.AppendExecutionProvider("QNN", qnn_options);
     }
