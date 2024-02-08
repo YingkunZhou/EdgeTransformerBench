@@ -16,6 +16,7 @@ download_library()
         [ -f "onnxruntime.tar.gz"] && wget onnxruntime.tar.gz
         tar xf onnxruntime.tar.gz
     fi
+    cd ..
 }
 
 testsuite()
@@ -25,41 +26,43 @@ testsuite()
     echo " "
 }
 
+NNAPI_testsuite()
+{
+    echo ">>>>>>>>>>>nnapi: fp32 model<<<<<<<<<"
+    testsuite fp32 n 1
+
+    echo ">>>>>>>>>>>nnapi: static ptq int8 model<<<<<<<<<"
+    testsuite int8 n 1
+}
+
+QNN_testsuite()
+{
+    echo ">>>>>>>>>>>qnn: fp32 model<<<<<<<<<"
+    testsuite fp32 q 1
+
+    echo ">>>>>>>>>>>qnn: static ptq int8 model<<<<<<<<<"
+    testsuite int8 q 1
+}
+
+CPU_testsuite()
+{
+    echo ">>>>>>>>>>>xnnpack: fp32 model<<<<<<<<<"
+    testsuite fp32 x $1
+
+    echo ">>>>>>>>>>>xnnpack: static ptq int8 model<<<<<<<<<"
+    testsuite int8 x $1
+
+    echo ">>>>>>>>>>>CPU: fp32 model<<<<<<<<<"
+    testsuite fp32 z $1
+
+    echo ">>>>>>>>>>>CPU: static ptq int8 model<<<<<<<<<"
+    testsuite int8 z $1
+}
+
 download_model
 download_library
 
-echo ">>>>>>>>>>>nnapi: fp32 model<<<<<<<<<"
-testsuite fp32 n 1
-
-echo ">>>>>>>>>>>nnapi: static ptq int8 model<<<<<<<<<"
-testsuite int8 n 1
-
-echo ">>>>>>>>>>>qnn: fp32 model<<<<<<<<<"
-testsuite fp32 q 1
-
-echo ">>>>>>>>>>>qnn: static ptq int8 model<<<<<<<<<"
-testsuite int8 q 1
-
-echo ">>>>>>>>>>>xnnpack: fp32 model<<<<<<<<<"
-testsuite fp32 x 1
-
-echo ">>>>>>>>>>>xnnpack: static ptq int8 model<<<<<<<<<"
-testsuite int8 x 1
-
-echo ">>>>>>>>>>>CPU: fp32 model<<<<<<<<<"
-testsuite fp32 z 1
-
-echo ">>>>>>>>>>>CPU: static ptq int8 model<<<<<<<<<"
-testsuite int8 z 1
-
-echo ">>>>>>>>>>>xnnpack: fp32 model multcore<<<<<<<<<"
-testsuite fp32 x 4
-
-echo ">>>>>>>>>>>xnnpack: static ptq int8 model multcore<<<<<<<<<"
-testsuite int8 x 4
-
-echo ">>>>>>>>>>>CPU: fp32 model multcore<<<<<<<<<"
-testsuite fp32 z 4
-
-echo ">>>>>>>>>>>CPU: static ptq int8 model multcore<<<<<<<<<"
-testsuite int8 z 4
+NNAPI_testsuite
+QNN_testsuite
+CPU_testsuite 1
+CPU_testsuite 3 # 3+1 threads
