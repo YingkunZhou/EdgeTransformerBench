@@ -137,9 +137,9 @@ int main(int argc, char* argv[])
         //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L449
         uint32_t nnapi_flags = 0;
         nnapi_flags |= NNAPI_FLAG_USE_FP16;
-        //nnapi_flags |= NNAPI_FLAG_USE_NCHW;
-        nnapi_flags |= NNAPI_FLAG_CPU_DISABLED;
-        //nnapi_flags |= NNAPI_FLAG_CPU_ONLY;
+        // nnapi_flags |= NNAPI_FLAG_USE_NCHW;
+        // nnapi_flags |= NNAPI_FLAG_CPU_DISABLED;
+        // nnapi_flags |= NNAPI_FLAG_CPU_ONLY;
         Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Nnapi(session_options, nnapi_flags));
     }
     else
