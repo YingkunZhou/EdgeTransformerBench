@@ -162,8 +162,8 @@ int main(int argc, char* argv[])
         //https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html
         //https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/perftest/ort_test_session.cc#L323
         std::unordered_map<std::string, std::string> qnn_options;
-        qnn_options["backend_path"] = ".libs/onnxruntime/libQnnCpu.so";
-        // qnn_options["backend_path"] = ".libs/onnxruntime/libQnnHtp.so";
+        qnn_options["backend_path"] = ".libs/onnxruntime/lib/libQnnCpu.so";
+        // qnn_options["backend_path"] = ".libs/onnxruntime/lib/libQnnHtp.so";
         // qnn_options["profiling_level"] = "off"; //{"off", "basic", "detailed"};
         //"burst", "balanced", "default", "high_performance",
         //"high_power_saver", "low_balanced", "extreme_power_saver",
