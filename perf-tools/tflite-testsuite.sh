@@ -196,13 +196,13 @@ NNAPI_testsuite()
     testsuite tinynn-32 n 32 1
 
     echo ">>>>>>>>>>>nnapi: tfconvert dynamic int8 model<<<<<<<<<"
-    testsuite dynamic g 32 1
+    testsuite dynamic n 32 1
 
     echo ">>>>>>>>>>>nnapi: tfconvert PTQ static int8 model<<<<<<<<<"
-    testsuite int8 g 32 1
+    testsuite int8 n 32 1
 
     echo ">>>>>>>>>>>nnapi: tinynn dynamic int8 model<<<<<<<<<"
-    testsuite_mobilevitv2 tinynn-d8 g 32 1
+    testsuite_mobilevitv2 tinynn-d8 n 32 1
 }
 
 download_model
