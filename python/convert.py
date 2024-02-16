@@ -149,6 +149,19 @@ if __name__ == '__main__':
                 do_constant_folding=True,
                 opset_version=args.opset_version
             )
+        if not args.format or args.format == 'coreml':
+            if not os.path.exists(".coreml"):
+                os.makedirs(".coreml")
+            trace_model = torch.jit.trace(model, inputs)
+            import coremltools as ct
+            model = ct.convert(
+                trace_model,
+                # convert_to="neuralnetwork",
+                convert_to="mlprogram",
+                inputs=[ct.TensorType(name = "inputs", shape=inputs.shape)]
+            )
+            model.save(".coreml/"+name+".mlpackage")
+            # model.save(".coreml/"+name+".mlmodel")
         if not args.format or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
                 os.makedirs(".pt/fp32")
