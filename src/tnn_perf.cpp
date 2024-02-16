@@ -68,11 +68,13 @@ int main(int argc, char* argv[])
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
+    int fpbits = 32;
 
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"fp", required_argument, 0, 'f'},
         {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
@@ -129,6 +131,9 @@ int main(int argc, char* argv[])
             case 't':
                 num_threads = atoi(optarg);
                 break;
+            case 'f':
+                fpbits = atoi(optarg);
+                break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
                 break;
@@ -144,8 +149,12 @@ int main(int argc, char* argv[])
     // SetCpuAffinity();
     tnn::NetworkConfig network_config;
     network_config.device_type = backend;
-    network_config.precision = tnn::PRECISION_HIGH;
-    // network_config.precision = tnn::PRECISION_AUTO;
+    if (fpbits == 32) {
+        network_config.precision = tnn::PRECISION_HIGH;
+    }
+    else {
+        network_config.precision = tnn::PRECISION_AUTO;
+    }
     // enable_tune_kernel for OpenCL
     if (backend == tnn::DEVICE_CUDA)
         network_config.network_type = tnn::NETWORK_TYPE_TENSORRT;

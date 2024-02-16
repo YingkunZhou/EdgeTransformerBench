@@ -43,11 +43,13 @@ int main(int argc, char* argv[])
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
+    int fpbits = 32;
 
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"fp", required_argument, 0, 'f'},
         {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
@@ -112,6 +114,9 @@ int main(int argc, char* argv[])
             case 't':
                 num_threads = atoi(optarg);
                 break;
+            case 'f':
+                fpbits = atoi(optarg);
+                break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
                 break;
@@ -123,7 +128,13 @@ int main(int argc, char* argv[])
 
     // https://www.yuque.com/mnn/cn/create_session#Wi4on
     // TODO: for better performance (lower latency)
-    int precision = MNN::BackendConfig::Precision_High;
+    int precision;
+    if (fpbits == 16) {
+        precision = MNN::BackendConfig::Precision_Low;
+    }
+    else {
+        precision = MNN::BackendConfig::Precision_High;
+    }
     MNN::ScheduleConfig config;
     config.type = static_cast<MNNForwardType>(forward);
     config.numThread = num_threads;

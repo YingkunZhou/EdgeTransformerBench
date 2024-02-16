@@ -213,7 +213,7 @@ then
     NNAPI_testsuite
 fi
 
-if clinfo
+if clinfo >/dev/null
 then
     GPU_testsuite
 fi

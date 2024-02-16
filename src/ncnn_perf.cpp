@@ -57,11 +57,13 @@ int main(int argc, char* argv[])
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
+    int fpbits = 32;
 
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"fp", required_argument, 0, 'f'},
         {"backend", required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
@@ -113,6 +115,9 @@ int main(int argc, char* argv[])
                 break;
             case 't':
                 num_threads = atoi(optarg);
+                break;
+            case 'f':
+                fpbits = atoi(optarg);
                 break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
@@ -169,6 +174,7 @@ int main(int argc, char* argv[])
         std::cout << "Creating ncnn net: " << args.model << std::endl;
         ncnn::Net net;
         net.opt.num_threads = num_threads;
+    if (fpbits == 32) {
 #if 0
         // https://github.com/Tencent/ncnn/blob/master/src/option.cpp#L46C18-L46C18
         std::cout << "opt status: " <<
@@ -181,6 +187,7 @@ int main(int argc, char* argv[])
         net.opt.use_int8_storage    <<
         net.opt.use_int8_arithmetic <<
         net.opt.use_packing_layout;
+#endif
         net.opt.use_fp16_packed     = false;
         net.opt.use_fp16_storage    = false;
         net.opt.use_fp16_arithmetic = false;
@@ -190,6 +197,7 @@ int main(int argc, char* argv[])
         net.opt.use_int8_storage    = false;
         net.opt.use_int8_arithmetic = false;
         //net.opt.use_packing_layout  = false;
+#if 0
         std::cout << " ==> "        <<
         net.opt.use_fp16_packed     <<
         net.opt.use_fp16_storage    <<
@@ -201,6 +209,7 @@ int main(int argc, char* argv[])
         net.opt.use_int8_arithmetic <<
         net.opt.use_packing_layout  << std::endl;
 #endif
+    }
 #if NCNN_VULKAN
         if (use_vulkan)
         {

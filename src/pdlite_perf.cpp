@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
+    int fpbits = 32;
 
     static struct option long_options[] =
     {
@@ -98,6 +99,9 @@ int main(int argc, char* argv[])
                 break;
             case 't':
                 num_threads = atoi(optarg);
+                break;
+            case 'f':
+                fpbits = atoi(optarg);
                 break;
             case '?':
                 std::cout << "Got unknown option." << std::endl;
@@ -168,7 +172,11 @@ int main(int argc, char* argv[])
             // CL_PRECISION_AUTO: 0, first fp16 if valid, default
             // CL_PRECISION_FP32: 1, force fp32
             // CL_PRECISION_FP16: 2, force fp16
-            config.set_opencl_precision(paddle::lite_api::CL_PRECISION_FP16);
+            if (fpbits == 32) {
+                config.set_opencl_precision(paddle::lite_api::CL_PRECISION_FP32);
+            } else {
+                config.set_opencl_precision(paddle::lite_api::CL_PRECISION_FP16);
+            }
         } else {
             std::cout << "*** nb model will be running on cpu. ***" << std::endl;
             // you can give backup cpu nb model instead

@@ -1,4 +1,4 @@
-# USAGE: bash perf-tools/tflite-testsuite.sh
+# USAGE: bash perf-tools/onnxruntime-testsuite.sh
 download_model()
 {
     if [ ! -d ".onnx" ]
@@ -62,7 +62,10 @@ CPU_testsuite()
 download_model
 download_library
 
-NNAPI_testsuite
-QNN_testsuite
+if uname -a | grep -q Android
+then
+    NNAPI_testsuite
+    QNN_testsuite
+fi
 CPU_testsuite 1
 CPU_testsuite 3 # 3+1 threads
