@@ -136,11 +136,11 @@ if __name__ == '__main__':
         CPU_AND_NE = 4 # Allows the model to use both the CPU and neural engine, but not the GPU.
                     # Only available on macOS >= 13.0
         """
-        if args.compute == 'CPU_AND_GPU':
+        if args.compute == 'gpu':
             compute_units = ct.ComputeUnit.CPU_AND_GPU
-        elif args.compute == 'CPU_ONLY':
+        elif args.compute == 'cpu':
             compute_units = ct.ComputeUnit.CPU_ONLY
-        elif args.compute == 'CPU_AND_NE':
+        elif args.compute == 'npu':
             compute_units = ct.ComputeUnit.CPU_AND_NE
         else:
             compute_units = ct.ComputeUnit.ALL
