@@ -17,6 +17,7 @@ def get_args_parser():
     parser.add_argument('--num_workers', default=2, type=int)
     # Benchmark parameters
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
+    parser.add_argument('--compute', default='', type=str, help='Apple soc compute units')
 
     return parser
 
@@ -135,8 +136,17 @@ if __name__ == '__main__':
         CPU_AND_NE = 4 # Allows the model to use both the CPU and neural engine, but not the GPU.
                     # Only available on macOS >= 13.0
         """
+        if args.compute == 'CPU_AND_GPU':
+            compute_units = ct.ComputeUnit.CPU_AND_GPU
+        elif args.compute == 'CPU_ONLY':
+            compute_units = ct.ComputeUnit.CPU_ONLY
+        elif args.compute == 'CPU_AND_NE':
+            compute_units = ct.ComputeUnit.CPU_AND_NE
+        else:
+            compute_units = ct.ComputeUnit.ALL
+
         mlmodel = ct.models.MLModel(model=".coreml/"+name+".mlpackage",
-                                    compute_units=ct.ComputeUnit.ALL)
+                                    compute_units=compute_units)
         args.model = name
         args.input_size = resolution
         args.usi_eval = usi_eval
