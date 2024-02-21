@@ -147,6 +147,12 @@ if __name__ == '__main__':
 
         mlmodel = ct.models.MLModel(model=".coreml/"+name+".mlpackage",
                                     compute_units=compute_units)
+
+        import coremltools.optimize.coreml as cto
+        op_config = cto.OpPalettizerConfig(mode="kmeans", nbits=8)
+        config = cto.OptimizationConfig(global_config=op_config)
+        # mlmodel = cto.palettize_weights(mlmodel, config)
+
         args.model = name
         args.input_size = resolution
         args.usi_eval = usi_eval

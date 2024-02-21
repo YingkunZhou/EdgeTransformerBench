@@ -152,16 +152,28 @@ if __name__ == '__main__':
         if not args.format or args.format == 'coreml':
             if not os.path.exists(".coreml"):
                 os.makedirs(".coreml")
+            if not os.path.exists(".coreml/int8"):
+                os.makedirs(".coreml/int8")
+            if not os.path.exists(".coreml/fp16"):
+                os.makedirs(".coreml/fp16")
+
             trace_model = torch.jit.trace(model, inputs)
             import coremltools as ct
             model = ct.convert(
                 trace_model,
                 # convert_to="neuralnetwork",
                 convert_to="mlprogram",
-                inputs=[ct.TensorType(name = "inputs", shape=inputs.shape)]
+                inputs=[ct.TensorType(name = "inputs", shape=inputs.shape)],
+                minimum_deployment_target=ct.target.macOS14,
             )
-            model.save(".coreml/"+name+".mlpackage")
+            model.save(".coreml/fp16/"+name+".mlpackage")
             # model.save(".coreml/"+name+".mlmodel")
+
+            import coremltools.optimize.coreml as cto
+            op_config = cto.OpLinearQuantizerConfig(mode="linear_symmetric", weight_threshold=512)
+            config = cto.OptimizationConfig(global_config=op_config)
+            compressed_8_bit_model = cto.linear_quantize_weights(model, config=config)
+            compressed_8_bit_model.save(".coreml/int8/"+name+".mlpackage")
         if not args.format or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
                 os.makedirs(".pt/fp32")
