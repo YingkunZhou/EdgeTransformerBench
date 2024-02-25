@@ -40,6 +40,7 @@ def benchmarking_cpu(model, inputs, args):
     val, idx = outputs.topk(3)
     print(list(zip(idx[0].tolist(), val[0].tolist())))
     if args.test: return
+
     time_list = []
     while sum(time_list) < TEST_SEC:
         start = time.perf_counter()
@@ -52,7 +53,8 @@ def benchmarking_cpu(model, inputs, args):
     print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
 
 
-def benchmarking_cuda(model, inputs):
+def benchmarking_cuda(model, inputs, args):
+    model = model.cuda()
     torch.cuda.empty_cache()
     # warmup
     torch.cuda.synchronize()
@@ -60,9 +62,11 @@ def benchmarking_cuda(model, inputs):
     start = time.perf_counter()
     while time.perf_counter() - start < WARMUP_SEC:
         outputs = model(inputs)
+        if args.test: break
 
     val, idx = outputs.topk(3)
     print(list(zip(idx[0].tolist(), val[0].tolist())))
+    if args.test: return
 
     time_list = []
 
@@ -89,7 +93,6 @@ def get_args_parser():
     parser.add_argument('--fuse', action='store_true', default=False)
     parser.add_argument('--test', action='store_true', default=False)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
-    parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
     # Dataset parameters
     parser.add_argument('--validation', action='store_true', default=False)
@@ -193,7 +196,16 @@ if __name__ == '__main__':
             )
             if not extern and args.pretrained:
                 # load model weights
-                weights_dict = torch.load(args.weights+'/'+weight, map_location="cpu")
+                if not os.path.exists('weights'):
+                    import subprocess
+                    if not os.path.exists('EdgeTransformerPerf-weights.tar'):
+                        print("============Downloading weights============")
+                        print("============you should install gdown first: pip install gdown============")
+                        subprocess.run(['gdown', '19irI6H_c1w2OaDOVzPIj2v0Dy30pq-So'])
+                    else:
+                        print("============Extracting weights============")
+                        subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
+                weights_dict = torch.load('weights/'+weight, map_location="cpu")
                 # print(weights_dict.keys())
 
                 if "state_dict" in weights_dict:
@@ -241,8 +253,6 @@ if __name__ == '__main__':
             if args.use_script:
                 script_model = torch.jit.script(model)
             if args.use_trace:
-                # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
-                torch.backends.quantized.engine = 'qnnpack'
                 if not os.path.exists(".pt/" + args.model + ".pt"):
                     print(args.model + " model doesn't exist!!!")
                     continue

@@ -36,7 +36,6 @@ def get_args_parser():
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
     parser.add_argument('--fuse', action='store_true', default=False)
     parser.add_argument('--mobile', default=None, type=str, help='cpu, vulkan, nnapi')
-    parser.add_argument('--weights', default='weights', type=str, help='weigths path')
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     parser.add_argument('--format', default='', type=str, help='conversion format')
     parser.add_argument('--debug', default=None, type=str, help='e,g --debug 32,4')
@@ -97,7 +96,17 @@ if __name__ == '__main__':
         )
         if weight and args.pretrained:
             # load model weights
-            weights_dict = torch.load(args.weights+'/'+weight, map_location="cpu")
+            if not os.path.exists('weights'):
+                import subprocess
+                if not os.path.exists('EdgeTransformerPerf-weights.tar'):
+                    print("============Downloading weights============")
+                    print("============you should install gdown first: pip install gdown============")
+                    subprocess.run(['gdown', '19irI6H_c1w2OaDOVzPIj2v0Dy30pq-So'])
+                else:
+                    print("============Extracting weights============")
+                    subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
+
+            weights_dict = torch.load('weights/'+weight, map_location="cpu")
             # print(weights_dict.keys())
 
             if "state_dict" in weights_dict:
