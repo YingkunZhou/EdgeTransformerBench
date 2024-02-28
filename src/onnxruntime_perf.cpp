@@ -12,13 +12,22 @@
 #include <algorithm>
 
 #include <onnxruntime_cxx_api.h>
+
 #if USE_DNNL
 #include <dnnl_provider_options.h>
 #endif
+
+#ifdef USE_TENSORRT
+#include <tensorrt_provider_options.h>
+#endif
+
 #ifdef USE_NNAPI
 #include <nnapi_provider_factory.h>
 #endif
+
+#ifdef USE_ACL
 #include <acl_provider_factory.h>
+#endif
 
 #include "utils.h"
 
@@ -144,7 +153,7 @@ int main(int argc, char* argv[])
     }
     else
 #endif
-#if USE_DNNL
+#ifdef USE_DNNL
     if (backend == 'd') {
         std::cout << "INFO: Using ONEDNN backend" << std::endl;
         //https://onnxruntime.ai/docs/execution-providers/oneDNN-ExecutionProvider.html
@@ -154,6 +163,76 @@ int main(int argc, char* argv[])
         dnnl_options.use_arena = 1;
         dnnl_options.threadpool_args = static_cast<void*>(&num_threads);;
         session_options.AppendExecutionProvider_Dnnl(dnnl_options);
+    }
+    else
+#endif
+#ifdef USE_TENSORRT
+    if (backend == 't') {
+        // https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html
+        const auto& api = Ort::GetApi();
+        OrtTensorRTProviderOptionsV2* tensorrt_options;
+        Ort::ThrowOnError(api.CreateTensorRTProviderOptions(&tensorrt_options));
+        std::vector<const char*> option_keys = {
+            "device_id",
+            "trt_max_workspace_size",
+            "trt_builder_optimization_level",
+            "trt_cuda_graph_enable",
+            "trt_dump_subgraphs",
+            "trt_engine_cache_enable",
+            "trt_timing_cache_enable",
+            "trt_engine_cache_path",
+            "trt_timing_cache_path",
+
+            "trt_fp16_enable",
+            "trt_int8_enable",
+            "trt_int8_use_native_calibration_table",
+            "trt_int8_calibration_table_name",
+            "trt_dla_enable",
+            "trt_dla_core"
+        };
+        std::vector<const char*> option_values = {
+            "0", //"device_id",
+            "2147483648", //"trt_max_workspace_size",
+            "5", //"trt_builder_optimization_level",
+            "1", //"trt_cuda_graph_enable",
+            "1", //"trt_dump_subgraphs",
+            "1", //"trt_engine_cache_enable",
+            "1", //"trt_timing_cache_enable",
+            ".trt-cache", //"trt_engine_cache_path",
+            ".trt-cache", //"trt_timing_cache_path",
+
+            "1", //"trt_fp16_enable",
+            "1", //"trt_int8_enable",
+            "1", //"trt_int8_use_native_calibration_table",
+            only_test, //"trt_int8_calibration_table_name
+            "1", //"trt_dla_enable",
+            "0" //"trt_dla_core
+        };
+        Ort::ThrowOnError(api.UpdateTensorRTProviderOptions(
+            tensorrt_options,
+            option_keys.data(), option_values.data(), option_keys.size()));
+
+        session_options.AppendExecutionProvider_TensorRT_V2(*tensorrt_options);
+        // api.ReleaseTensorRTProviderOptions(tensorrt_options);
+
+        OrtCUDAProviderOptions cuda_options;
+        cuda_options.device_id = tensorrt_options->device_id;
+        // 0:OrtCudnnConvAlgoSearchExhaustive,  // expensive exhaustive benchmarking using cudnnFindConvolutionForwardAlgorithmEx
+        // 1:OrtCudnnConvAlgoSearchHeuristic,   // lightweight heuristic based search using cudnnGetConvolutionForwardAlgorithm_v7
+        // 2:OrtCudnnConvAlgoSearchDefault,     // default algorithm using CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM
+        cuda_options.cudnn_conv_algo_search = static_cast<OrtCudnnConvAlgoSearch>(0);
+        cuda_options.do_copy_in_default_stream = true; // TODO
+        // TODO: Support arena configuration for users of perf test
+        // cuda_options.arena_extend_strategy = 0; // 0: kNextPowerOfTwo, 1: kSameAsRequested
+        session_options.AppendExecutionProvider_CUDA(cuda_options);
+    }
+    else
+#endif
+#ifdef USE_ACL
+    if (backend == 'a') {
+        std::cout << "INFO: Using ACL backend" << std::endl;
+        bool enable_cpu_mem_arena = true;
+        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_ACL(session_options, enable_cpu_mem_arena));
     }
     else
 #endif
@@ -174,11 +253,6 @@ int main(int argc, char* argv[])
         // qnn_options["htp_arch"] = "0"; //{"0", "68", "69", "73", "75"};
         //key == "rpc_control_latency" || key == "vtcm_mb" || key == "soc_model" || key == "device_id"
         session_options.AppendExecutionProvider("QNN", qnn_options);
-    }
-    else if (backend == 'a') {
-        std::cout << "INFO: Using ACL backend" << std::endl;
-        bool enable_cpu_mem_arena = true;
-        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_ACL(session_options, enable_cpu_mem_arena));
     }
     else if (backend == 'x') {
         std::cout << "INFO: Using XNNPACK backend" << std::endl;

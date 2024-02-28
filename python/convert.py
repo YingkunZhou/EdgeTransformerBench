@@ -30,7 +30,8 @@ def get_args_parser():
         'EdgeTransformerPerf model format conversion script', add_help=False)
     parser.add_argument('--batch-size', default=1, type=int)
     parser.add_argument('--opset-version', default=None, type=int)
-    parser.add_argument('--data-path', default='.ncnn/calibration', type=str, help='dataset path')
+    # by: ln -sf ../../../.ncnn/calibration/imagenet-sample-images/n01* .
+    parser.add_argument('--data-path', default='.pt/calibration', type=str, help='dataset path')
     # Model parameters
     parser.set_defaults(pretrained=True)
     parser.add_argument('--non-pretrained', action='store_false', dest='pretrained')
@@ -39,6 +40,8 @@ def get_args_parser():
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     parser.add_argument('--format', default='', type=str, help='conversion format')
     parser.add_argument('--debug', default=None, type=str, help='e,g --debug 32,4')
+    parser.add_argument('--int8', action='store_true', default=False)
+    parser.add_argument('--trt-dev', default="gpu", type=str, help='gpu, dla')
 
     return parser
 
@@ -158,6 +161,55 @@ if __name__ == '__main__':
                 do_constant_folding=True,
                 opset_version=args.opset_version
             )
+        if not args.format or args.format == 'trt':
+            trace_model = torch.jit.trace(model, inputs).cuda()
+
+            import torch_tensorrt
+            import torch.utils.data as tdata
+            import torch_tensorrt.ptq as tptq
+
+            calib_dataset = build_dataset(args)
+            calib_dataset = tdata.random_split(calib_dataset, [len(calib_dataset)-200, 200])[1]
+            calib_dataloader = tdata.DataLoader(calib_dataset, batch_size=1, shuffle=False, drop_last=True)
+            dev = args.trt_dev
+            if args.int8:
+                if not os.path.exists(".pt/"+dev+"-int8"):
+                    os.makedirs(".pt/"+dev+"-int8")
+                calibrator = tptq.DataLoaderCalibrator(
+                    calib_dataloader,
+                    use_cache=False,
+                    # Network built for DLA requires kENTROPY_CALIBRATION_2 calibrator.
+                    algo_type=tptq.CalibrationAlgo.MINMAX_CALIBRATION if dev == 'gpu' \
+                         else tptq.CalibrationAlgo.ENTROPY_CALIBRATION_2,
+                    device=torch.device('cuda:0'))
+
+                compile_spec = {
+                    "inputs": [torch_tensorrt.Input([1, 3, resolution, resolution])],
+                    "enabled_precisions": torch.int8,
+                    "calibrator": calibrator,
+                    "truncate_long_and_double": True,
+                }
+                if dev == 'dla':
+                    compile_spec["device"] = torch_tensorrt.Device("dla:0", allow_gpu_fallback=True)
+                trt_int8 = torch_tensorrt.compile(trace_model, **compile_spec)
+                torch.jit.save(trt_int8, ".pt/"+dev+"-int8/"+name+'.ts')
+            else:
+                if not os.path.exists(".pt/"+dev+"-fp16"):
+                    os.makedirs(".pt/"+dev+"-fp16")
+                compile_spec = {
+                    "inputs": [torch_tensorrt.Input(
+                        [1, 3, resolution, resolution],
+                        # dtype=torch.half,
+                    )],
+                    "enabled_precisions": torch.half,
+                    "truncate_long_and_double": True,
+                }
+                if dev == 'dla':
+                    compile_spec["device"] = torch_tensorrt.Device("dla:0", allow_gpu_fallback=True)
+                trt_fp16 = torch_tensorrt.compile(trace_model, **compile_spec)
+                torch.jit.save(trt_fp16, ".pt/"+dev+"-fp16/"+name+'.ts')
+
+
         if not args.format or args.format == 'coreml':
             if not os.path.exists(".coreml"):
                 os.makedirs(".coreml")

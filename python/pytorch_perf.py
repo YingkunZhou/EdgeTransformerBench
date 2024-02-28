@@ -55,6 +55,7 @@ def benchmarking_cpu(model, inputs, args):
 
 def benchmarking_cuda(model, inputs, args):
     model = model.cuda()
+    inputs = inputs.cuda()
     torch.cuda.empty_cache()
     # warmup
     torch.cuda.synchronize()
@@ -109,6 +110,8 @@ def get_args_parser():
     parser.add_argument('--use-inference', action='store_true', default=False)
     parser.add_argument('--use-compile', action='store_true', default=False)
     parser.add_argument('--use-mobile', action='store_true', default=False)
+    parser.add_argument('--use-trt', action='store_true', default=False)
+
     parser.add_argument('--use_amp', action='store_true', default=False,
                         help="Use PyTorch's AMP (Automatic Mixed Precision) or not") #TODO: much slower?
     parser.add_argument('--backend', default='inductor', type=str, help='pytorch compile backend')
@@ -269,6 +272,13 @@ if __name__ == '__main__':
                     print(args.model + " model doesn't exist!!!")
                     continue
                 mobile_model = torch.jit.load(".pt/" + args.model + ".c.ptl")
+            if args.use_trt:
+                if not os.path.exists(".pt/" + args.model + ".ts"):
+                    print(args.model + " model doesn't exist!!!")
+                    continue
+                import torch_tensorrt
+                trt_model = torch.jit.load(".pt/" + args.model + ".ts").cuda()
+                benchmarking = benchmarking_cuda
 
             print(f"Creating model: {name}")
             if args.validation:
@@ -295,6 +305,8 @@ if __name__ == '__main__':
                     evaluate(data_loader_val, compile_model, device, args)
                 if args.use_mobile:
                     evaluate(data_loader_val, mobile_model, device, args)
+                if args.use_trt:
+                    evaluate(data_loader_val, trt_model, 'cuda:0', args)
             else:
                 # load test image
                 inputs = load_image(args=args).to(device)
@@ -313,3 +325,5 @@ if __name__ == '__main__':
                     benchmarking(compile_model, inputs, args)
                 if args.use_mobile:
                     benchmarking(mobile_model, inputs, args)
+                if args.use_trt:
+                    benchmarking(trt_model, inputs, args)

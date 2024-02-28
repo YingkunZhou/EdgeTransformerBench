@@ -767,10 +767,99 @@ cp ../../../include/onnxruntime/core/providers/nnapi/nnapi_provider_factory.h in
 
 # torch
 
-pytorch 实在是太TM复杂了！！！而且还强烈依赖openblas库，对性能的影响非常敏感！！！
-
 <details>
 <summary>Linux</summary>
+
+**we finally use [aarch64_ci_build.sh](https://github.com/pytorch/builder/blob/main/aarch64_linux/aarch64_ci_build.sh) methods to build pytorch**
+
+```dockerfile
+FROM ubuntu:20.04
+ARG default_py_version=3.8
+ENV PY_VERSION="${default_py_version}"
+
+RUN if ! [ "$(arch)" = "aarch64" ] ; then exit 1; fi
+
+ENV TZ=Asia/Shanghai \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y install \
+     accountsservice apport at autoconf bc build-essential cpufrequtils curl ethtool \
+     g++-10 gcc-10 gettext-base gfortran-10 git iproute2 iputils-ping lxd libbz2-dev \
+     libc++-dev libcgal-dev libffi-dev libfreetype6-dev libhdf5-dev libjpeg-dev \
+     liblzma-dev libncurses5-dev libncursesw5-dev libopenblas-dev libopencv-dev libpng-dev \
+     libreadline-dev libsox-fmt-all libsqlite3-dev libssl-dev libxml2-dev libxslt-dev locales \
+     lsb-release lvm2 moreutils net-tools open-iscsi openjdk-8-jdk openssl pciutils policykit-1 \
+     python${PY_VERSION} python${PY_VERSION}-dev python${PY_VERSION}-distutils python${PY_VERSION}-venv \
+     python3-pip python-openssl rsync rsyslog snapd scons sox ssh sudo time udev unzip ufw \
+     uuid-runtime vim wget xz-utils zip zlib1g-dev zsh
+
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 1 && \
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-10 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+
+WORKDIR /work
+```
+
+编译ACL需要gcc>=10，不然会报错：`fatal error: arm_sve.h: No such file or directory`
+
+```bash
+docker build . -f Dockerfile -t <image name>
+# --name set container name
+docker run --name pytorch --hostname pytorch -v <mount local dir>:/work -it <image name> zsh
+docker start pytorch
+docker exec -it pytorch zsh
+
+export CMAKE_BUILD_PARALLEL_LEVEL=4 # set thread number to build pytorch
+# https://github.com/pytorch/pytorch/issues/29327
+export USE_QNNPACK=ON
+export USE_PYTORCH_QNNPACK=ON
+export USE_MPI=0
+
+DESIRED_PYTHON="3.8" ./aarch64_ci_build.sh
+
+cd /pytorch
+cp /acl/build/libarm_compute.so       /pytorch/torch/lib
+cp /acl/build/libarm_compute_graph.so /pytorch/torch/lib
+cp /acl/build/libarm_compute_core.so  /pytorch/torch/lib
+# wget http://mirror.archlinuxarm.org/aarch64/extra/ openblas-0.3.26-3-aarch64.pkg.tar.xz
+tar openblas-0.3.26-3-aarch64.pkg.tar.xz
+cp usr/lib/libopenblas.so.0 /pytorch/torch/lib
+rm -rf usr
+tar czf torch.tar.gz torch/lib/*.so* torch/include
+```
+
+google search: Didn't find engine for operation quantized::conv2d_prepack NoQEngine
+- https://github.com/pytorch/pytorch/issues/29327
+- https://github.com/pytorch/pytorch/issues/76755
+
+```diff
+diff --git a/aten/src/ATen/Context.cpp b/aten/src/ATen/Context.cpp
+index 1ec545d..63675a5 100644
+--- a/aten/src/ATen/Context.cpp
++++ b/aten/src/ATen/Context.cpp
+@@ -286,7 +286,7 @@ bool Context::hasLAPACK() {
+ at::QEngine Context::qEngine() const {
+   static auto _quantized_engine = []() {
+     at::QEngine qengine = at::kNoQEngine;
+-#if defined(C10_MOBILE) && defined(USE_PYTORCH_QNNPACK)
++#if defined(USE_PYTORCH_QNNPACK)
+     qengine = at::kQNNPACK;
+ #endif
+
+
+```
+
+</details>
+
+
+<details>
+<summary>Deprecated</summary>
+
+pytorch 实在是太TM复杂了！！！而且还强烈依赖openblas库，对性能的影响非常敏感！！！
 
 ```bash
 git clone https://github.com/google/shaderc --depth=1
@@ -872,12 +961,18 @@ https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
 ```json
 # cat /etc/docker/daemon.json
 {
-    "bip": "172.18.0.1/16",
+    "max-concurrent-downloads": 1,
     "registry-mirrors": [
         "https://xxx.mirror.aliyuncs.com"
     ]
 }
 ```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
 
 - [Setup the proxy for Dockerfile building](https://dev.to/zyfa/setup-the-proxy-for-dockerfile-building--4jc8)
 ```diff
@@ -896,139 +991,4 @@ index 78334c6..5484033 100644
 
 ```
 
-**we finally use [aarch64_ci_build.sh](https://github.com/pytorch/builder/blob/main/aarch64_linux/aarch64_ci_build.sh) methods to build pytorch**
-
-```dockerfile
-ARG default_py_version=3.8
-
-FROM ubuntu:20.04
-ARG default_py_version
-ENV PY_VERSION="${default_py_version}"
-
-RUN if ! [ "$(arch)" = "aarch64" ] ; then exit 1; fi
-
-ENV TZ=Asia/Shanghai \
-    DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get -y update
-RUN apt-get -y upgrade
-# Install core OS packages
-RUN apt-get -y install \
-      zsh \
-      wget \
-      accountsservice \
-      apport \
-      at \
-      autoconf \
-      bc \
-      build-essential \
-      cmake \
-      cpufrequtils \
-      curl \
-      ethtool \
-      g++-10 \
-      gcc-10 \
-      gettext-base \
-      gfortran-10 \
-      git \
-      iproute2 \
-      iputils-ping \
-      lxd \
-      libbz2-dev \
-      libc++-dev \
-      libcgal-dev \
-      libffi-dev \
-      libfreetype6-dev \
-      libhdf5-dev \
-      libjpeg-dev \
-      liblzma-dev \
-      libncurses5-dev \
-      libncursesw5-dev \
-      libpng-dev \
-      libreadline-dev \
-      libsox-fmt-all \
-      libsqlite3-dev \
-      libssl-dev \
-      libxml2-dev \
-      libxslt-dev \
-      locales \
-      lsb-release \
-      lvm2 \
-      moreutils \
-      net-tools \
-      open-iscsi \
-      openjdk-8-jdk \
-      openssl \
-      pciutils \
-      policykit-1 \
-      python${PY_VERSION} \
-      python${PY_VERSION}-dev \
-      python${PY_VERSION}-distutils \
-      python${PY_VERSION}-venv \
-      python3-pip \
-      python-openssl \
-      rsync \
-      rsyslog \
-      snapd \
-      scons \
-      sox \
-      ssh \
-      sudo \
-      time \
-      udev \
-      unzip \
-      ufw \
-      uuid-runtime \
-      vim \
-      xz-utils \
-      zip \
-      zlib1g-dev
-
-# Set default gcc, python and pip versions
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1 && \
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 1 && \
-    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-10 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
-    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-```
-
-```bash
-docker build . -f Dockerfile -t xxx
-docker run --name pytorch --hostname pytorch -v xxx:/xxx -it xxx bash
-docker start pytorch
-docker exec -it pytorch zsh
-update-alternatives --config gcc
-update-alternatives --config g++
-# openblas use clang-14, onednn+acl use gcc-10
-# export CMAKE_BUILD_PARALLEL_LEVEL=4 # set thread number to build pytorch
-# cd /usr/lib/aarch64-linux-gnu
-# rm libgomp.so.1; ln -s ../llvm-14/lib/libomp.so.5 libgomp.so.1
-
-# https://github.com/pytorch/pytorch/issues/29327
-export USE_QNNPACK=ON
-export USE_PYTORCH_QNNPACK=ON
-
-DESIRED_PYTHON="3.8" ./aarch64_ci_build.sh
-```
-
-google search: Didn't find engine for operation quantized::conv2d_prepack NoQEngine
-- https://github.com/pytorch/pytorch/issues/29327
-- https://github.com/pytorch/pytorch/issues/76755
-
-```diff
-diff --git a/aten/src/ATen/Context.cpp b/aten/src/ATen/Context.cpp
-index 1ec545d..63675a5 100644
---- a/aten/src/ATen/Context.cpp
-+++ b/aten/src/ATen/Context.cpp
-@@ -286,7 +286,7 @@ bool Context::hasLAPACK() {
- at::QEngine Context::qEngine() const {
-   static auto _quantized_engine = []() {
-     at::QEngine qengine = at::kNoQEngine;
--#if defined(C10_MOBILE) && defined(USE_PYTORCH_QNNPACK)
-+#if defined(USE_PYTORCH_QNNPACK)
-     qengine = at::kQNNPACK;
- #endif
-
-
-```
 </details>

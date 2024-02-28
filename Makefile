@@ -163,19 +163,23 @@ test-tflite-perf: bin/tflite-perf-test
 ONNXRT_INC ?= $(PWD)/.libs/onnxruntime/include
 ONNXRT_LIB ?= $(PWD)/.libs/onnxruntime/lib
 
-NNAPI_FLAGS =
+NNAPI_FLAGS ?=
 ifeq ($(ANDROID),0)
 	NNAPI_FLAGS += -DUSE_NNAPI
 endif
+
+TENSORRT_FLAGS ?=
+ACL_FLAGS ?=
+DNNL_FLAGS ?=
 
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
 bin/onnxruntime-perf: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS)
+	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS)
 
 bin/onnxruntime-perf-test: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS)
+	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS)
 
 run-onnxruntime-perf: bin/onnxruntime-perf
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
