@@ -48,3 +48,6 @@ warning.log
 .onnx/
 bin/
 *.tar.gz
+*.tar
+.trt-cache
+*.onnx
