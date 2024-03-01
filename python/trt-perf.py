@@ -1,3 +1,4 @@
+import os
 import torch
 import argparse
 import time
@@ -26,6 +27,7 @@ TEST_SEC  = 20
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('EdgeTransformerPerf evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
+
     for name, resolution, usi_eval in [
         ('efficientformerv2_s0', 224, False),
         ('efficientformerv2_s1', 224, False),
@@ -69,7 +71,7 @@ if __name__ == '__main__':
         ('tf_efficientnetv2_b3' , 300, False),
     ]:
 
-        if args.only_test and args.only_test not in name:
+        if args.only_test and args.only_test != name:
             continue
 
         args.model = name
@@ -81,6 +83,28 @@ if __name__ == '__main__':
 
         input_buffer = torch.zeros(input_shape, dtype=torch.float32, device=torch.device('cuda'))
         output_buffer = torch.zeros(output_shape, dtype=torch.float32, device=torch.device('cuda'))
+
+        if 'mobilevitv2' in args.model:
+            if not os.path.exists('.onnx/'+args.model+'.onnx'):
+                print(args.model + " model doesn't exist!!!")
+                continue
+            cmd=['LD_LIBRARY_PATH=.libs/onnxruntime/lib', 'bin/onnxruntime-perf',
+                 '--backend', 't', '--only-test']
+            cmd.append(args.model)
+            if args.format == 'int8':
+                cmd.append('--use-int8')
+            if args.trt_dev == 'gpu':
+                cmd.append('--use-gpu')
+            if args.validation:
+                cmd.append('--validation')
+            os.system(' '.join(cmd))
+            continue
+
+        if not os.path.exists('.onnx/'+args.trt_dev+'-'+args.format+'/'+args.model+'.engine'):
+            print(args.model + " model doesn't exist!!!")
+            continue
+
+        print("loading engine: "+args.trt_dev+'-'+args.format+'/'+args.model+'.engine')
 
         logger = trt.Logger(trt.Logger.INFO)
         runtime = trt.Runtime(logger)
@@ -144,7 +168,8 @@ if __name__ == '__main__':
             test_stats = {k: meter.global_avg for k, meter in metric_logger.meters.items()}
             print(f"Accuracy on {args.len_dataset_val} test images: {test_stats['acc1']:.1f}%")
         else:
-            # /usr/src/tensorrt/bin/trtexec --batch=1 --loadEngine=xxx.engine  --dumpProfile --separateProfileRun
+            # /usr/src/tensorrt/bin/trtexec --batch=1 --loadEngine=xxx.engine --dumpProfile --separateProfileRun
+            # /usr/src/tensorrt/bin/trtexec --batch=1 --loadEngine=xxx.engine --avgRuns=500 --duration=20
             images = load_image(args)
             input_buffer[0:args.batch_size].copy_(images)
             # warmup

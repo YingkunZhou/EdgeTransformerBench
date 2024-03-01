@@ -203,6 +203,7 @@ if __name__ == '__main__':
                     )],
                     "enabled_precisions": torch.half,
                     "truncate_long_and_double": True,
+                    "workspace_size": 8192,
                 }
                 if dev == 'dla':
                     compile_spec["device"] = torch_tensorrt.Device("dla:0", allow_gpu_fallback=True)

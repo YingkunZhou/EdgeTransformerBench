@@ -1,3 +1,6 @@
+# /usr/src/tensorrt/bin/trtexec --fp16 --onnx=.onnx/fp32/xxx.onnx --saveEngine=.onnx/gpu-fp16/xxx.engine
+# /usr/src/tensorrt/bin/trtexec --fp16 --onnx=.onnx/fp32/xxx.onnx --saveEngine=.onnx/dla-fp16/xxx.engine --useDLACore=0 --allowGPUFallback
+# above can work for fp16, but slower
 import os
 import argparse
 import torch
@@ -70,6 +73,8 @@ class DatasetCalibrator(trt.IInt8Calibrator):
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser('tensorrt quantization script', parents=[get_args_parser()])
     args = argparser.parse_args()
+    if not os.path.exists('.onnx/'+args.trt_dev+'-'+args.format):
+        os.makedirs('.onnx/'+args.trt_dev+'-'+args.format)
 
     # create logger
     logger = trt.Logger(trt.Logger.INFO)
@@ -145,16 +150,25 @@ if __name__ == '__main__':
         # define the builder configuration
         config = builder.create_builder_config()
         config.add_optimization_profile(profile)
+        config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 2147483648)
 
+        # below we choose most suitable calibration algorithm for the model
         if "resnet50" in args.model:
             algorithm = trt.CalibrationAlgoType.MINMAX_CALIBRATION
+        elif "efficientnet" in args.model \
+            or "mobilevit"  in args.model \
+                or "EMO"    in args.model:
+            # use ENTROPY_CALIBRATION will cause segmentation fault
+            algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
         else:
+            # ENTROPY_CALIBRATION is better than ENTROPY_CALIBRATION_2 for accuracy
             algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION
 
         if args.trt_dev == 'dla':
             config.default_device_type = trt.DeviceType.DLA
             config.DLA_core = 0
             config.set_flag(trt.BuilderFlag.GPU_FALLBACK)
+            # Network built for DLA requires kENTROPY_CALIBRATION_2 calibrator.
             algorithm = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
 
         if args.format == 'int8':
@@ -168,9 +182,7 @@ if __name__ == '__main__':
         else:
             config.set_flag(trt.BuilderFlag.FP16)
 
-        engine_bytes = builder.build_serialized_network(network, config)
 
-        if not os.path.exists('.onnx/'+args.trt_dev+'-'+args.format):
-            os.makedirs('.onnx/'+args.trt_dev+'-'+args.format)
+        engine_bytes = builder.build_serialized_network(network, config)
         with open('.onnx/'+args.trt_dev+'-'+args.format+'/'+args.model+'.engine', 'wb') as f:
             f.write(engine_bytes)

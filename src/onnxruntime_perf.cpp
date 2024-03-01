@@ -57,7 +57,8 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     char backend = 'a';
-    bool debug = false;
+    bool use_gpu = false;
+    bool use_int8 = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
@@ -65,7 +66,8 @@ int main(int argc, char* argv[])
     static struct option long_options[] =
     {
         {"validation", no_argument, 0, 'v'},
-        {"debug", no_argument, 0, 'g'},
+        {"use-gpu", no_argument, 0, 'g'},
+        {"use-int8", no_argument, 0, 'i'},
         {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
@@ -76,7 +78,7 @@ int main(int argc, char* argv[])
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vgubdot", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "vgiubdot", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -103,7 +105,10 @@ int main(int argc, char* argv[])
                 only_test = optarg;
                 break;
             case 'g':
-                debug = true;
+                use_gpu = true;
+                break;
+            case 'i':
+                use_int8 = true;
                 break;
             case 'u':
                 backend = optarg[0];
@@ -168,6 +173,7 @@ int main(int argc, char* argv[])
 #endif
 #ifdef USE_TENSORRT
     if (backend == 't') {
+        std::cout << "INFO: Using TENSORRT backend" << std::endl;
         // https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html
         const auto& api = Ort::GetApi();
         OrtTensorRTProviderOptionsV2* tensorrt_options;
@@ -175,39 +181,42 @@ int main(int argc, char* argv[])
         std::vector<const char*> option_keys = {
             "device_id",
             "trt_max_workspace_size",
-            "trt_builder_optimization_level",
-            "trt_cuda_graph_enable",
             "trt_dump_subgraphs",
             "trt_engine_cache_enable",
             "trt_timing_cache_enable",
             "trt_engine_cache_path",
             "trt_timing_cache_path",
-
-            "trt_fp16_enable",
-            "trt_int8_enable",
-            "trt_int8_use_native_calibration_table",
-            "trt_int8_calibration_table_name",
-            "trt_dla_enable",
-            "trt_dla_core"
         };
         std::vector<const char*> option_values = {
-            "0", //"device_id",
-            "2147483648", //"trt_max_workspace_size",
-            "5", //"trt_builder_optimization_level",
-            "1", //"trt_cuda_graph_enable",
-            "1", //"trt_dump_subgraphs",
+            "0",
+            "2147483648",
+            "1",
             "1", //"trt_engine_cache_enable",
             "1", //"trt_timing_cache_enable",
             ".trt-cache", //"trt_engine_cache_path",
             ".trt-cache", //"trt_timing_cache_path",
-
-            "1", //"trt_fp16_enable",
-            "1", //"trt_int8_enable",
-            "1", //"trt_int8_use_native_calibration_table",
-            only_test, //"trt_int8_calibration_table_name
-            "1", //"trt_dla_enable",
-            "0" //"trt_dla_core
         };
+
+        if (use_gpu) {
+            option_keys.push_back("trt_fp16_enable");
+            option_values.push_back("1");
+        }
+        else {
+            option_keys.push_back("trt_dla_enable");
+            option_keys.push_back("trt_dla_core");
+            option_values.push_back("1");
+            option_values.push_back("0");
+        }
+
+        if (use_int8) {
+            option_keys.push_back("trt_int8_enable");
+            option_keys.push_back("trt_int8_use_native_calibration_table");
+            option_keys.push_back("trt_int8_calibration_table_name");
+            option_values.push_back("1");
+            option_values.push_back("1");
+            option_values.push_back(only_test);
+        };
+
         Ort::ThrowOnError(api.UpdateTensorRTProviderOptions(
             tensorrt_options,
             option_keys.data(), option_values.data(), option_keys.size()));
