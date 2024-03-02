@@ -197,11 +197,7 @@ int main(int argc, char* argv[])
             ".trt-cache", //"trt_timing_cache_path",
         };
 
-        if (use_gpu) {
-            option_keys.push_back("trt_fp16_enable");
-            option_values.push_back("1");
-        }
-        else {
+        if (!use_gpu) {
             option_keys.push_back("trt_dla_enable");
             option_keys.push_back("trt_dla_core");
             option_values.push_back("1");
@@ -215,7 +211,11 @@ int main(int argc, char* argv[])
             option_values.push_back("1");
             option_values.push_back("1");
             option_values.push_back(only_test);
-        };
+        }
+        else {
+            option_keys.push_back("trt_fp16_enable");
+            option_values.push_back("1");
+        }
 
         Ort::ThrowOnError(api.UpdateTensorRTProviderOptions(
             tensorrt_options,

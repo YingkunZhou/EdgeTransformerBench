@@ -88,6 +88,10 @@ if __name__ == '__main__':
             if not os.path.exists('.onnx/'+args.model+'.onnx'):
                 print(args.model + " model doesn't exist!!!")
                 continue
+
+            if os.path.exists('.onnx/'+args.trt_dev+'-'+args.format):
+                os.system('.onnx/'+args.trt_dev+'-'+args.format+'/map.sh')
+
             cmd=['LD_LIBRARY_PATH=.libs/onnxruntime/lib', 'bin/onnxruntime-perf',
                  '--backend', 't', '--only-test']
             cmd.append(args.model)
@@ -97,6 +101,8 @@ if __name__ == '__main__':
                 cmd.append('--use-gpu')
             if args.validation:
                 cmd.append('--validation')
+                cmd.append('--data-path')
+                cmd.append(args.data_path)
             os.system(' '.join(cmd))
             continue
 

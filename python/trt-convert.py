@@ -177,7 +177,7 @@ if __name__ == '__main__':
                 torch.zeros(args.batch_size, 3, args.input_size, args.input_size).cuda(),
                 build_dataset(args),
                 algorithm,
-                '.onnx/'+args.trt_dev+'-int8/'+args.model
+                '.onnx/'+args.trt_dev+'-int8/calib-cache/'+args.model
             )
         else:
             config.set_flag(trt.BuilderFlag.FP16)
