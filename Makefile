@@ -171,15 +171,16 @@ endif
 TENSORRT_FLAGS ?=
 ACL_FLAGS ?=
 DNNL_FLAGS ?=
+COREML_FLAGS ?=
 
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
 bin/onnxruntime-perf: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS)
+	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS) $(COREML_FLAGS)
 
 bin/onnxruntime-perf-test: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS)
+	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS) $(COREML_FLAGS)
 
 run-onnxruntime-perf: bin/onnxruntime-perf
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)

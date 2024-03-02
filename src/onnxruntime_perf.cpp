@@ -29,6 +29,10 @@
 #include <acl_provider_factory.h>
 #endif
 
+#ifdef USE_COREML
+#include <coreml_provider_factory.h>
+#endif
+
 #include "utils.h"
 
 #include <chrono>
@@ -242,6 +246,16 @@ int main(int argc, char* argv[])
         std::cout << "INFO: Using ACL backend" << std::endl;
         bool enable_cpu_mem_arena = true;
         Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_ACL(session_options, enable_cpu_mem_arena));
+    }
+    else
+#endif
+#ifdef USE_COREML
+    if (backend == 'c') {
+        std::cout << "INFO: Using COREML backend" << std::endl;
+        // https://onnxruntime.ai/docs/execution-providers/CoreML-ExecutionProvider.html
+        uint32_t coreml_flags = 0;
+        // coreml_flags |= COREML_FLAG_CREATE_MLPROGRAM;
+        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_CoreML(session_options, coreml_flags));
     }
     else
 #endif

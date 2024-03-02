@@ -107,6 +107,14 @@ int main(int argc, char* argv[])
                     forward = MNN_FORWARD_CUDA;
                     std::cout << "INFO: Using CUDA backend" << std::endl;
                 }
+                else if (optarg[0] == 'n') {
+                    forward = MNN_FORWARD_NN;
+                    std::cout << "INFO: Using COREML/NNAPI backend" << std::endl;
+                }
+                else if (optarg[0] == 'm') {
+                    forward = MNN_FORWARD_METAL;
+                    std::cout << "INFO: Using METAL backend" << std::endl;
+                }
                 else {
                     std::cout << "INFO: Using CPU backend" << std::endl;
                 }

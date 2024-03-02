@@ -148,18 +148,6 @@ index a5b42a7..a5294ea 100644
      endif()
      if(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7")
          add_definitions(-mfpu=neon)    #please define in project/cross-compile/arm.toolchain.cmake
-diff --git a/source/backend/cpu/CPUFixedPoint.hpp b/source/backend/cpu/CPUFixedPoint.hpp
-index a5c44f9..e7e8083 100644
---- a/source/backend/cpu/CPUFixedPoint.hpp
-+++ b/source/backend/cpu/CPUFixedPoint.hpp
-@@ -25,6 +25,7 @@ limitations under the License.
- #ifdef MNN_USE_NEON
- #include <arm_neon.h>
- #endif
-+#include <cstdint>
-
- namespace MNN {
- // Part 1: Low-level integer-arithmetic primitives.
 ```
 </details>
 
