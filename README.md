@@ -1,5 +1,5 @@
 # EdgeTransformerPerf
-edge/mobile transformer based Vision DNN inference benchmark
+Edge/mobile CNN+Transformer hybrid CV (computer vision) DNN backbone inference benchmark
 
 we filter the model which satisfy one of the condition below:
 - #params > 15M (for FP32 model > 60M) which is too large for edge/mobile devices.
@@ -28,7 +28,7 @@ we filter the model which satisfy one of the condition below:
 | mobilevitv2_075  |   75.6   |  75.0  | 74.4 | 2.9M   |   1.0G   | [mobilevitv2-0.75.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet1k/256x256/mobilevitv2-0.75.pt) |
 | mobilevitv2_100  |   78.1   |  77.9  | 76.9 | 4.9M   |   1.8G   | [mobilevitv2-1.0.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet1k/256x256/mobilevitv2-1.0.pt) |
 | mobilevitv2_125  |   79.7   |  79.1  | 80.7 | 7.5M   |   2.8G   | [mobilevitv2-1.25.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet1k/256x256/mobilevitv2-1.25.pt) |
-| mobilevitv2_150  |   81.5   |  80.8  | 81.8 |10.6M   |   4.0G   | [mobilevitv2-1.5.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet21k_to_1k/256x256/mobilevitv2-1.5.pt) |
+| [x] mobilevitv2_150  |   81.5   |  80.8  | 81.8 |10.6M   |   4.0G   | [mobilevitv2-1.5.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet21k_to_1k/256x256/mobilevitv2-1.5.pt) |
 | [x] mobilevitv2_175  |   81.9   |  80.8  | 81.1 |14.3M   |   5.5G   | [mobilevitv2-1.75.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet21k_to_1k/256x256/mobilevitv2-1.75.pt) |
 | [x] mobilevitv2_200  |   82.3   |  82.0  | 83.1 |18.4M   |   7.2G   | [mobilevitv2-2.0.pt](https://docs-assets.developer.apple.com/ml-research/models/cvnets-v2/classification/mobilevitv2/imagenet21k_to_1k/256x256/mobilevitv2-2.0.pt) |
 ||
