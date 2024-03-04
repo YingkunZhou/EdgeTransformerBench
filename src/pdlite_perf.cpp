@@ -48,6 +48,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"fp", required_argument, 0, 'f'},
         {"backend",  required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
         {"data-path",  required_argument, 0, 'd'},
@@ -58,7 +59,7 @@ int main(int argc, char* argv[])
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vgubdot", // TODO
+    while ((c = getopt_long(argc, argv, "vgfubdot", // TODO
             long_options, &option_index)) != -1)
     {
         switch (c)
