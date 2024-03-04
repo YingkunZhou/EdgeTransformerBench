@@ -38,11 +38,11 @@ int main(int argc, char* argv[])
     args.validation = false;
     args.batch_size = 1;
     args.debug = false;
-    bool use_opencl = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
     int num_threads = 1;
     int fpbits = 32;
+    char backend = 'c';
 
     static struct option long_options[] =
     {
@@ -90,9 +90,12 @@ int main(int argc, char* argv[])
                 args.debug = true;
                 break;
             case 'u':
+                backend = optarg[0];
                 if (optarg[0] == 'o') {
-                    use_opencl = true;
                     std::cout << "INFO: Using OpenCL backend" << std::endl;
+                }
+                else if (optarg[0] == 'n') {
+                    std::cout << "INFO: Using NNAPI backend" << std::endl;
                 }
                 else {
                     std::cout << "INFO: Using CPU backend" << std::endl;
@@ -114,6 +117,9 @@ int main(int argc, char* argv[])
     std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
     // TODO:
     int power_mode = 0;
+    std::string nnadapter_context_properties;
+    std::vector<std::string> nnadapter_device_names;
+    nnadapter_device_names.emplace_back("android_nnapi");
 
     for (const auto & model: test_models) {
         args.model = model.first;
@@ -187,6 +193,10 @@ int main(int argc, char* argv[])
         config.set_threads(num_threads);
         config.set_power_mode(static_cast<paddle::lite_api::PowerMode>(power_mode));
 
+        if (backend == 'n') {
+            config.set_nnadapter_device_names(nnadapter_device_names);
+            config.set_nnadapter_context_properties(nnadapter_context_properties);
+        }
         // 2. Create PaddlePredictor by MobileConfig
         std::shared_ptr<paddle::lite_api::PaddlePredictor> predictor =
             paddle::lite_api::CreatePaddlePredictor<paddle::lite_api::MobileConfig>(config);
