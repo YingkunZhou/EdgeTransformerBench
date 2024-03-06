@@ -22,7 +22,7 @@ download_library()
 
 testsuite()
 {
-    cd .mnn; rm -rf *.mnn; ln -sf $1/* .; rm LeViT_256.*  .mnn/mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
+    cd .mnn; rm -rf *.mnn; ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-mnn-perf 2>/dev/null
     echo " "
 }
@@ -57,7 +57,6 @@ CPU_testsuite()
 download_model
 download_library
 
-# TODO: CPU & GPU int8
 if clinfo >/dev/null
 then
     OPENCL_testsuite
