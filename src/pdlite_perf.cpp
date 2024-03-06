@@ -193,6 +193,8 @@ int main(int argc, char* argv[])
         config.set_threads(num_threads);
         config.set_power_mode(static_cast<paddle::lite_api::PowerMode>(power_mode));
 
+        // https://www.paddlepaddle.org.cn/lite/develop/demo_guides/android_nnapi.html
+        // https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/lite/tests/api/test_resnet50_fp32_v1_8_nnadapter.cc
         if (backend == 'n') {
             config.set_nnadapter_device_names(nnadapter_device_names);
             config.set_nnadapter_context_properties(nnadapter_context_properties);
