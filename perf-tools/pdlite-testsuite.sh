@@ -3,11 +3,11 @@ download_model()
 {
     if [ ! -d ".pdlite" ]
     then
-        [ -f "pdlite-models.tar.gz" ] || gdown 1KpTZxZ-mo1TEnXIMkOBEgktroI5vqLBw
+        [ ! -f "pdlite-models.tar.gz" ] && gdown 1KpTZxZ-mo1TEnXIMkOBEgktroI5vqLBw
         tar xf pdlite-models.tar.gz;
         if clinfo >/dev/null
         then
-            [ -f "pdlite-opencl-models.tar.gz" ] || gdown 1F9ZtUPMG1NKPYOknGU_PMRnqXLukqo5P
+            [ ! -f "pdlite-opencl-models.tar.gz" ] && gdown 1F9ZtUPMG1NKPYOknGU_PMRnqXLukqo5P
             tar xf pdlite-opencl-models.tar.gz;
         fi
     fi
@@ -18,7 +18,7 @@ download_library()
     cd .libs
     if [ ! -d "Paddle-Lite" ]
     then
-        [ -f "Paddle-Lite.tar.gz" ] || wget Paddle-Lite.tar.gz
+        [ ! -f "Paddle-Lite.tar.gz" ] && wget Paddle-Lite.tar.gz
         tar xf Paddle-Lite.tar.gz
     fi
     cd ..

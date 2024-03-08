@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".ncnn" ]
     then
-        [ -f "ncnn-models.tar.gz" ] || gdown 1ApgE-Js-uPaGTAnpbNTERQgAuyR5K0su
+        [ ! -f "ncnn-models.tar.gz" ] && gdown 1ApgE-Js-uPaGTAnpbNTERQgAuyR5K0su
         tar xf ncnn-models.tar.gz;
     fi
     # gdown 1SEb9g3zBrBGh_uf0PkEJios_AB_G3ItT # downloading ncnn-fp32-models.tar.gz
@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "ncnn" ]
     then
-        [ -f "ncnn.tar.gz"] || wget ncnn.tar.gz
+        [ ! -f "ncnn.tar.gz"] && wget ncnn.tar.gz
         tar xf ncnn.tar.gz
     fi
     cd ..

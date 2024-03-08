@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".onnx" ]
     then
-        [ -f "onnx-models.tar.gz" ] || gdown 1eS2sGylZeSuUcrSLtrSo2nJafHQvzVIR
+        [ ! -f "onnx-models.tar.gz" ] && gdown 1eS2sGylZeSuUcrSLtrSo2nJafHQvzVIR
         tar xf onnx-models.tar.gz;
     fi
 }
@@ -13,7 +13,7 @@ download_library()
     cd .libs
     if [ ! -d "onnxruntime" ]
     then
-        [ -f "onnxruntime.tar.gz"] || wget onnxruntime.tar.gz
+        [ ! -f "onnxruntime.tar.gz"] && wget onnxruntime.tar.gz
         tar xf onnxruntime.tar.gz
     fi
     cd ..

@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".tnn" ]
     then
-        [ -f "tnn-models.tar.gz" ] || gdown 1OXrtjeLA0VGt7mLS7nSc1ipgIJ3BK7k5
+        [ ! -f "tnn-models.tar.gz" ] && gdown 1OXrtjeLA0VGt7mLS7nSc1ipgIJ3BK7k5
         tar xf tnn-models.tar.gz;
     fi
     # gdown 1Qz0U4pPslYsdbkW16Y0lWuGsZBNSL0qf # downloading tnn-fp32-models.tar.gz
@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "TNN" ]
     then
-        [ -f "TNN.tar.gz"] || wget TNN.tar.gz
+        [ ! -f "TNN.tar.gz"] && wget TNN.tar.gz
         tar xf TNN.tar.gz
     fi
     cd ..
