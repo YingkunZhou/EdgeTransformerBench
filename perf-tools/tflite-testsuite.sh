@@ -3,9 +3,9 @@ download_model()
 {
     if [ ! -d ".tflite" ]
     then
-        [ -f "tflite-fp32-models.tar.gz" ]   && gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov-
-        [ -f "tflite-onnx-models.tar.gz" ]   && gdown 18ZJBnwhBLac9mprisHIM_9D2w0mSXHog
-        [ -f "tflite-tinynn-models.tar.gz" ] && gdown 1q5gdahzHoBQSSGXEKjPsybFgHg-yOSbR
+        [ -f "tflite-fp32-models.tar.gz" ]   || gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov-
+        [ -f "tflite-onnx-models.tar.gz" ]   || gdown 18ZJBnwhBLac9mprisHIM_9D2w0mSXHog
+        [ -f "tflite-tinynn-models.tar.gz" ] || gdown 1q5gdahzHoBQSSGXEKjPsybFgHg-yOSbR
         tar xf tflite-fp32-models.tar.gz; \
         tar xf tflite-onnx-models.tar.gz; \
         tar xf tflite-tinynn-models.tar.gz
@@ -17,25 +17,25 @@ download_library()
     cd .libs
     if [ ! -d "tensorflow" ]
     then
-        [ -f "tensorflow.tar.gz"] && wget tensorflow.tar.gz
+        [ -f "tensorflow.tar.gz"] || wget tensorflow.tar.gz
         tar xf tensorflow.tar.gz
         if clinfo
         then
             if cat /proc/cpuinfo | grep -q asimdhp
             then
-                [ -f "armnn-v8.2-cl.tar.gz"] && wget armnn-v8.2-cl.tar.gz
+                [ -f "armnn-v8.2-cl.tar.gz"] || wget armnn-v8.2-cl.tar.gz
                 tar xf armnn-v8.2-cl.tar.gz
             else
-                [ -f "armnn-v8-cl.tar.gz"] && wget armnn-v8-cl.tar.gz
+                [ -f "armnn-v8-cl.tar.gz"] || wget armnn-v8-cl.tar.gz
                 tar xf armnn-v8-cl.tar.gz
             fi
         else
             if cat /proc/cpuinfo | grep -q asimdhp
             then
-                [ -f "armnn-v8.2.tar.gz"] && wget armnn-v8.2.tar.gz
+                [ -f "armnn-v8.2.tar.gz"] || wget armnn-v8.2.tar.gz
                 tar xf armnn-v8.2.tar.gz
             else
-                [ -f "armnn-v8.tar.gz"] && wget armnn-v8.tar.gz
+                [ -f "armnn-v8.tar.gz"] || wget armnn-v8.tar.gz
                 tar xf armnn-v8.tar.gz
             fi
         fi
@@ -45,14 +45,14 @@ download_library()
 
 testsuite()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     echo " "
 }
 
 testsuite_mobilevitv2()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=orm make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=sma make run-tflite-perf 2>/dev/null
@@ -72,7 +72,7 @@ testsuite_mobilevitv2()
 # under 2GB memory
 testsuite_onebyone()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=s0 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=s1 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=s2 make run-tflite-perf 2>/dev/null

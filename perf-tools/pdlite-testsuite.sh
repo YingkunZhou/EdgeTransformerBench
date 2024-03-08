@@ -3,11 +3,11 @@ download_model()
 {
     if [ ! -d ".pdlite" ]
     then
-        [ -f "pdlite-models.tar.gz" ] && gdown 1KpTZxZ-mo1TEnXIMkOBEgktroI5vqLBw
+        [ -f "pdlite-models.tar.gz" ] || gdown 1KpTZxZ-mo1TEnXIMkOBEgktroI5vqLBw
         tar xf pdlite-models.tar.gz;
         if clinfo >/dev/null
         then
-            [ -f "pdlite-opencl-models.tar.gz" ] && gdown 1F9ZtUPMG1NKPYOknGU_PMRnqXLukqo5P
+            [ -f "pdlite-opencl-models.tar.gz" ] || gdown 1F9ZtUPMG1NKPYOknGU_PMRnqXLukqo5P
             tar xf pdlite-opencl-models.tar.gz;
         fi
     fi
@@ -18,7 +18,7 @@ download_library()
     cd .libs
     if [ ! -d "Paddle-Lite" ]
     then
-        [ -f "Paddle-Lite.tar.gz" ] && wget Paddle-Lite.tar.gz
+        [ -f "Paddle-Lite.tar.gz" ] || wget Paddle-Lite.tar.gz
         tar xf Paddle-Lite.tar.gz
     fi
     cd ..
@@ -26,7 +26,7 @@ download_library()
 
 testsuite()
 {
-    cd .pdlite; rm -rf *.nb; ln -sf $1/* .; cd ..
+    cd .pdlite; rm -rf *.nb; ln -sf $1/*.nb .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-pdlite-perf 2>/dev/null
     echo " "
 }

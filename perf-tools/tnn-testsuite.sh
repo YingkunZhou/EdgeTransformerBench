@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".tnn" ]
     then
-        [ -f "tnn-models.tar.gz" ] && gdown 1OXrtjeLA0VGt7mLS7nSc1ipgIJ3BK7k5
+        [ -f "tnn-models.tar.gz" ] || gdown 1OXrtjeLA0VGt7mLS7nSc1ipgIJ3BK7k5
         tar xf tnn-models.tar.gz;
     fi
     # gdown 1Qz0U4pPslYsdbkW16Y0lWuGsZBNSL0qf # downloading tnn-fp32-models.tar.gz
@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "TNN" ]
     then
-        [ -f "TNN.tar.gz"] && wget TNN.tar.gz
+        [ -f "TNN.tar.gz"] || wget TNN.tar.gz
         tar xf TNN.tar.gz
     fi
     cd ..
@@ -22,7 +22,7 @@ download_library()
 
 testsuite()
 {
-    cd .tnn; ln -sf $1/* .; cd ..
+    cd .tnn; rm -rf *.tnn; ln -sf $1/*.tnn .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tnn-perf 2>/dev/null
     echo " "
 }

@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".ncnn" ]
     then
-        [ -f "ncnn-models.tar.gz" ] && gdown 1ApgE-Js-uPaGTAnpbNTERQgAuyR5K0su
+        [ -f "ncnn-models.tar.gz" ] || gdown 1ApgE-Js-uPaGTAnpbNTERQgAuyR5K0su
         tar xf ncnn-models.tar.gz;
     fi
     # gdown 1SEb9g3zBrBGh_uf0PkEJios_AB_G3ItT # downloading ncnn-fp32-models.tar.gz
@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "ncnn" ]
     then
-        [ -f "ncnn.tar.gz"] && wget ncnn.tar.gz
+        [ -f "ncnn.tar.gz"] || wget ncnn.tar.gz
         tar xf ncnn.tar.gz
     fi
     cd ..
@@ -22,7 +22,7 @@ download_library()
 
 testsuite()
 {
-    cd .ncnn; ln -sf $1/* .; cd ..
+    cd .ncnn; rm *;  ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-ncnn-perf 2>/dev/null
     echo " "
 }

@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".mnn" ]
     then
-        [ -f "mnn-models.tar.gz" ] && gdown 1nBOlcsk2E_RXwwmc2gQa0OTzFuQe4v-3
+        [ -f "mnn-models.tar.gz" ] || gdown 1nBOlcsk2E_RXwwmc2gQa0OTzFuQe4v-3
         tar xf mnn-models.tar.gz;
     fi
     # gdown 1XqF9my9TguiKKlaKxvfvGAXTDZh6HUSG # downloading mnn-fp32-models.tar.gz
@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "MNN" ]
     then
-        [ -f "MNN.tar.gz"] && wget MNN.tar.gz
+        [ -f "MNN.tar.gz"] || wget MNN.tar.gz
         tar xf MNN.tar.gz
     fi
     cd ..
@@ -22,7 +22,7 @@ download_library()
 
 testsuite()
 {
-    cd .mnn; rm -rf *.mnn; ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
+    cd .mnn; rm -rf *.mnn; ln -sf $1/*.mnn .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-mnn-perf 2>/dev/null
     echo " "
 }
