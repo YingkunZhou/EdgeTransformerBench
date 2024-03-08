@@ -14,6 +14,7 @@ DEPS = src/utils.cpp src/evaluate.tcc src/benchmark.tcc src/PillowResize.cc
 # DEF="-DUSE_HWC" make tflite-perf-test
 DEF ?=
 FLAGS = src/utils.cpp src/PillowResize.cc -std=c++17 `pkg-config --cflags --libs opencv4` $(DEF)
+VAL_EXTRA?=
 
 ########################
 ###### ncnn part #######
@@ -34,7 +35,7 @@ run-ncnn-perf: bin/ncnn-perf
 	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-ncnn: bin/ncnn-perf
-	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP)
+	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 test-ncnn-perf: bin/ncnn-perf-test
 	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -58,7 +59,7 @@ run-mnn-perf: bin/mnn-perf
 	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-mnn: bin/mnn-perf
-	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP)
+	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 test-mnn-perf: bin/mnn-perf-test
 	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -82,7 +83,7 @@ run-tnn-perf: bin/tnn-perf
 	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-tnn: bin/tnn-perf
-	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP)
+	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 test-tnn-perf: bin/tnn-perf-test
 	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -106,7 +107,7 @@ run-pdlite-perf: bin/pdlite-perf
 	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-pdlite: bin/pdlite-perf
-	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP)
+	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 test-pdlite-perf: bin/pdlite-perf-test
 	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -151,7 +152,7 @@ run-tflite-perf: bin/tflite-perf
 
 validation-tflite: bin/tflite-perf
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
-	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP)
+	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 test-tflite-perf: bin/tflite-perf-test
 	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
@@ -186,7 +187,7 @@ run-onnxruntime-perf: bin/onnxruntime-perf
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
 
 validation-onnxruntime: bin/onnxruntime-perf
-	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS)
+	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) $(VAL_EXTRA)
 
 test-onnxruntime-perf: bin/onnxruntime-perf-test
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
@@ -214,7 +215,7 @@ run-torch-perf: bin/torch-perf
 	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
 
 validation-torch: bin/torch-perf
-	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS)
+	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) $(VAL_EXTRA)
 
 test-torch-perf: bin/torch-perf-test
 	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
