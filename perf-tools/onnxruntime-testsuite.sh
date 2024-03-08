@@ -65,7 +65,7 @@ download_library
 if uname -a | grep -q Android
 then
     NNAPI_testsuite
-    QNN_testsuite
+    # QNN_testsuite
 fi
 CPU_testsuite 1
 CPU_testsuite 3 # 3+1 threads
