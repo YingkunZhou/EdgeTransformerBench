@@ -1,0 +1,14 @@
+diff --git a/source/backend/opencl/core/OpenCLBackend.cpp b/source/backend/opencl/core/OpenCLBackend.cpp
+index 4457595..3f3ed91 100644
+--- a/source/backend/opencl/core/OpenCLBackend.cpp
++++ b/source/backend/opencl/core/OpenCLBackend.cpp
+@@ -467,7 +467,8 @@ Execution* OpenCLBackend::onCreate(const std::vector<Tensor*>& inputs, const std
+         #endif
+         return NULL;
+     }
+-    if (iter == creators->end()) {
++    // if (op->type() == 77) printf("op 77\n");
++    if (iter == creators->end() || mPrecision != BackendConfig::Precision_High && op->type() == 77) {
+         mDevideOpRecord = true;
+         #ifdef OPENCL_FALLBACK_LOG
+         if (nullptr != op->name()) {

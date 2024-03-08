@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".onnx" ]
     then
-        [ -f "onnx-models.tar.gz" ] && gdown 1wDlAcXP2kU17yjFFUBG2Uwd1O_hemMPl
+        [ -f "onnx-models.tar.gz" ] && gdown 1eS2sGylZeSuUcrSLtrSo2nJafHQvzVIR
         tar xf onnx-models.tar.gz;
     fi
 }
@@ -21,7 +21,7 @@ download_library()
 
 testsuite()
 {
-    cd .onnx; rm -rf *.onnx; ln -sf $1/* .; cd ..
+    cd .onnx; rm -rf *.onnx; ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 THREADS=$3 MODEL=ALL make run-onnxruntime-perf 2>/dev/null
     echo " "
 }
