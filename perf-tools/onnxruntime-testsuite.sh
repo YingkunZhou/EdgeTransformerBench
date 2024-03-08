@@ -26,6 +26,13 @@ testsuite()
     echo " "
 }
 
+testsuite_xnnpack()
+{
+    cd .onnx; rm -rf *.onnx; ln -sf $1/*.onnx .; rm efficientformerv2* LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
+    BACK=$2 THREADS=$3 MODEL=ALL make run-onnxruntime-perf 2>/dev/null
+    echo " "
+}
+
 NNAPI_testsuite()
 {
     echo ">>>>>>>>>>>nnapi: fp32 model<<<<<<<<<"
@@ -47,10 +54,10 @@ QNN_testsuite()
 CPU_testsuite()
 {
     echo ">>>>>>>>>>>xnnpack: fp32 model<<<<<<<<<"
-    testsuite fp32 x $1
+    testsuite_xnnpack fp32 x $1
 
     echo ">>>>>>>>>>>xnnpack: static ptq int8 model<<<<<<<<<"
-    testsuite int8 x $1
+    testsuite_xnnpack int8 x $1
 
     echo ">>>>>>>>>>>CPU: fp32 model<<<<<<<<<"
     testsuite fp32 z $1
