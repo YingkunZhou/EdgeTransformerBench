@@ -17,25 +17,25 @@ download_library()
     cd .libs
     if [ ! -d "tensorflow" ]
     then
-        [ ! -f "tensorflow.tar.gz"] && wget tensorflow.tar.gz
+        [ ! -f "tensorflow.tar.gz" ] && wget tensorflow.tar.gz
         tar xf tensorflow.tar.gz
         if clinfo
         then
             if cat /proc/cpuinfo | grep -q asimdhp
             then
-                [ ! -f "armnn-v8.2-cl.tar.gz"] && wget armnn-v8.2-cl.tar.gz
+                [ ! -f "armnn-v8.2-cl.tar.gz" ] && wget armnn-v8.2-cl.tar.gz
                 tar xf armnn-v8.2-cl.tar.gz
             else
-                [ ! -f "armnn-v8-cl.tar.gz"] && wget armnn-v8-cl.tar.gz
+                [ ! -f "armnn-v8-cl.tar.gz" ] && wget armnn-v8-cl.tar.gz
                 tar xf armnn-v8-cl.tar.gz
             fi
         else
             if cat /proc/cpuinfo | grep -q asimdhp
             then
-                [ ! -f "armnn-v8.2.tar.gz"] && wget armnn-v8.2.tar.gz
+                [ ! -f "armnn-v8.2.tar.gz" ] && wget armnn-v8.2.tar.gz
                 tar xf armnn-v8.2.tar.gz
             else
-                [ ! -f "armnn-v8.tar.gz"] && wget armnn-v8.tar.gz
+                [ ! -f "armnn-v8.tar.gz" ] && wget armnn-v8.tar.gz
                 tar xf armnn-v8.tar.gz
             fi
         fi

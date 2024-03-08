@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "MNN" ]
     then
-        [ ! -f "MNN.tar.gz"] && wget MNN.tar.gz
+        [ ! -f "MNN.tar.gz" ] && wget MNN.tar.gz
         tar xf MNN.tar.gz
     fi
     cd ..

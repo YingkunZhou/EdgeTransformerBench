@@ -13,7 +13,7 @@ download_library()
     cd .libs
     if [ ! -d "onnxruntime" ]
     then
-        [ ! -f "onnxruntime.tar.gz"] && wget onnxruntime.tar.gz
+        [ ! -f "onnxruntime.tar.gz" ] && wget onnxruntime.tar.gz
         tar xf onnxruntime.tar.gz
     fi
     cd ..

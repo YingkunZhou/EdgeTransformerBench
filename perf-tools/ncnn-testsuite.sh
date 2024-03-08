@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "ncnn" ]
     then
-        [ ! -f "ncnn.tar.gz"] && wget ncnn.tar.gz
+        [ ! -f "ncnn.tar.gz" ] && wget ncnn.tar.gz
         tar xf ncnn.tar.gz
     fi
     cd ..

@@ -14,7 +14,7 @@ download_library()
     cd .libs
     if [ ! -d "TNN" ]
     then
-        [ ! -f "TNN.tar.gz"] && wget TNN.tar.gz
+        [ ! -f "TNN.tar.gz" ] && wget TNN.tar.gz
         tar xf TNN.tar.gz
     fi
     cd ..
