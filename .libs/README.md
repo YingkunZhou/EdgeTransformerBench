@@ -387,6 +387,22 @@ cd Paddle-Lite
 ./lite/tools/build.sh build_optimize_tool
 ```
 
+```diff
+diff --git a/src/google/protobuf/compiler/java/java_file.cc b/src/google/protobuf/compiler/java/java_file.cc
+index 3cbc530eb..0eb0da19a 100644
+--- a/src/google/protobuf/compiler/java/java_file.cc
++++ b/src/google/protobuf/compiler/java/java_file.cc
+@@ -65,7 +65,7 @@ namespace java {
+ namespace {
+
+ struct FieldDescriptorCompare {
+-  bool operator ()(const FieldDescriptor* f1, const FieldDescriptor* f2) {
++  bool operator ()(const FieldDescriptor* f1, const FieldDescriptor* f2) const {
+     if(f1 == NULL) {
+       return false;
+     }
+```
+
 </details>
 
 <details>

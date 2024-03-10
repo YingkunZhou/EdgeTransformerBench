@@ -37,13 +37,26 @@ testsuite()
     echo " "
 }
 
+testsuite_opencl()
+{
+    cd .pdlite; rm -rf *.nb; ln -sf opencl/*.nb .; rm LeViT_256.*; cd ..
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_ make run-pdlite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_ make run-pdlite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_ make run-pdlite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-pdlite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_ make run-pdlite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-pdlite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-pdlite-perf 2>/dev/null
+    echo " "
+}
+
 OPENCL_testsuite()
 {
     echo ">>>>>>>>>>>opencl: fp16 model + fp32 arith<<<<<<<<<"
-    testsuite opencl o 32 1
+    testsuite_opencl o 32 1
 
     echo ">>>>>>>>>>>opencl: fp16 model + fp16 arith<<<<<<<<<"
-    testsuite opencl o 16 1
+    testsuite_opencl o 16 1
 }
 
 CPU_testsuite()

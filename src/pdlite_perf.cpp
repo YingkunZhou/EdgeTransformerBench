@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     }
     std::cout << "INFO: Using num_threads == " << num_threads << std::endl;
     // TODO:
-    int power_mode = 0;
+    int power_mode = paddle::lite_api::LITE_POWER_NO_BIND;
     std::string nnadapter_context_properties;
     std::vector<std::string> nnadapter_device_names;
     nnadapter_device_names.emplace_back("android_nnapi");

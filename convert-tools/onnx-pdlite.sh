@@ -11,19 +11,19 @@ onnx_pdlite()
     fi
 
     ### stage 2: paddle -> paddle-lite
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp16/$MODEL --enable_fp16=true
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp32/$MODEL
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/quant/$MODEL  --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL
+    ../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp16/$MODEL --enable_fp16=true
+    ../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/fp32/$MODEL
+    ../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=opencl --optimize_out=.pdlite/opencl/$MODEL
 
     if [ ! -d ".pdlite/quant/$MODEL" ]
     then
         python python/pdlite-int8.py
     fi
-    ../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=opencl --optimize_out=.pdlite/opencl/$MODEL
+    ../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/quant/$MODEL  --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL
 
     ### rubbish following
-    #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int16/$MODEL --quant_model=true --quant_type=QUANT_INT16
-    #../update/Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/$MODEL --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL --quant_model=true --quant_type=QUANT_INT8
+    #../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/int16/$MODEL --quant_model=true --quant_type=QUANT_INT16
+    #../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL --quant_model=true --quant_type=QUANT_INT8
 }
 
 cd .pdlite
