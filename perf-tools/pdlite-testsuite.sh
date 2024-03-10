@@ -18,15 +18,21 @@ download_library()
     cd .libs
     if [ ! -d "Paddle-Lite" ]
     then
-        [ ! -f "Paddle-Lite.tar.gz" ] && wget Paddle-Lite.tar.gz
-        tar xf Paddle-Lite.tar.gz
+        if cat /proc/cpuinfo | grep -q asimdhp
+        then
+            [ ! -f "Paddle-Lite-ARM82.tar.gz" ] && wget Paddle-Lite-ARM82.tar.gz
+            tar xf Paddle-Lite-ARM82.tar.gz
+        else
+            [ ! -f "Paddle-Lite.tar.gz" ] && wget Paddle-Lite.tar.gz
+            tar xf Paddle-Lite.tar.gz
+        fi
     fi
     cd ..
 }
 
 testsuite()
 {
-    cd .pdlite; rm -rf *.nb; ln -sf $1/*.nb .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
+    cd .pdlite; rm -rf *.nb; ln -sf $1/*.nb .; rm SwiftFormer* LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-pdlite-perf 2>/dev/null
     echo " "
 }
