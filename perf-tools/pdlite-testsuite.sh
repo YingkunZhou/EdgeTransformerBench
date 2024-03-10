@@ -40,13 +40,13 @@ testsuite()
 testsuite_opencl()
 {
     cd .pdlite; rm -rf *.nb; ln -sf opencl/*.nb .; rm LeViT_256.*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_ make run-pdlite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_ make run-pdlite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_ make run-pdlite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-pdlite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_ make run-pdlite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-pdlite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=efficientformerv2_ make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=EMO_ make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=edgenext_ make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=mobilevit_ make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=LeViT_ make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=resnet50 make run-pdlite-perf 2>/dev/null
+    BACK=$1 FP=$2 THREADS=$3 MODEL=mobilenetv3_large_100 make run-pdlite-perf 2>/dev/null
     echo " "
 }
 
