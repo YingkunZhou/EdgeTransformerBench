@@ -45,7 +45,7 @@ CPU_testsuite()
     testsuite fp16 z 16 $1
 
     echo ">>>>>>>>>>>cpu: int8 model<<<<<<<<<"
-    testsuite eq-int8 v 16 $1
+    testsuite eq-int8 z 16 $1
 }
 
 download_model
