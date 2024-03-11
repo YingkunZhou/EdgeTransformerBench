@@ -45,60 +45,36 @@ download_library()
 
 testsuite()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256*  mobilevitv2_1[257]*  mobilevitv2_200*  tf_efficientnetv2_b3*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     echo " "
 }
 
 testsuite_mobilevitv2()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=orm make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=sma make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=050 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=075 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=100 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=125 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=150 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=175 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=200 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=LeV make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=res make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_ make run-tflite-perf 2>/dev/null
+    cd .tflite; rm -rf *.tflite; ln -sf $1/efficientformerv2* .; ln -sf $1/SwiftFormer* .; ln -sf $1/edgenext* .; cd ..
+    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
+    cd .tflite; rm -rf *.tflite; ln -sf $1/mobilevitv2_0* .; ln -sf $1/mobilevitv2_100* .; cd ..
+    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
+    cd .tflite; rm -rf *.tflite; ln -sf $1*.tflite .; rm efficientformerv2* SwiftFormer* edgenext* mobilevitv2* LeViT_256* tf_efficientnetv2_b3*; cd ..
+    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     echo " "
 }
 
 # under 2GB memory
-testsuite_onebyone()
+testsuite_split()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=s0 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=s1 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=s2 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=XS make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=_S make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=L1 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=1M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=2M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=5M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=6M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=ed make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=050 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=075 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=100 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=125 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=150 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=175 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=200 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=it_x make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=it_x make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=it_s make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=128 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=196 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=256 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=res make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_ make run-tflite-perf 2>/dev/null
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* tf_efficientnetv2_b3*; cd ..
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
     echo " "
 }
 
@@ -112,10 +88,10 @@ CPU_testsuite()
     testsuite tinynn-32 z 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_onebyone fp32 a 32 $1
+    testsuite_split fp32 a 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_onebyone tinynn-32 a 32 $1
+    testsuite_split tinynn-32 a 32 $1
 
     ### fp16
     if cat /proc/cpuinfo | grep -q asimdhp
@@ -127,10 +103,10 @@ CPU_testsuite()
         testsuite tinynn-32 x 16 $1
 
         echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
-        testsuite_onebyone fp32 a 16 $1
+        testsuite_split fp32 a 16 $1
 
         echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
-        testsuite_onebyone tinynn-32 a 16 $1
+        testsuite_split tinynn-32 a 16 $1
     fi
 
     ### int8
@@ -154,10 +130,10 @@ GPU_testsuite()
     testsuite tinynn-32 g 32 1
 
     echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_onebyone fp32 m 32 1
+    testsuite_split fp32 m 32 1
 
     echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_onebyone tinynn-32 m 32 1
+    testsuite_split tinynn-32 m 32 1
 
     ### fp16
     # make sure all opencl/gpu support fp16
@@ -168,10 +144,10 @@ GPU_testsuite()
     testsuite tinynn-32 g 16 1
 
     echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
-    testsuite_onebyone fp32 m 16 1
+    testsuite_split fp32 m 16 1
 
     echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
-    testsuite_onebyone tinynn-32 m 16 1
+    testsuite_split tinynn-32 m 16 1
 
     ### int8
     echo ">>>>>>>>>>>gpu: tfconvert dynamic int8 model<<<<<<<<<"
