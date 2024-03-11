@@ -19,7 +19,10 @@ download_library()
     then
         [ ! -f "tensorflow.tar.gz" ] && wget tensorflow.tar.gz
         tar xf tensorflow.tar.gz
-        if clinfo
+        if uname -a | grep -q Android
+        then
+            echo "assert all android devices have armv8.2 fp16 isa and opencl support"
+        elif clinfo >/dev/null
         then
             if cat /proc/cpuinfo | grep -q asimdhp
             then
@@ -50,19 +53,22 @@ testsuite()
     echo " "
 }
 
+# for tinynn dynamic int8 model
 testsuite_mobilevitv2()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/efficientformerv2* .; ln -sf $1/SwiftFormer* .; ln -sf $1/edgenext* .; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     cd .tflite; rm -rf *.tflite; ln -sf $1/mobilevitv2_0* .; ln -sf $1/mobilevitv2_100* .; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=050 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=075 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=100 make run-tflite-perf 2>/dev/null
     cd .tflite; rm -rf *.tflite; ln -sf $1*.tflite .; rm efficientformerv2* SwiftFormer* edgenext* mobilevitv2* LeViT_256* tf_efficientnetv2_b3*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     echo " "
 }
 
-# under 2GB memory
-testsuite_split()
+# for below 2GB memory device CPU
+testsuite_series()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* tf_efficientnetv2_b3*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2 make run-tflite-perf 2>/dev/null
@@ -72,6 +78,37 @@ testsuite_split()
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
+    echo " "
+}
+
+# for below 2GB memory device GPU
+testsuite_onebyone()
+{
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* tf_efficientnetv2_b3*; cd ..
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s0 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s1 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s2 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_XS make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_S  make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_L1 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_1M make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_2M make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_5M make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_6M make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_xx_small make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_x_small  make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_small    make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_050 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_075 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_100 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_xx_small make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_x_small  make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_small    make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_128 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_192 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
@@ -88,10 +125,10 @@ CPU_testsuite()
     testsuite tinynn-32 z 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_split fp32 a 32 $1
+    testsuite_series fp32 a 32 $1
 
     echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_split tinynn-32 a 32 $1
+    testsuite_series tinynn-32 a 32 $1
 
     ### fp16
     if cat /proc/cpuinfo | grep -q asimdhp
@@ -103,10 +140,10 @@ CPU_testsuite()
         testsuite tinynn-32 x 16 $1
 
         echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
-        testsuite_split fp32 a 16 $1
+        testsuite_series fp32 a 16 $1
 
         echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
-        testsuite_split tinynn-32 a 16 $1
+        testsuite_series tinynn-32 a 16 $1
     fi
 
     ### int8
@@ -130,10 +167,10 @@ GPU_testsuite()
     testsuite tinynn-32 g 32 1
 
     echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_split fp32 m 32 1
+    testsuite_onebyone fp32 m 32 1
 
     echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_split tinynn-32 m 32 1
+    testsuite_onebyone tinynn-32 m 32 1
 
     ### fp16
     # make sure all opencl/gpu support fp16
@@ -144,14 +181,14 @@ GPU_testsuite()
     testsuite tinynn-32 g 16 1
 
     echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
-    testsuite_split fp32 m 16 1
+    testsuite_onebyone fp32 m 16 1
 
     echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
-    testsuite_split tinynn-32 m 16 1
+    testsuite_onebyone tinynn-32 m 16 1
 
     ### int8
     echo ">>>>>>>>>>>gpu: tfconvert dynamic int8 model<<<<<<<<<"
-    testsuite dynamic g 16 1
+    testsuite dynamic g 16 1 ## use high percentage CPU!!! maybe all use CPU???
 
     echo ">>>>>>>>>>>gpu: tfconvert PTQ static int8 model<<<<<<<<<"
     testsuite int8 g 16 1
