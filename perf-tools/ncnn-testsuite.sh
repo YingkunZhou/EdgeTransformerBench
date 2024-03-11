@@ -22,7 +22,7 @@ download_library()
 
 testsuite()
 {
-    cd .ncnn; rm *;  ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
+    cd .ncnn; rm *;  ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  mobilevit_* tf_efficientnetv2_b3.*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-ncnn-perf 2>/dev/null
     echo " "
 }
@@ -30,7 +30,7 @@ testsuite()
 VULKAN_testsuite()
 {
     echo ">>>>>>>>>>>vulkan: fp16 model + fp32 arith<<<<<<<<<"
-    testsuite fp16 v 16 1
+    testsuite fp16 v 32 1
 
     echo ">>>>>>>>>>>vulkan: fp16 model + fp16 arith<<<<<<<<<"
     testsuite fp16 v 16 1
@@ -45,7 +45,7 @@ CPU_testsuite()
     testsuite fp16 z 16 $1
 
     echo ">>>>>>>>>>>cpu: int8 model<<<<<<<<<"
-    testsuite int8 v 16 $1
+    testsuite eq-int8 v 16 $1
 }
 
 download_model
