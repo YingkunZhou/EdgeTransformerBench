@@ -56,13 +56,13 @@ testsuite()
 # for tinynn dynamic int8 model
 testsuite_mobilevitv2()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/efficientformerv2* .; ln -sf $1/SwiftFormer* .; ln -sf $1/edgenext* .; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/efficientformerv2* .; ln -sf $1/SwiftFormer* .; ln -sf $1/EMO* .; ln -sf $1/edgenext* .; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     cd .tflite; rm -rf *.tflite; ln -sf $1/mobilevitv2_0* .; ln -sf $1/mobilevitv2_100* .; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=050 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=075 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=100 make run-tflite-perf 2>/dev/null
-    cd .tflite; rm -rf *.tflite; ln -sf $1*.tflite .; rm efficientformerv2* SwiftFormer* edgenext* mobilevitv2* LeViT_256* tf_efficientnetv2_b3*; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm efficientformerv2* SwiftFormer* EMO* edgenext* mobilevitv2* LeViT_256* tf_efficientnetv2_b3*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
     echo " "
 }
@@ -70,7 +70,7 @@ testsuite_mobilevitv2()
 # for below 2GB memory device CPU
 testsuite_series()
 {
-    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* tf_efficientnetv2_b3*; cd ..
+    cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* mobilevitv2_1[257]* mobilevitv2_200* tf_efficientnetv2_b3*; cd ..
     BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
@@ -78,8 +78,8 @@ testsuite_series()
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
     echo " "
 }
@@ -109,8 +109,8 @@ testsuite_onebyone()
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_small    make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_128 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_192 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
     echo " "
 }
@@ -124,12 +124,6 @@ CPU_testsuite()
     echo ">>>>>>>>>>>xnnpack: tinynn fp32 model + fp32 arith<<<<<<<<<"
     testsuite tinynn-32 z 32 $1
 
-    echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_series fp32 a 32 $1
-
-    echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_series tinynn-32 a 32 $1
-
     ### fp16
     if cat /proc/cpuinfo | grep -q asimdhp
     then
@@ -138,12 +132,6 @@ CPU_testsuite()
 
         echo ">>>>>>>>>>>xnnpack: tinynn fp32 model + fp16 arith<<<<<<<<<"
         testsuite tinynn-32 x 16 $1
-
-        echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
-        testsuite_series fp32 a 16 $1
-
-        echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
-        testsuite_series tinynn-32 a 16 $1
     fi
 
     ### int8
@@ -153,8 +141,24 @@ CPU_testsuite()
     echo ">>>>>>>>>>>xnnpack: tinynn dynamic int8 model<<<<<<<<<"
     testsuite_mobilevitv2 tinynn-d8 z 32 $1
 
-    echo ">>>>>>>>>>>armnn CPU: tfconvert ptq static int8 model<<<<<<<<<"
-    testsuite int8 a 32 $1
+    ##### armnn performance is not good on CPU
+    # echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
+    # testsuite_series fp32 a 32 $1
+
+    # echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
+    # testsuite_series tinynn-32 a 32 $1
+
+    # if cat /proc/cpuinfo | grep -q asimdhp
+    # then
+    #     echo ">>>>>>>>>>>armnn CPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
+    #     testsuite_series fp32 a 16 $1
+
+    #     echo ">>>>>>>>>>>armnn CPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
+    #     testsuite_series tinynn-32 a 16 $1
+    # fi
+
+    # echo ">>>>>>>>>>>armnn CPU: tfconvert ptq static int8 model<<<<<<<<<"
+    # testsuite int8 a 32 $1
 }
 
 GPU_testsuite()
