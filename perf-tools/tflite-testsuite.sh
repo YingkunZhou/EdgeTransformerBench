@@ -67,7 +67,7 @@ testsuite_mobilevitv2()
     echo " "
 }
 
-# for below 2GB memory device CPU
+# for below 2GB memory device CPU armnn inference
 testsuite_series()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* mobilevitv2_1[257]* mobilevitv2_200* tf_efficientnetv2_b3*; cd ..
@@ -78,13 +78,11 @@ testsuite_series()
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2 make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-tflite-perf 2>/dev/null
     BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=net make run-tflite-perf 2>/dev/null
     echo " "
 }
 
-# for below 2GB memory device GPU
+# for below 2GB memory device GPU armnn inference
 testsuite_onebyone()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* tf_efficientnetv2_b3*; cd ..
@@ -168,13 +166,17 @@ GPU_testsuite()
     testsuite fp16 g 32 1
 
     echo ">>>>>>>>>>>gpu: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite tinynn-32 g 32 1
+    testsuite_series tinynn-32 g 32 1
+    if vulkaninfo | grep -q Adreno
+    then
+        echo "armnn GPU backend is not suitable for Qualcomm Adreno GPU"
+    else
+        echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
+        testsuite_onebyone fp32 m 32 1
 
-    echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_onebyone fp32 m 32 1
-
-    echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
-    testsuite_onebyone tinynn-32 m 32 1
+        echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp32 arith<<<<<<<<<"
+        testsuite_onebyone tinynn-32 m 32 1
+    fi
 
     ### fp16
     # make sure all opencl/gpu support fp16
@@ -182,26 +184,36 @@ GPU_testsuite()
     testsuite fp16 g 16 1
 
     echo ">>>>>>>>>>>gpu: tinynn fp32 model + fp16 arith<<<<<<<<<"
-    testsuite tinynn-32 g 16 1
+    testsuite_series tinynn-32 g 16 1
 
-    echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
-    testsuite_onebyone fp32 m 16 1
+    if vulkaninfo | grep -q Adreno
+    then
+        echo "armnn GPU backend is not suitable for Qualcomm Adreno GPU"
+    else
+        echo ">>>>>>>>>>>armnn GPU: tfconvert fp32 model + fp16 arith<<<<<<<<<"
+        testsuite_onebyone fp32 m 16 1
 
-    echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
-    testsuite_onebyone tinynn-32 m 16 1
+        echo ">>>>>>>>>>>armnn GPU: tinynn fp32 model + fp16 arith<<<<<<<<<"
+        testsuite_onebyone tinynn-32 m 16 1
+    fi
 
     ### int8
-    echo ">>>>>>>>>>>gpu: tfconvert dynamic int8 model<<<<<<<<<"
-    testsuite dynamic g 16 1 ## use high percentage CPU!!! maybe all use CPU???
-
     echo ">>>>>>>>>>>gpu: tfconvert PTQ static int8 model<<<<<<<<<"
     testsuite int8 g 16 1
 
     echo ">>>>>>>>>>>gpu: tinynn dynamic int8 model<<<<<<<<<"
     testsuite_mobilevitv2 tinynn-d8 g 16 1
 
-    echo ">>>>>>>>>>>armnn GPU: tfconvert ptq static int8 model<<<<<<<<<"
-    testsuite int8 m 32 1 # no difference with fp16
+    if vulkaninfo | grep -q Adreno
+    then
+        echo "armnn GPU backend is not suitable for Qualcomm Adreno GPU"
+    else
+        echo ">>>>>>>>>>>armnn GPU: tfconvert ptq static int8 model<<<<<<<<<"
+        testsuite_series int8 m 32 1
+    fi
+
+    echo ">>>>>>>>>>>gpu: tfconvert dynamic int8 model<<<<<<<<<"
+    testsuite dynamic g 16 1
 }
 
 NNAPI_testsuite()
