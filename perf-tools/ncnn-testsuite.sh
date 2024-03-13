@@ -14,7 +14,15 @@ download_library()
     cd .libs
     if [ ! -d "ncnn" ]
     then
-        [ ! -f "ncnn.tar.gz" ] && wget ncnn.tar.gz
+        if [ ! -f "ncnn.tar.gz" ]
+        then
+            if uname -a | grep -q Android
+            then
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/ncnn.tar.gz
+            else
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/ncnn.tar.gz
+            fi
+        fi
         tar xf ncnn.tar.gz
     fi
     cd ..

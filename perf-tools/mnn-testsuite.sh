@@ -14,7 +14,15 @@ download_library()
     cd .libs
     if [ ! -d "MNN" ]
     then
-        [ ! -f "MNN.tar.gz" ] && wget MNN.tar.gz
+        if [ ! -f "MNN.tar.gz" ]
+        then
+            if uname -a | grep -q Android
+            then
+                [ ! -f "MNN.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/MNN.tar.gz
+            else
+                [ ! -f "MNN.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/MNN.tar.gz
+            fi
+        fi
         tar xf MNN.tar.gz
     fi
     cd ..
@@ -52,6 +60,11 @@ CPU_testsuite()
 
     echo ">>>>>>>>>>>cpu: fp16 model + fp16 arith<<<<<<<<<"
     testsuite fp16 z 16 $1
+
+    echo ">>>>>>>>>>>cpu: int8 model<<<<<<<<<"
+    # TODO: testsuite int8 z 16 $1
+    # unable to run in aipro and m1, because missing SMMLA instruction
+
 }
 
 download_model

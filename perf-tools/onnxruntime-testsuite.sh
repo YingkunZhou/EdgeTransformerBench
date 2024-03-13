@@ -13,7 +13,15 @@ download_library()
     cd .libs
     if [ ! -d "onnxruntime" ]
     then
-        [ ! -f "onnxruntime.tar.gz" ] && wget onnxruntime.tar.gz
+        if [ ! -f "onnxruntime.tar.gz" ]
+        then
+            if uname -a | grep -q Android
+            then
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/onnxruntime.tar.gz
+            else
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/onnxruntime.tar.gz
+            fi
+        fi
         tar xf onnxruntime.tar.gz
     fi
     cd ..

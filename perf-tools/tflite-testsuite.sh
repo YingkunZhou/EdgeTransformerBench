@@ -17,7 +17,15 @@ download_library()
     cd .libs
     if [ ! -d "tensorflow" ]
     then
-        [ ! -f "tensorflow.tar.gz" ] && wget tensorflow.tar.gz
+        if [ ! -f "tensorflow.tar.gz" ]
+        then
+            if uname -a | grep -q Android
+            then
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/tensorflow.tar.gz
+            else
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/tensorflow.tar.gz
+            fi
+        fi
         tar xf tensorflow.tar.gz
         if uname -a | grep -q Android
         then
@@ -26,19 +34,19 @@ download_library()
         then
             if cat /proc/cpuinfo | grep -q asimdhp
             then
-                [ ! -f "armnn-v8.2-cl.tar.gz" ] && wget armnn-v8.2-cl.tar.gz
+                [ ! -f "armnn-v8.2-cl.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/armnn-v8.2-cl.tar.gz
                 tar xf armnn-v8.2-cl.tar.gz
             else
-                [ ! -f "armnn-v8-cl.tar.gz" ] && wget armnn-v8-cl.tar.gz
+                [ ! -f "armnn-v8-cl.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/armnn-v8-cl.tar.gz
                 tar xf armnn-v8-cl.tar.gz
             fi
         else
             if cat /proc/cpuinfo | grep -q asimdhp
             then
-                [ ! -f "armnn-v8.2.tar.gz" ] && wget armnn-v8.2.tar.gz
+                [ ! -f "armnn-v8.2.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/armnn-v8.2.tar.gz
                 tar xf armnn-v8.2.tar.gz
             else
-                [ ! -f "armnn-v8.tar.gz" ] && wget armnn-v8.tar.gz
+                [ ! -f "armnn-v8.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/armnn-v8.tar.gz
                 tar xf armnn-v8.tar.gz
             fi
         fi
@@ -49,7 +57,7 @@ download_library()
 testsuite()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256*  mobilevitv2_1[257]*  mobilevitv2_200*  tf_efficientnetv2_b3*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
     echo " "
 }
 
@@ -57,13 +65,13 @@ testsuite()
 testsuite_mobilevitv2()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/efficientformerv2* .; ln -sf $1/SwiftFormer* .; ln -sf $1/EMO* .; ln -sf $1/edgenext* .; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
     cd .tflite; rm -rf *.tflite; ln -sf $1/mobilevitv2_0* .; ln -sf $1/mobilevitv2_100* .; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=050 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=075 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=100 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=050 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=075 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=100 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm efficientformerv2* SwiftFormer* EMO* edgenext* mobilevitv2* LeViT_256* tf_efficientnetv2_b3*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=ALL VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
     echo " "
 }
 
@@ -71,14 +79,14 @@ testsuite_mobilevitv2()
 testsuite_series()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* mobilevitv2_1[257]* mobilevitv2_200* tf_efficientnetv2_b3*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=net make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_ VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=net VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
     echo " "
 }
 
@@ -86,30 +94,30 @@ testsuite_series()
 testsuite_onebyone()
 {
     cd .tflite; rm -rf *.tflite; ln -sf $1/*.tflite .; rm LeViT_256* tf_efficientnetv2_b3*; cd ..
-    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s0 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s1 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s2 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_XS make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_S  make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_L1 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_1M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_2M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_5M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_6M make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_xx_small make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_x_small  make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_small    make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_050 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_075 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_100 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_xx_small make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_x_small  make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_small    make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_128 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_192 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 make run-tflite-perf 2>/dev/null
-    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 make run-tflite-perf 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s0 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s1 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=efficientformerv2_s2 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_XS VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_S  VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=SwiftFormer_L1 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_1M VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_2M VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_5M VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=EMO_6M VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_xx_small VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_x_small  VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=edgenext_small    VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_050 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_075 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevitv2_100 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_xx_small VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_x_small  VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilevit_small    VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_128 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=LeViT_192 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=resnet50 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=mobilenetv3_large_100 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
+    BACK=$2 FP=$3 THREADS=$4 MODEL=tf_efficientnetv2 VAL_EXTRA="--da imagenet-div50" make validation-tflite 2>/dev/null
     echo " "
 }
 

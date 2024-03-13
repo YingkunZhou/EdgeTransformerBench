@@ -12,6 +12,7 @@
 #include <tensorflow/lite/kernels/register.h>
 #ifdef USE_GPU
 #include <tensorflow/lite/delegates/gpu/delegate.h>
+#include <tensorflow/lite/delegates/gpu/delegate_options.h>
 #endif
 #ifdef USE_NNAPI
 #include <tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.h>
@@ -166,6 +167,15 @@ int main(int argc, char* argv[])
             // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/delegates/gpu/delegate_options.cc
             TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
             if (fpbits == 16) options.is_precision_loss_allowed = 1; // GPU performs FP16 calculation internally
+            /*
+            options.inference_priority1 = TFLITE_GPU_INFERENCE_PRIORITY_MIN_LATENCY;
+            options.inference_preference =
+                TFLITE_GPU_INFERENCE_PREFERENCE_SUSTAINED_SPEED;
+             // TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER;
+            options.enable_quantized_inference = true;
+            options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_QUANT;
+            */
+
             /* GPU 委托序列化
             options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
             options.serialization_dir = kTmpDir;

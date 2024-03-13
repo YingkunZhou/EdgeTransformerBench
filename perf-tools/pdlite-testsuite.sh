@@ -18,12 +18,16 @@ download_library()
     cd .libs
     if [ ! -d "Paddle-Lite" ]
     then
-        if cat /proc/cpuinfo | grep -q asimdhp
+        if uname -a | grep -q Android
         then
-            [ ! -f "Paddle-Lite-ARM82.tar.gz" ] && wget Paddle-Lite-ARM82.tar.gz
+            [ ! -f "Paddle-Lite-ARM82.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/Paddle-Lite-ARM82.tar.gz
+            tar xf Paddle-Lite-ARM82.tar.gz
+        elif cat /proc/cpuinfo | grep -q asimdhp
+        then
+            [ ! -f "Paddle-Lite-ARM82.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/Paddle-Lite-ARM82.tar.gz
             tar xf Paddle-Lite-ARM82.tar.gz
         else
-            [ ! -f "Paddle-Lite.tar.gz" ] && wget Paddle-Lite.tar.gz
+            [ ! -f "Paddle-Lite.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/Paddle-Lite.tar.gz
             tar xf Paddle-Lite.tar.gz
         fi
     fi
