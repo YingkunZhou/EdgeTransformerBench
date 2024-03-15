@@ -3,12 +3,16 @@ download_model()
 {
     if [ ! -d ".tflite" ]
     then
-        [ ! -f "tflite-fp32-models.tar.gz" ]   && gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov-
         [ ! -f "tflite-onnx-models.tar.gz" ]   && gdown 18ZJBnwhBLac9mprisHIM_9D2w0mSXHog
         [ ! -f "tflite-tinynn-models.tar.gz" ] && gdown 1q5gdahzHoBQSSGXEKjPsybFgHg-yOSbR
-        tar xf tflite-fp32-models.tar.gz; \
         tar xf tflite-onnx-models.tar.gz; \
         tar xf tflite-tinynn-models.tar.gz
+        if vulkaninfo | grep -q Mali
+        then
+            [ ! -f "tflite-fp32-models.tar.gz" ]   && gdown 1GIC-Q5OMuNZEh5wWM2qvZriboL_Xiov-
+            tar xf tflite-fp32-models.tar.gz;
+        fi
+
     fi
 }
 
