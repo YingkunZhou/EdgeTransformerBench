@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
     bool use_vulkan = false;
     char* arg_long = nullptr;
     char* only_test = nullptr;
+    char* extern_model = nullptr;
     int num_threads = 1;
     int fpbits = 32;
 
@@ -63,6 +64,7 @@ int main(int argc, char* argv[])
     {
         {"validation", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'g'},
+        {"model", required_argument, 0, 'm'},
         {"fp", required_argument, 0, 'f'},
         {"backend", required_argument, 0, 'u'},
         {"batch-size", required_argument, 0, 'b'},
@@ -74,7 +76,7 @@ int main(int argc, char* argv[])
     };
     int option_index;
     int c;
-    while ((c = getopt_long(argc, argv, "vgfubdot", // TODO
+    while ((c = getopt_long(argc, argv, "vgmfubdot", // TODO
             long_options, &option_index)) != -1)
     {
         switch (c)
@@ -89,6 +91,9 @@ int main(int argc, char* argv[])
                 }
                 break;
             }
+            case 'm':
+                extern_model = optarg;
+                break;
             case 'v':
                 args.validation = true;
                 break;
@@ -145,11 +150,16 @@ int main(int argc, char* argv[])
     // ncnn::set_omp_num_threads(num_threads);
 
     for (const auto & model: test_models) {
-        args.model = model.first;
+        if (extern_model) {
+            args.model = extern_model;
+        }
+        else {
+            args.model = model.first;
+        }
         if (only_test && strcmp(only_test, "ALL") && args.model.find(only_test) == std::string::npos) {
             continue;
         }
-        // TODO
+
         args.input_size = model.second;
 
         g_blob_pool_allocator.clear();
@@ -233,6 +243,10 @@ int main(int argc, char* argv[])
         }
         else {
             benchmark(net, input_tensor);
+        }
+
+        if (extern_model) {
+            break;
         }
     }
 
