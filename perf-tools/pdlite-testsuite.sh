@@ -80,6 +80,11 @@ CPU_testsuite()
 download_model
 download_library
 
+if vulkaninfo | grep -q Adreno
+then
+    cp /vendor/lib64/libOpenCL.so .libs/Paddle-Lite/lib
+fi
+
 if clinfo >/dev/null
 then
     OPENCL_testsuite
