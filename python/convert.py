@@ -105,9 +105,8 @@ if __name__ == '__main__':
                     print("============Downloading weights============")
                     print("============you should install gdown first: pip install gdown============")
                     subprocess.run(['gdown', '19irI6H_c1w2OaDOVzPIj2v0Dy30pq-So'])
-                else:
-                    print("============Extracting weights============")
-                    subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
+                print("============Extracting weights============")
+                subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
 
             weights_dict = torch.load('weights/'+weight, map_location="cpu")
             # print(weights_dict.keys())
