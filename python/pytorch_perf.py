@@ -8,12 +8,8 @@ import os
 import torch
 import time
 import numpy as np
-from PIL import Image
 from timm.models import create_model
 from main import load_image, build_dataset, evaluate
-from torch.ao.quantization import get_default_qconfig_mapping
-from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
-import copy
 
 import sota.efficientformer_v2
 import sota.swiftformer
@@ -138,6 +134,7 @@ if __name__ == '__main__':
                     'cat /proc/cpuinfo | grep ^processor | wc -l; '
                     'cat /proc/cpuinfo | grep ^"model name" | tail -1')
             print('Using 1 cpu thread')
+            os.environ['OMP_NUM_THREADS'] = '1'
             torch.set_num_threads(1)
             benchmarking = benchmarking_cpu
         else:
@@ -205,9 +202,8 @@ if __name__ == '__main__':
                         print("============Downloading weights============")
                         print("============you should install gdown first: pip install gdown============")
                         subprocess.run(['gdown', '19irI6H_c1w2OaDOVzPIj2v0Dy30pq-So'])
-                    else:
-                        print("============Extracting weights============")
-                        subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
+                    print("============Extracting weights============")
+                    subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
                 weights_dict = torch.load('weights/'+weight, map_location="cpu")
                 # print(weights_dict.keys())
 
@@ -234,6 +230,9 @@ if __name__ == '__main__':
             inputs = torch.randn(1, 3, resolution, resolution,)
 
             if args.use_quant:
+                from torch.ao.quantization import get_default_qconfig_mapping
+                from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
+                import copy
                 # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
                 torch.backends.quantized.engine = 'qnnpack'
                 # we need to deepcopy if we still want to keep model_fp unchanged after quantization since quantization apis change the input model
@@ -258,20 +257,26 @@ if __name__ == '__main__':
             if args.use_trace:
                 if not os.path.exists(".pt/" + args.model + ".pt"):
                     print(args.model + " model doesn't exist!!!")
-                    continue
-                trace_model = torch.jit.load(".pt/" + args.model + ".pt")
+                    trace_model = torch.jit.trace(model, inputs)
+                else:
+                    trace_model = torch.jit.load(".pt/" + args.model + ".pt")
             if args.use_inference:
-                frozen_model = torch.jit.optimize_for_inference(torch.jit.script(model))
+                script_model = torch.jit.script(model)
+                frozen_model = torch.jit.optimize_for_inference(script_model)
             if args.use_compile:
-                import torch._dynamo as dynamo
+                # import torch._dynamo as dynamo
                 # dynamo.config.verbose=True
                 # dynamo.config.suppress_errors = True
+                # ['cudagraphs', 'inductor', 'onnxrt', 'openxla', 'openxla_eval', 'tvm']
                 compile_model = torch.compile(model, backend=args.backend)
             if args.use_mobile:
                 if not os.path.exists(".pt/" + args.model + ".c.ptl"):
                     print(args.model + " model doesn't exist!!!")
-                    continue
-                mobile_model = torch.jit.load(".pt/" + args.model + ".c.ptl")
+                    from torch.utils.mobile_optimizer import optimize_for_mobile
+                    trace_model = torch.jit.trace(model, inputs)
+                    mobile_model = optimize_for_mobile(trace_model)
+                else:
+                    mobile_model = torch.jit.load(".pt/" + args.model + ".c.ptl")
             if args.use_trt:
                 if not os.path.exists(".pt/" + args.model + ".ts"):
                     print(args.model + " model doesn't exist!!!")

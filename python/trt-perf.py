@@ -83,6 +83,7 @@ if __name__ == '__main__':
 
         input_buffer = torch.zeros(input_shape, dtype=torch.float32, device=torch.device('cuda'))
         output_buffer = torch.zeros(output_shape, dtype=torch.float32, device=torch.device('cuda'))
+        print(f"Creating TensorRT runtime execution context: {name}")
 
         if 'mobilevitv2' in args.model:
             if not os.path.exists('.onnx/'+args.model+'.onnx'):

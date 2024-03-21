@@ -2,6 +2,8 @@ FORMAT=$1
 DEV=$2
 EVAL=$3
 DATA=$4
+rm bin/onnxruntime-perf; TENSORRT_FLAGS="-DUSE_TENSORRT" make bin/onnxruntime-perf
+cd .onnx; rm -rf *.onnx; ln -sf fp32/*.onnx .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
 
 python python/trt-perf.py --format $FORMAT --trt-dev $DEV $EVAL $DATA --only-test efficientformerv2_s0 2>/dev/null
 python python/trt-perf.py --format $FORMAT --trt-dev $DEV $EVAL $DATA --only-test efficientformerv2_s1 2>/dev/null
