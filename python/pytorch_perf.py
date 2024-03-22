@@ -230,28 +230,32 @@ if __name__ == '__main__':
             inputs = torch.randn(1, 3, resolution, resolution,)
 
             if args.use_quant:
-                from torch.ao.quantization import get_default_qconfig_mapping
-                from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
-                import copy
-                # TODO: if use x86 machine, please replace 'qnnpack' with 'x86'!
-                torch.backends.quantized.engine = 'qnnpack'
-                # we need to deepcopy if we still want to keep model_fp unchanged after quantization since quantization apis change the input model
-                float_model = copy.deepcopy(model)
-                float_model.eval()
-                qconfig_mapping = get_default_qconfig_mapping('qnnpack')
-                # a tuple of one or more example inputs are needed to trace the model
-                example_inputs = (inputs,)
+                # https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html
+                from torch._export import capture_pre_autograd_graph
+                exported_model = capture_pre_autograd_graph(model, (inputs,))
 
-                prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
-                prepared_model.eval()
-                calibration_data_loader = build_dataset(args)
-                calibration_data = [torch.unsqueeze(i[0], dim=0) for i in calibration_data_loader]
-                calibration_data = calibration_data[:2] # for quick try
-                with torch.inference_mode():
-                    for i in calibration_data:
-                        prepared_model(i)
+                from torch.ao.quantization.quantize_pt2e import (
+                  prepare_pt2e,
+                  convert_pt2e,
+                )
+                from torch.ao.quantization.quantizer.xnnpack_quantizer import (
+                  XNNPACKQuantizer,
+                  get_symmetric_quantization_config,
+                )
 
-                quantized_model = convert_fx(prepared_model)  # convert the calibrated model to a quantized model
+                quantizer = XNNPACKQuantizer().set_global(get_symmetric_quantization_config())
+                prepared_model = prepare_pt2e(exported_model, quantizer)
+
+                val_data = args.data_path
+                args.data_path = ".pt/calibration"
+                data_calibrate = build_dataset(args)
+                args.data_path = val_data
+                with torch.no_grad():
+                    for image, _ in data_calibrate:
+                        model(torch.unsqueeze(image, dim=0))
+
+                quant_model = convert_pt2e(prepared_model)
+
             if args.use_script:
                 script_model = torch.jit.script(model)
             if args.use_trace:
@@ -300,6 +304,8 @@ if __name__ == '__main__':
 
                 if args.use_eager:
                     evaluate(data_loader_val, model, device, args)
+                if args.use_quant:
+                    evaluate(data_loader_val, quant_model, device, args)
                 if args.use_script:
                     evaluate(data_loader_val, script_model, device, args)
                 if args.use_trace:
@@ -319,7 +325,7 @@ if __name__ == '__main__':
                 if args.use_eager:
                     benchmarking(model, inputs, args)
                 if args.use_quant:
-                    benchmarking(quantized_model, inputs, args)
+                    benchmarking(quant_model, inputs, args)
                 if args.use_script:
                     benchmarking(script_model, inputs, args)
                 if args.use_trace:
