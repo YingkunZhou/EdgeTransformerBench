@@ -252,9 +252,10 @@ if __name__ == '__main__':
                 args.data_path = val_data
                 with torch.no_grad():
                     for image, _ in data_calibrate:
-                        model(torch.unsqueeze(image, dim=0))
+                        prepared_model(torch.unsqueeze(image, dim=0))
 
                 quant_model = convert_pt2e(prepared_model)
+                quant_model = torch.compile(quant_model)
 
             if args.use_script:
                 script_model = torch.jit.script(model)
