@@ -3,6 +3,8 @@ onnx_cann()
 {
     SHAPE=$1
     MODEL=$2
+    # source $HOME/Ascend/ascend-toolkit/set_env.sh
+    # pip install numpy scipy attrs psutil
     atc --mode 0 --framework 5 --input_format NCHW --soc_version Ascend310B4 \
     --input_shape input:$SHAPE --model .onnx/fp32/$MODEL.onnx --output .cann/fp16/$MODEL
 
