@@ -275,7 +275,10 @@ def evaluate(data_loader, model, device, args):
     header = 'Test:'
 
     # switch to evaluation mode
-    model.eval()
+    try:
+        model.eval()
+    except Exception as e:
+        print(str(e))
 
     dataset_scale = 50000//args.len_dataset_val
     for images, target in metric_logger.log_every(data_loader, 50, header):

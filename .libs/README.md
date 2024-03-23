@@ -149,6 +149,24 @@ index a5b42a7..a5294ea 100644
      if(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7")
          add_definitions(-mfpu=neon)    #please define in project/cross-compile/arm.toolchain.cmake
 ```
+
+```diff
+diff --git a/source/backend/opencl/core/OpenCLBackend.cpp b/source/backend/opencl/core/OpenCLBackend.cpp
+index 4457595..3f3ed91 100644
+--- a/source/backend/opencl/core/OpenCLBackend.cpp
++++ b/source/backend/opencl/core/OpenCLBackend.cpp
+@@ -467,7 +467,8 @@ Execution* OpenCLBackend::onCreate(const std::vector<Tensor*>& inputs, const std
+         #endif
+         return NULL;
+     }
+-    if (iter == creators->end()) {
++    // if (op->type() == 77) printf("op 77\n");
++    if (iter == creators->end() || mPrecision != BackendConfig::Precision_High && op->type() == 77) {
+         mDevideOpRecord = true;
+         #ifdef OPENCL_FALLBACK_LOG
+         if (nullptr != op->name()) {
+```
+
 </details>
 
 <details>

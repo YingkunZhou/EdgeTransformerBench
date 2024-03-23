@@ -251,11 +251,12 @@ if __name__ == '__main__':
                 data_calibrate = build_dataset(args)
                 args.data_path = val_data
                 with torch.no_grad():
-                    for image, _ in data_calibrate:
+                    for i, (image, _) in enumerate(data_calibrate):
+                        if i > 64: break
                         prepared_model(torch.unsqueeze(image, dim=0))
 
                 quant_model = convert_pt2e(prepared_model)
-                quant_model = torch.compile(quant_model)
+                # quant_model = torch.compile(quant_model) #TODO: worse?!
 
             if args.use_script:
                 script_model = torch.jit.script(model)

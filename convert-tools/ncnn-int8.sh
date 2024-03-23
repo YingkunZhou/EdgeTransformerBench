@@ -43,6 +43,7 @@ ncnn_int8()
     cd ..
 }
 
+mkdir -p .ncnn
 # TODO: please first patch `ncnn-tools-quantize.patch` to ncnn repo and rebuild quantize tools
 download_calibration
 METHOD=kl # we use METHOD=kl(,aciq,eq) as default
