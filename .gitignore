@@ -46,6 +46,7 @@ warning.log
 .pdlite/
 .tnn/
 .onnx/
+.cann/
 bin/
 *.tar.gz
 *.tar

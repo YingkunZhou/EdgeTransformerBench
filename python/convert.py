@@ -5,6 +5,7 @@ https://github.com/facebookresearch/LeViT/blob/main/speed_test.py
 
 import os
 import argparse
+import subprocess
 import torch
 from timm.models import create_model
 from main import build_dataset
@@ -30,7 +31,7 @@ def get_args_parser():
         'EdgeTransformerPerf model format conversion script', add_help=False)
     parser.add_argument('--batch-size', default=1, type=int)
     parser.add_argument('--opset-version', default=None, type=int)
-    # by: ln -sf ../../../.ncnn/calibration/imagenet-sample-images/n01* .
+    # by: ln -sf ../.ncnn/calibration .
     parser.add_argument('--data-path', default='.pt/calibration', type=str, help='dataset path')
     # Model parameters
     parser.set_defaults(pretrained=True)
@@ -100,7 +101,6 @@ if __name__ == '__main__':
         if weight and args.pretrained:
             # load model weights
             if not os.path.exists('weights'):
-                import subprocess
                 if not os.path.exists('EdgeTransformerPerf-weights.tar'):
                     print("============Downloading weights============")
                     print("============you should install gdown first: pip install gdown============")
@@ -235,6 +235,32 @@ if __name__ == '__main__':
             config = cto.OptimizationConfig(global_config=op_config)
             compressed_8_bit_model = cto.linear_quantize_weights(model, config=config)
             compressed_8_bit_model.save(".coreml/int8/"+name+".mlpackage")
+
+        if not args.format or args.format == 'cann':
+            # pip install numpy scipy attrs psutil decorator
+            # pip install onnx onnxruntime
+            opt_shape = ['--input_shape', 'input:1,3,{},{}'.format(resolution,resolution)]
+            opt_model = ['--model', '.onnx/fp32/{}.onnx'.format(args.model)]
+            convert_cmd = ['atc', '--mode', '0', '--framework', '5',
+                           '--input_format', 'NCHW', '--soc_version', 'Ascend310B4']
+            convert_cmd += opt_shape
+            if args.int8:
+                calib_dataset = build_dataset(args)
+                if not os.path.exists(".cann/calibration"):
+                    os.makedirs(".cann/calibration")
+                num_images = 64
+                for i, (image, _) in enumerate(calib_dataset):
+                    if i >= 64: break
+                    torch.unsqueeze(image, dim=0).numpy().tofile(".cann/calibration/{}.bin".format(i))
+                subprocess.run(['amct_onnx', 'calibration'] + opt_model + opt_shape +
+                               ['--data_type', 'float32', '--data_dir', '.cann/calibration',
+                                '--save_path', '.cann/int8/{}'.format(args.model),
+                                '--batch_num', str(num_images)])
+                subprocess.run(convert_cmd + ['--output', '.cann/int8/'+args.model,
+                               '--model', '.cann/int8/{}_deploy_model.onnx'.format(args.model)])
+            else:
+                subprocess.run(convert_cmd + opt_model + ['--output', '.cann/fp16/'+args.model])
+
         if not args.format or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
                 os.makedirs(".pt/fp32")
@@ -253,4 +279,3 @@ if __name__ == '__main__':
             else:
                 trace_model = torch.jit.trace(model, inputs)
                 trace_model.save(".pt/fp32/"+name+'.pt')
-
