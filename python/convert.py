@@ -250,7 +250,7 @@ if __name__ == '__main__':
                     os.makedirs(".cann/calibration")
                 num_images = 64
                 for i, (image, _) in enumerate(calib_dataset):
-                    if i >= 64: break
+                    if i >= num_images: break
                     torch.unsqueeze(image, dim=0).numpy().tofile(".cann/calibration/{}.bin".format(i))
                 subprocess.run(['amct_onnx', 'calibration'] + opt_model + opt_shape +
                                ['--data_type', 'float32', '--data_dir', '.cann/calibration',
