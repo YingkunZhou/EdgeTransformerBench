@@ -16,7 +16,7 @@ def get_args_parser():
     parser.add_argument('--format', default='fp16', type=str)
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     # Dataset parameters
-    # by: ln -sf ../../../.ncnn/calibration/imagenet-sample-images/n01* .
+    # cd .onnx; ln -sf ../.ncnn/calibration .; cd ..
     parser.add_argument('--data-path', default='.onnx/calibration', type=str, help='dataset path')
     # TensorRT device parameters
     parser.add_argument('--trt-dev', default="gpu", type=str, help='gpu, dla')
@@ -34,7 +34,7 @@ class DatasetCalibrator(trt.IInt8Calibrator):
         self.count = 0
 
     def get_batch(self, *args, **kwargs):
-        if self.count < len(self.dataset):
+        if self.count < 100:
             for buffer_idx in range(self.get_batch_size()):
 
                 # get image from dataset

@@ -453,7 +453,7 @@ export BASEDIR=$PWD
 cd tensorflow
 ./configure
 # choose clang, and use -O3 option
-bazel build --verbose_failures -c opt //tensorflow/lite:tensorflowlite --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true # --jobs 8
+bazel build --verbose_failures -c opt //tensorflow/lite:tensorflowlite --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true # --jobs 8 #--define xnn_enable_qs8=true
 bazel build --verbose_failures -c opt --config=monolithic tensorflow/lite/delegates/flex:tensorflowlite_flex --define tflite_with_xnnpack=true --define tflite_with_xnnpack_qs8=true # --jobs 8
 
 mkdir -p install/include/tensorflow

@@ -11,7 +11,7 @@ from paddleslim.quant import quant_post_static
 from main import build_dataset
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--batch_size',      type=int,  default=32,                 help="Minibatch size.")
+parser.add_argument('--batch_size',      type=int,  default=1,                 help="Minibatch size.")
 parser.add_argument('--batch_num',       type=int,  default=512,                help="Batch number")
 parser.add_argument('--only-convert',    type=str,  default='', help='only test a certain model series')
 parser.add_argument('--model_filename',  type=str,  default='model.pdmodel',    help="model file name")
@@ -34,7 +34,7 @@ def quantize(args):
         calib_dataset,
         feed_list=[image],
         return_list=False,
-        batch_size=1)
+        batch_size=args.batch_size)
 
     quant_post_static(
         executor=paddle.static.Executor(paddle.CPUPlace()),

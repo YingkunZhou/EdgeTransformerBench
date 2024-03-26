@@ -252,7 +252,7 @@ if __name__ == '__main__':
                 args.data_path = val_data
                 with torch.no_grad():
                     for i, (image, _) in enumerate(data_calibrate):
-                        if i > 64: break
+                        if i > 70: break
                         prepared_model(torch.unsqueeze(image, dim=0))
 
                 quant_model = convert_pt2e(prepared_model)

@@ -3,7 +3,6 @@ import os
 import argparse
 import torch
 import onnx
-from onnxconverter_common import float16
 from onnxruntime.transformers.optimizer import optimize_model
 from onnxruntime import quantization
 from main import build_dataset
@@ -14,18 +13,22 @@ class QuntizationDataReader(quantization.CalibrationDataReader):
         self.torch_dl = torch.utils.data.DataLoader(torch_ds, batch_size=batch_size, shuffle=False)
 
         self.input_name = input_name
-        self.datasize = len(self.torch_dl)
+        self.datasize = 70
         self.enum_data = iter(self.torch_dl)
+        self.count = 0
 
     def to_numpy(self, pt_tensor):
         return pt_tensor.detach().cpu().numpy() if pt_tensor.requires_grad else pt_tensor.cpu().numpy()
 
     def get_next(self):
-        batch = next(self.enum_data, None)
-        if batch is not None:
-          return {self.input_name: self.to_numpy(batch[0])}
-        else:
-          return None
+        if self.count < self.datasize:
+            self.count += 1
+            batch = next(self.enum_data, None)
+            if batch is not None:
+                return {self.input_name: self.to_numpy(batch[0])}
+            else:
+                return None
+        return None
 
     def rewind(self):
         self.enum_data = iter(self.torch_dl)
@@ -38,10 +41,7 @@ def get_args_parser():
     # Model parameters
     parser.add_argument('--only-convert', default='', type=str, help='only test a certain model series')
     # Dataset parameters
-    """
-    mkdir -p .onnx/calibration/subset && cd .onnx/calibration/subset
-    ln -sf ../../../.ncnn/calibration/imagenet-sample-images/n01[4567]* . # seems best?
-    """
+    # cd .onnx; ln -sf ../.ncnn/calibration .; cd ..
     parser.add_argument('--data-path', default='.onnx/calibration', type=str, help='dataset path')
 
     return parser
@@ -112,6 +112,7 @@ if __name__ == '__main__':
             When opt_level is None, we will choose default optimization level according to model type.
             When opt_level is 0 and only_onnxruntime is False, only python fusion logic is used and onnxruntime is disabled.
             """
+            from onnxconverter_common import float16
             model_fp16 = optimize_model(
                 model_fp32_path,
                 # opt_level=1,
