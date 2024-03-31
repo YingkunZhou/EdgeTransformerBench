@@ -38,6 +38,14 @@ void evaluate(
     &module,
     torch::Tensor &input)
 #endif
+#if defined(USE_TVM)
+void evaluate(
+    tvm::runtime::PackedFunc &set_input,
+    tvm::runtime::PackedFunc &get_output,
+    tvm::runtime::PackedFunc &run,
+    tvm::runtime::NDArray &input_tensor,
+    tvm::runtime::NDArray &output_tensor)
+#endif
 {
     int class_index = 0;
     int num_predict = 0;
@@ -110,6 +118,13 @@ void evaluate(
             load_image(image.path(), input.data_ptr<float>(), args.model, args.input_size, args.batch_size);
             args.output = module.forward({input}).toTensor();
             num_acc5 += acck(args.output.data_ptr<float>(), 5, index, num_acc1);
+#endif
+#if defined(USE_TVM)
+            load_image(image.path(), static_cast<float*>(input_tensor->data), args.model, args.input_size, args.batch_size);
+            set_input("input", input_tensor);
+            run();
+            get_output(0, output_tensor);
+            num_acc5 += acck(static_cast<float*>(output_tensor->data), 5, index, num_acc1);
 #endif
         }
         class_index++;

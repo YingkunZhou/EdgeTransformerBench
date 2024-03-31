@@ -285,3 +285,37 @@ test-torch-perf: bin/torch-perf-test
 
 torch-model-test: bin/torch-perf-test
 	LD_LIBRARY_PATH=$(TORCH_LIB):$(LD_LIBRARY_PATH) bin/torch-perf-test --model $(MODEL) --backend $(BACK) --threads $(THREADS)
+
+
+########################
+##### tvm part #####
+########################
+TVM_LIB ?= $(PWD)/.libs/tvm/lib
+TVM_INC ?= $(PWD)/.libs/tvm/include
+
+tvm-perf: bin/tvm-perf
+tvm-perf-test: bin/torch-perf-test
+
+bin/tvm-perf: src/tvm-perf.cpp $(DEPS)
+	$(CXX) -O3 -o bin/tvm-perf src/tvm-perf.cpp -I$(TVM_INC) -L$(TVM_LIB) -ldl -pthread -ltvm_runtime $(FLAGS) -DDMLC_USE_LOGGING_LIBRARY=\<tvm/runtime/logging.h\>
+
+bin/tvm-perf-test: src/tvm-perf.cpp $(DEPS)
+	$(CXX) -O3 -DTEST -o bin/tvm-perf-test src/tvm-perf.cpp -I$(TVM_INC) -L$(TVM_LIB) -ldl -pthread -ltvm_runtime $(FLAGS) -DDMLC_USE_LOGGING_LIBRARY=\<tvm/runtime/logging.h\>
+
+run-tvm-perf: bin/tvm-perf
+	LD_LIBRARY_PATH=$(TVM_LIB):$(LD_LIBRARY_PATH) bin/tvm-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
+
+validation-tvm: bin/tvm-perf
+	LD_LIBRARY_PATH=$(TVM_LIB):$(LD_LIBRARY_PATH) bin/tvm-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) $(VAL_EXTRA)
+
+tvm-model-perf: bin/tvm-perf
+	LD_LIBRARY_PATH=$(TVM_LIB):$(LD_LIBRARY_PATH) bin/tvm-perf --model $(MODEL) --backend $(BACK) --threads $(THREADS)
+
+tvm-model-validation: bin/tvm-perf
+	LD_LIBRARY_PATH=$(TVM_LIB):$(LD_LIBRARY_PATH) bin/tvm-perf --model $(MODEL) --backend $(BACK) --validation --threads $(THREADS) $(VAL_EXTRA)
+
+test-tvm-perf: bin/tvm-perf-test
+	LD_LIBRARY_PATH=$(TVM_LIB):$(LD_LIBRARY_PATH) bin/tvm-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
+
+tvm-model-test: bin/tvm-perf-test
+	LD_LIBRARY_PATH=$(TVM_LIB):$(LD_LIBRARY_PATH) bin/tvm-perf-test --model $(MODEL) --backend $(BACK) --threads $(THREADS)

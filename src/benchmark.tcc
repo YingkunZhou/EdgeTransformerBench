@@ -41,6 +41,14 @@ void benchmark(
     &module,
     torch::Tensor &input)
 #endif
+#if defined(USE_TVM)
+void benchmark(
+    tvm::runtime::PackedFunc &set_input,
+    tvm::runtime::PackedFunc &get_output,
+    tvm::runtime::PackedFunc &run,
+    tvm::runtime::NDArray &input_tensor,
+    tvm::runtime::NDArray &output_tensor)
+#endif
 {
     // Measure latency
 #if defined(USE_NCNN)
@@ -78,6 +86,10 @@ void benchmark(
 #if defined(USE_TORCH)
     load_image("daisy.jpg", input.data_ptr<float>(), args.model, args.input_size, args.batch_size);
 #endif
+#if defined(USE_TVM)
+    load_image("daisy.jpg", static_cast<float*>(input_tensor->data), args.model, args.input_size, args.batch_size);
+    set_input("input", input_tensor);
+#endif
 
     auto start = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
@@ -112,6 +124,9 @@ void benchmark(
 #endif
 #if defined(USE_TORCH)
         args.output = module.forward({input}).toTensor();
+#endif
+#if defined(USE_TVM)
+        run();
 #endif
 #if defined(DEBUG) || defined(TEST)
         break;
@@ -159,6 +174,10 @@ void benchmark(
 #endif
 #if defined(USE_TORCH)
     print_topk(args.output.data_ptr<float>(), 3);
+#endif
+#if defined(USE_TVM)
+    get_output(0, output_tensor);
+    print_topk(static_cast<float*>(output_tensor->data), 3);
 #endif
 #if defined(TEST)
     return;
@@ -208,6 +227,9 @@ void benchmark(
 #endif
 #if defined(USE_TORCH)
         args.output = module.forward({input}).toTensor();
+#endif
+#if defined(USE_TVM)
+        run();
 #endif
         stop = high_resolution_clock::now();
         auto elapse = duration_cast<microseconds>(stop - start);

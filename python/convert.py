@@ -261,6 +261,58 @@ if __name__ == '__main__':
             else:
                 subprocess.run(convert_cmd + opt_model + ['--output', '.cann/fp16/'+args.model])
 
+        if not args.format or args.format == 'tvm':
+            import tvm
+            import tvm.relay as relay
+            import onnx
+            from tvm import rpc
+            from tvm.contrib import utils, graph_executor
+
+            onnx_model = onnx.load('.onnx/fp32/'+name+'.onnx')
+            input_name = 'input'
+            shape_dict = {input_name: inputs.shape}
+            mod, params = relay.frontend.from_onnx(onnx_model, shape_dict)
+            tvm_device = 'cpu'
+            with tvm.transform.PassContext(opt_level=3):
+                if tvm_device == 'cpu':
+                    target = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
+                elif tvm_device == 'opencl':
+                    target = tvm.target.Target('opencl', host="llvm -mtriple=aarch64-linux-gnu")
+
+                built_lib = relay.build(mod, target, params=params)
+
+            if tvm_device == 'cpu':
+                if not os.path.exists(".tvm/fp32"): os.makedirs(".tvm/fp32")
+                local_lib_path = ".tvm/fp32/"+name+".tar"
+            elif tvm_device == 'opencl':
+                if not os.path.exists(".tvm/opencl"): os.makedirs(".tvm/opencl")
+                local_lib_path = ".tvm/opencl/"+name+".tar"
+
+            built_lib.export_library(local_lib_path)
+
+            host = "192.168.3.14"; port = 9090 # TODO: should modified by your machine IP!!!
+            remote = rpc.connect(host, port)
+
+            # upload the library to remote device and load it
+            remote_lib_path = "/tmp/"+name+".tar"
+            remote.upload(local_lib_path, remote_lib_path)
+            rlib = remote.load_module(remote_lib_path)
+
+            # create the remote runtime module
+            if tvm_device == 'cpu':
+                dev = remote.cpu()
+            elif tvm_device == 'opencl':
+                dev = remote.cl()
+
+            module = graph_executor.GraphModule(rlib["default"](dev))
+            # set input data
+            module.set_input(input_name, tvm.nd.array(inputs.numpy()))
+            # run
+            module.run()
+            # get output
+            out = torch.from_numpy(module.get_output(0).numpy())
+            print(out[0][985])
+
         if not args.format or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
                 os.makedirs(".pt/fp32")
