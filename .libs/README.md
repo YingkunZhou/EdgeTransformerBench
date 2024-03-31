@@ -1016,3 +1016,33 @@ index 78334c6..5484033 100644
 ```
 
 </details>
+
+
+# tvm
+
+<details>
+<summary>Linux</summary>
+
+```bash
+git clone --recursive https://github.com/apache/tvm tvm
+cd tvm
+# if want to use opencl
+sed -i "s/USE_OPENCL OFF/USE_OPENCL ON/" cmake/config.cmake
+mkdir build
+cp cmake/config.cmake build
+cd build
+cmake ..
+make runtime -j`nproc`
+mkdir ../install
+cd ../install
+cp -r ../include .
+cp -r ../3rdparty/dlpack/include/dlpack include
+cp -r ../3rdparty/dmlc-core/include/dmlc include
+mkdir lib
+cp ../build/libtvm_runtime.so lib
+cd ../..
+tar czf tvm.tar.gz tvm/install
+# and then copy tvm.tar.gz the the test machine EdgeTransformerPerf/.libs folder, and `tar xf` to set the tvm runtime
+```
+
+</details>

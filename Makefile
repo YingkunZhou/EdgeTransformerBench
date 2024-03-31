@@ -290,8 +290,8 @@ torch-model-test: bin/torch-perf-test
 ########################
 ##### tvm part #####
 ########################
-TVM_LIB ?= $(PWD)/.libs/tvm/lib
-TVM_INC ?= $(PWD)/.libs/tvm/include
+TVM_LIB ?= $(PWD)/.libs/tvm/install/lib
+TVM_INC ?= $(PWD)/.libs/tvm/install/include
 
 tvm-perf: bin/tvm-perf
 tvm-perf-test: bin/torch-perf-test
