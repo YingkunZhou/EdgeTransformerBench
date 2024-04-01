@@ -9,7 +9,7 @@ import torch
 import time
 import numpy as np
 from timm.models import create_model
-from main import load_image, build_dataset, evaluate
+from main import load_image, build_dataset, evaluate, WARMUP_SEC, TEST_SEC
 
 import sota.efficientformer_v2
 import sota.swiftformer
@@ -22,9 +22,6 @@ import sota.levit
 import sota.levit_c
 
 torch.autograd.set_grad_enabled(False)
-
-WARMUP_SEC = 5
-TEST_SEC  = 20
 
 def benchmarking_cpu(model, inputs, args):
     # warmup

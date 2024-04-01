@@ -3,8 +3,7 @@ import numpy as np
 import torch
 import argparse
 import time
-from pytorch_perf import WARMUP_SEC, TEST_SEC
-from main import load_image, build_dataset, MetricLogger
+from main import load_image, build_dataset, MetricLogger, WARMUP_SEC, TEST_SEC
 from timm.utils import accuracy
 import tflite_runtime.interpreter as tflite
 

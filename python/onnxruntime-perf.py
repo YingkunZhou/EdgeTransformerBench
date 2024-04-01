@@ -11,8 +11,7 @@ import time
 import numpy as np
 import torch
 import argparse
-from pytorch_perf import load_image, WARMUP_SEC, TEST_SEC
-from main import build_dataset, MetricLogger
+from main import build_dataset, MetricLogger, load_image, WARMUP_SEC, TEST_SEC
 from timm.utils import accuracy
 
 def get_args_parser():

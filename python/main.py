@@ -30,6 +30,9 @@ import sota.emo
 import sota.mobilevit
 import sota.mobilevit_v2
 
+WARMUP_SEC = 5
+TEST_SEC  = 20
+
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a
     window or the global series average.

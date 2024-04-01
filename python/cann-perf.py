@@ -8,8 +8,7 @@ import acl
 import numpy as np
 import torch
 import argparse
-from pytorch_perf import load_image, WARMUP_SEC, TEST_SEC
-from main import build_dataset, MetricLogger
+from main import build_dataset, MetricLogger, WARMUP_SEC, TEST_SEC, load_image
 from timm.utils import accuracy
 
 ACL_MEM_MALLOC_HUGE_FIRST = 0

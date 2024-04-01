@@ -4,7 +4,7 @@ import argparse
 import time
 import numpy as np
 import tensorrt as trt
-from main import MetricLogger, accuracy, build_dataset, load_image
+from main import MetricLogger, accuracy, build_dataset, load_image, WARMUP_SEC, TEST_SEC
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
@@ -20,9 +20,6 @@ def get_args_parser():
     parser.add_argument('--data-path', default='imagenet-div50', type=str, help='dataset path')
 
     return parser
-
-WARMUP_SEC = 5
-TEST_SEC  = 20
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('EdgeTransformerPerf evaluation script', parents=[get_args_parser()])
