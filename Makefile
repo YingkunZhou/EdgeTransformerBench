@@ -25,11 +25,11 @@ NCNN_INC ?= $(PWD)/.libs/ncnn/install/include/ncnn
 ncnn-perf: bin/ncnn-perf
 ncnn-perf-test: bin/ncnn-perf-test
 
-bin/ncnn-perf: src/ncnn_perf.cpp $(DEPS)
-	LD_LIBRARY_PATH=$(NCNN_LIB) $(CXX) -O3 -o bin/ncnn-perf src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
+bin/ncnn-perf: src/ncnn-perf.cpp $(DEPS)
+	LD_LIBRARY_PATH=$(NCNN_LIB) $(CXX) -O3 -o bin/ncnn-perf src/ncnn-perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
 
-bin/ncnn-perf-test: src/ncnn_perf.cpp $(DEPS)
-	LD_LIBRARY_PATH=$(NCNN_LIB) $(CXX) -O3 -DTEST -o bin/ncnn-perf-test src/ncnn_perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
+bin/ncnn-perf-test: src/ncnn-perf.cpp $(DEPS)
+	LD_LIBRARY_PATH=$(NCNN_LIB) $(CXX) -O3 -DTEST -o bin/ncnn-perf-test src/ncnn-perf.cpp -I$(NCNN_INC) -L$(NCNN_LIB) -lncnn $(FLAGS)
 
 run-ncnn-perf: bin/ncnn-perf
 	LD_LIBRARY_PATH=$(NCNN_LIB):$(LD_LIBRARY_PATH) bin/ncnn-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -58,11 +58,11 @@ MNN_INC ?= $(PWD)/.libs/MNN/install/include
 mnn-perf: bin/mnn-perf
 mnn-perf-test: bin/mnn-perf-test
 
-bin/mnn-perf: src/mnn_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/mnn-perf src/mnn_perf.cpp -I$(MNN_INC) -L$(MNN_LIB) -lMNN $(FLAGS)
+bin/mnn-perf: src/mnn-perf.cpp $(DEPS)
+	$(CXX) -O3 -o bin/mnn-perf src/mnn-perf.cpp -I$(MNN_INC) -L$(MNN_LIB) -lMNN $(FLAGS)
 
-bin/mnn-perf-test: src/mnn_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/mnn-perf-test src/mnn_perf.cpp -I$(MNN_INC) -L$(MNN_LIB) -lMNN $(FLAGS)
+bin/mnn-perf-test: src/mnn-perf.cpp $(DEPS)
+	$(CXX) -O3 -DTEST -o bin/mnn-perf-test src/mnn-perf.cpp -I$(MNN_INC) -L$(MNN_LIB) -lMNN $(FLAGS)
 
 run-mnn-perf: bin/mnn-perf
 	LD_LIBRARY_PATH=$(MNN_LIB):$(LD_LIBRARY_PATH) bin/mnn-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -91,11 +91,11 @@ TNN_INC ?= $(PWD)/.libs/TNN/install/include
 tnn-perf: bin/tnn-perf
 tnn-perf-test: bin/tnn-perf-test
 
-bin/tnn-perf: src/tnn_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/tnn-perf src/tnn_perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
+bin/tnn-perf: src/tnn-perf.cpp $(DEPS)
+	$(CXX) -O3 -o bin/tnn-perf src/tnn-perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
 
-bin/tnn-perf-test: src/tnn_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/tnn-perf-test src/tnn_perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
+bin/tnn-perf-test: src/tnn-perf.cpp $(DEPS)
+	$(CXX) -O3 -DTEST -o bin/tnn-perf-test src/tnn-perf.cpp -I$(TNN_INC) -L$(TNN_LIB) -lTNN $(FLAGS)
 
 run-tnn-perf: bin/tnn-perf
 	LD_LIBRARY_PATH=$(TNN_LIB):$(LD_LIBRARY_PATH) bin/tnn-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -124,11 +124,11 @@ PDLITE_INC ?= $(PWD)/.libs/Paddle-Lite/include
 pdlite-perf: bin/pdlite-perf
 pdlite-perf-test: bin/pdlite-perf-test
 
-bin/pdlite-perf: src/pdlite_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/pdlite-perf src/pdlite_perf.cpp -I$(PDLITE_INC)  -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
+bin/pdlite-perf: src/pdlite-perf.cpp $(DEPS)
+	$(CXX) -O3 -o bin/pdlite-perf src/pdlite-perf.cpp -I$(PDLITE_INC)  -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
 
-bin/pdlite-perf-test: src/pdlite_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/pdlite-perf-test src/pdlite_perf.cpp -I$(PDLITE_INC) -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
+bin/pdlite-perf-test: src/pdlite-perf.cpp $(DEPS)
+	$(CXX) -O3 -DTEST -o bin/pdlite-perf-test src/pdlite-perf.cpp -I$(PDLITE_INC) -L$(PDLITE_LIB) -lpaddle_light_api_shared $(FLAGS)
 
 run-pdlite-perf: bin/pdlite-perf
 	LD_LIBRARY_PATH=$(PDLITE_LIB):$(LD_LIBRARY_PATH) bin/pdlite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
@@ -174,12 +174,12 @@ endif
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
-bin/tflite-perf: src/tflite_perf.cpp $(DEPS)
-	LD_LIBRARY_PATH=$(TFLITE_LIB) $(CXX) -O3 -o bin/tflite-perf src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+bin/tflite-perf: src/tflite-perf.cpp $(DEPS)
+	LD_LIBRARY_PATH=$(TFLITE_LIB) $(CXX) -O3 -o bin/tflite-perf src/tflite-perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	$(ARMNN_FLAGS) $(GPU_FLAGS) $(NNAPI_FLAGS)
 
-bin/tflite-perf-test: src/tflite_perf.cpp $(DEPS)
-	LD_LIBRARY_PATH=$(TFLITE_LIB) $(CXX) -O3 -DTEST -o bin/tflite-perf-test src/tflite_perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
+bin/tflite-perf-test: src/tflite-perf.cpp $(DEPS)
+	LD_LIBRARY_PATH=$(TFLITE_LIB) $(CXX) -O3 -DTEST -o bin/tflite-perf-test src/tflite-perf.cpp -I$(TFLITE_INC) -L$(TFLITE_LIB) $(FLAGS) -ltensorflowlite \
 	$(ARMNN_FLAGS) $(GPU_FLAGS) $(NNAPI_FLAGS)
 
 run-tflite-perf: bin/tflite-perf
@@ -225,11 +225,11 @@ COREML_FLAGS ?=
 tflite-perf: bin/tflite-perf
 tflite-perf-test: bin/tflite-perf-test
 
-bin/onnxruntime-perf: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(ONNXRT_NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS) $(COREML_FLAGS)
+bin/onnxruntime-perf: src/onnxruntime-perf.cpp $(DEPS)
+	$(CXX) -O3 -o bin/onnxruntime-perf src/onnxruntime-perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(ONNXRT_NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS) $(COREML_FLAGS)
 
-bin/onnxruntime-perf-test: src/onnxruntime_perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime_perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(ONNXRT_NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS) $(COREML_FLAGS)
+bin/onnxruntime-perf-test: src/onnxruntime-perf.cpp $(DEPS)
+	$(CXX) -O3 -DTEST -o bin/onnxruntime-perf-test src/onnxruntime-perf.cpp -I$(ONNXRT_INC)  -L$(ONNXRT_LIB) $(FLAGS) -lonnxruntime $(ONNXRT_NNAPI_FLAGS) $(TENSORRT_FLAGS) $(ACL_FLAGS) $(DNNL_FLAGS) $(COREML_FLAGS)
 
 run-onnxruntime-perf: bin/onnxruntime-perf
 	LD_LIBRARY_PATH=$(ONNXRT_LIB):$(LD_LIBRARY_PATH) bin/onnxruntime-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS)
@@ -258,13 +258,13 @@ TORCH_INC ?= $(PWD)/.libs/torch/include
 torch-perf: bin/torch-perf
 torch-perf-test: bin/torch-perf-test
 
-bin/torch-perf: src/torch_perf.cpp $(DEPS)
-	LD_LIBRARY_PATH=$(TORCH_LIB) $(CXX) -O3 -o bin/torch-perf src/torch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
+bin/torch-perf: src/torch-perf.cpp $(DEPS)
+	LD_LIBRARY_PATH=$(TORCH_LIB) $(CXX) -O3 -o bin/torch-perf src/torch-perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
 	#-DUSE_TORCH_MOBILE
 	#-D_GLIBCXX_USE_CXX11_ABI=0
 
-bin/torch-perf-test: src/torch_perf.cpp $(DEPS)
-	LD_LIBRARY_PATH=$(TORCH_LIB) $(CXX) -O3 -DTEST -o bin/torch-perf-test src/torch_perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
+bin/torch-perf-test: src/torch-perf.cpp $(DEPS)
+	LD_LIBRARY_PATH=$(TORCH_LIB) $(CXX) -O3 -DTEST -o bin/torch-perf-test src/torch-perf.cpp -I$(TORCH_INC) -L$(TORCH_LIB) -lc10 -ltorch_cpu -ltorch $(FLAGS)
 	#-DUSE_TORCH_MOBILE
 	#-D_GLIBCXX_USE_CXX11_ABI=0
 
