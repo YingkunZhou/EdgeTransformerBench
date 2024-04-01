@@ -127,6 +127,7 @@ def evaluate(data_loader, sess, args):
 
 
 if __name__ == '__main__':
+    print("WARNING: This python benchmark script is decrepated, please use the C++ version. see src/onnxruntime-perf.cpp")
     parser = get_args_parser()
     args = parser.parse_args()
     device_list = []
@@ -183,10 +184,10 @@ if __name__ == '__main__':
             ('mobilevitv2_050', 256, False),
             ('mobilevitv2_075', 256, False),
             ('mobilevitv2_100', 256, False),
-            ('mobilevitv2_125', 256, False),
-            ('mobilevitv2_150', 256, False),
-            ('mobilevitv2_175', 256, False),
-            ('mobilevitv2_200', 256, False),
+            # ('mobilevitv2_125', 256, False),
+            # ('mobilevitv2_150', 256, False),
+            # ('mobilevitv2_175', 256, False),
+            # ('mobilevitv2_200', 256, False),
 
             ('mobilevit_xx_small', 256, False),
             ('mobilevit_x_small' , 256, False),
@@ -195,16 +196,16 @@ if __name__ == '__main__':
             ('LeViT_128S', 224, False),
             ('LeViT_128' , 224, False),
             ('LeViT_192' , 224, False),
-            ('LeViT_256' , 224, False),
+            # ('LeViT_256' , 224, False),
 
             ('resnet50', 224, False),
             ('mobilenetv3_large_100', 224, False),
             ('tf_efficientnetv2_b0' , 224, False),
             ('tf_efficientnetv2_b1' , 240, False),
             ('tf_efficientnetv2_b2' , 260, False),
-            ('tf_efficientnetv2_b3' , 300, False),
+            # ('tf_efficientnetv2_b3' , 300, False),
         ]:
-            if args.only_test and args.only_test not in name:
+            if args.only_test and args.only_test not in name and args.only_test != 'ALL':
                 continue
 
             print(f"Creating onnx runtime session: {name}")

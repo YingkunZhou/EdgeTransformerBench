@@ -162,10 +162,10 @@ if __name__ == '__main__':
             ('mobilevitv2_050', 256, False, "mobilevitv2-0.5.pt"),
             ('mobilevitv2_075', 256, False, "mobilevitv2-0.75.pt"),
             ('mobilevitv2_100', 256, False, "mobilevitv2-1.0.pt"),
-            ('mobilevitv2_125', 256, False, "mobilevitv2-1.25.pt"),
-            ('mobilevitv2_150', 256, False, "mobilevitv2-1.5.pt"),
-            ('mobilevitv2_175', 256, False, "mobilevitv2-1.75.pt"),
-            ('mobilevitv2_200', 256, False, "mobilevitv2-2.0.pt"),
+            # ('mobilevitv2_125', 256, False, "mobilevitv2-1.25.pt"),
+            # ('mobilevitv2_150', 256, False, "mobilevitv2-1.5.pt"),
+            # ('mobilevitv2_175', 256, False, "mobilevitv2-1.75.pt"),
+            # ('mobilevitv2_200', 256, False, "mobilevitv2-2.0.pt"),
 
             ('mobilevit_xx_small', 256, False, "mobilevit_xxs.pt"),
             ('mobilevit_x_small' , 256, False, "mobilevit_xs.pt"),
@@ -174,16 +174,16 @@ if __name__ == '__main__':
             ('LeViT_128S', 224, False, "LeViT-128S.pth"),
             ('LeViT_128' , 224, False, "LeViT-128.pth"),
             ('LeViT_192' , 224, False, "LeViT-192.pth"),
-            ('LeViT_256' , 224, False, "LeViT-256.pth"),
+            # ('LeViT_256' , 224, False, "LeViT-256.pth"),
 
             ('resnet50', 224, True, ""),
             ('mobilenetv3_large_100', 224, True, ""),
             ('tf_efficientnetv2_b0' , 224, True, ""),
             ('tf_efficientnetv2_b1' , 240, True, ""),
             ('tf_efficientnetv2_b2' , 260, True, ""),
-            ('tf_efficientnetv2_b3' , 300, True, ""),
+            # ('tf_efficientnetv2_b3' , 300, True, ""),
         ]:
-            if args.only_test and args.only_test not in name:
+            if args.only_test and args.only_test not in name and args.only_test != 'ALL':
                 continue
 
             args.usi_eval = False
@@ -243,7 +243,7 @@ if __name__ == '__main__':
                   get_symmetric_quantization_config,
                 )
 
-                quantizer = XNNPACKQuantizer().set_global(get_symmetric_quantization_config())
+                quantizer = XNNPACKQuantizer().set_global(get_symmetric_quantization_config(is_per_channel=True))
                 prepared_model = prepare_pt2e(exported_model, quantizer)
 
                 val_data = args.data_path
@@ -256,7 +256,7 @@ if __name__ == '__main__':
                         prepared_model(torch.unsqueeze(image, dim=0))
 
                 quant_model = convert_pt2e(prepared_model)
-                # quant_model = torch.compile(quant_model) #TODO: worse?!
+                quant_model = torch.compile(quant_model)
 
             if args.use_script:
                 script_model = torch.jit.script(model)
