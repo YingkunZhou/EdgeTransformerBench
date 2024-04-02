@@ -268,17 +268,44 @@ if __name__ == '__main__':
             from tvm import rpc
             from tvm.contrib import utils, graph_executor
 
-            onnx_model = onnx.load('.onnx/fp32/'+name+'.onnx')
             input_name = 'input'
-            shape_dict = {input_name: inputs.shape}
-            mod, params = relay.frontend.from_onnx(onnx_model, shape_dict)
-            use_tune = False
+            use_onnx = False
+            if use_onnx:
+                onnx_model  = onnx.load('.onnx/fp32/'+name+'.onnx')
+                mod, params = relay.frontend.from_onnx(onnx_model, {input_name: inputs.shape})
+            else:
+                trace_model = torch.jit.trace(model, inputs)
+                mod, params = relay.frontend.from_pytorch(trace_model, [(input_name, inputs.shape)])
+
+            use_tune = True
             if use_tune:
                 """
                 python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key=orin
                 """
-                if True:
-                    from tvm.autotvm.tuner import XGBTuner
+                use_tvmc = False
+                if use_tvmc:
+                    from tvm.driver import tvmc
+                    model = tvmc.frontends.load_model('.onnx/fp32/'+name+'.onnx')
+                    target = 'llvm -mtriple=aarch64-linux-gnu'
+                    # from tvm import auto_scheduler
+                    # hardware_params = auto_scheduler.HardwareParams(num_cores=1, target=target)
+                    tvmc.tune(
+                        model,
+                        target=target, # Compilation target as string // Device to compile for
+                        hostname='127.0.0.1', # The IP address of an RPC tracker, used when benchmarking remotely.
+                        port=9190, # The port of the RPC tracker to connect to. Defaults to 9090.
+                        rpc_key='orin', # The RPC tracker key of the target device. Required when rpc_tracker is provided
+                        tuning_records=".tvm/fp32/"+name+".autotvm.json",
+                        number=10,
+                        repeat=1,
+                        early_stopping=100,
+                        min_repeat_ms=0, # since we're tuning on a CPU, can be set to 0
+                        timeout=10, # in seconds
+                        # enable_autoscheduler=True,
+                        trials=20,
+                        # hardware_params=hardware_params,
+                    )
+                else:
                     from tvm import autotvm
                     # create a TVM runner
                     runner = autotvm.RPCRunner(
@@ -300,6 +327,7 @@ if __name__ == '__main__':
                     )
                     n_trial = 20
 
+                    from tvm.autotvm.tuner import XGBTuner
                     # Tune the extracted tasks sequentially.
                     for i, task in enumerate(tasks):
                         prefix = "[Task %2d/%2d] " % (i + 1, len(tasks))
@@ -313,50 +341,31 @@ if __name__ == '__main__':
                                 autotvm.callback.log_to_file('.tvm/fp32/'+name+'.autotvm.json'),
                             ],
                         )
-
-                    exit(0)
-
-                from tvm.driver import tvmc
-                model = tvmc.frontends.load_model('.onnx/fp32/'+name+'.onnx')
-                target = 'llvm -mtriple=aarch64-linux-gnu'
-                # from tvm import auto_scheduler
-                # hardware_params = auto_scheduler.HardwareParams(num_cores=1, target=target)
-                tvmc.tune(
-                    model,
-                    target=target, # Compilation target as string // Device to compile for
-                    hostname='127.0.0.1', # The IP address of an RPC tracker, used when benchmarking remotely.
-                    port=9190, # The port of the RPC tracker to connect to. Defaults to 9090.
-                    rpc_key='orin', # The RPC tracker key of the target device. Required when rpc_tracker is provided
-                    tuning_records=".tvm/fp32/"+name+".autotvm.json",
-                    number = 10,
-                    repeat=1,
-                    early_stopping=100,
-                    min_repeat_ms = 0, # since we're tuning on a CPU, can be set to 0
-                    timeout=10, # in seconds
-                    # enable_autoscheduler=True,
-                    trials=20,
-                    # hardware_params=hardware_params,
-                )
             else:
                 """
                 python -m tvm.exec.rpc_server --host 0.0.0.0 --port=9090
                 """
                 tvm_device = 'cpu'
-                with tvm.transform.PassContext(opt_level=3):
-                    if tvm_device == 'cpu':
-                        target = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
-                    elif tvm_device == 'opencl':
-                        target = tvm.target.Target('opencl', host="llvm -mtriple=aarch64-linux-gnu")
+                if tvm_device == 'cpu':
+                    target = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
+                elif tvm_device == 'opencl':
+                    target = tvm.target.Target('opencl', host="llvm -mtriple=aarch64-linux-gnu")
 
-                    # built_lib = relay.build(mod, target, params=params)
+                use_autotvm = False
+                use_auto_scheduler = False
+                if use_autotvm:
                     from tvm import autotvm
                     with autotvm.apply_history_best('.tvm/fp32/'+name+'.autotvm.json'):
                         with tvm.transform.PassContext(opt_level=3, config={}):
                             built_lib = relay.build(mod, target=target, params=params)
-                    # from tvm import auto_scheduler
-                    # with auto_scheduler.ApplyHistoryBest('.tvm/fp32/'+name+'.ansor.json'):
-                    #     with tvm.transform.PassContext(opt_level=3, config={"relay.backend.use_auto_scheduler": True}):
-                    #         built_lib = relay.build(mod, target=target, params=params)
+                elif use_auto_scheduler:
+                    from tvm import auto_scheduler
+                    with auto_scheduler.ApplyHistoryBest('.tvm/fp32/'+name+'.ansor.json'):
+                        with tvm.transform.PassContext(opt_level=3, config={"relay.backend.use_auto_scheduler": True}):
+                            built_lib = relay.build(mod, target=target, params=params)
+                else:
+                    with tvm.transform.PassContext(opt_level=3):
+                        built_lib = relay.build(mod, target, params=params)
 
                 if tvm_device == 'cpu':
                     if not os.path.exists(".tvm/fp32"): os.makedirs(".tvm/fp32")
@@ -386,9 +395,6 @@ if __name__ == '__main__':
                 module.set_input(input_name, tvm.nd.array(inputs.numpy()))
                 # run
                 module.run()
-                # get output
-                out = torch.from_numpy(module.get_output(0).numpy())
-                print(out[0][985])
 
         if not args.format or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
