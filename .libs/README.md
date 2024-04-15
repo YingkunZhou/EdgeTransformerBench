@@ -762,6 +762,12 @@ index b2040b2..691b948 100644
      parser.add_argument("--acl_home", help="Path to ACL home dir")
 ```
 
+## Tensorrt
+
+```bash
+./build.sh --config Release --build_shared_lib --parallel --skip_tests --use_cuda --cuda_home /usr/local/cuda --cudnn_home /usr/local/cuda --use_tensorrt --tensorrt_home /usr/local/cuda --cmake_extra_defines onnxruntime_DISABLE_FLOAT8_TYPES=ON
+```
+
 </details>
 
 

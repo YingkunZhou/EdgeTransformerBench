@@ -44,6 +44,14 @@ def get_args_parser():
     parser.add_argument('--int8', action='store_true', default=False)
     parser.add_argument('--trt-dev', default="gpu", type=str, help='gpu, dla')
 
+    parser.add_argument('--tvm_dev', default="orpi5b", type=str, help='reference to remote_device_list')
+    parser.add_argument('--tvm_frontend', default="pytorch", type=str, help='pytorch, onnx')
+    parser.add_argument('--tvm_backend', default="cpu", type=str, help='reference to remote_device_list')
+    parser.add_argument('--tvm_tune_method',default="None", type=str, help='None,AutoTVM, AutoScheduler')
+    parser.add_argument('--tvm_only_tune', action='store_true', default=False)
+    parser.add_argument('--tvm_only_upload', action='store_true', default=False)
+    parser.add_argument('--tvm_remote_run', action='store_true', default=True)
+    parser.add_argument('--tvm_data_precision',default="fp32", type=str, help='fp32,mixed,fp16')
     return parser
 
 if __name__ == '__main__':
@@ -262,139 +270,147 @@ if __name__ == '__main__':
                 subprocess.run(convert_cmd + opt_model + ['--output', '.cann/fp16/'+args.model])
 
         if not args.format or args.format == 'tvm':
+            """
+                python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key={remote_device_name}
+            """
+            import subprocess
             import tvm
             import tvm.relay as relay
             import onnx
             from tvm import rpc
             from tvm.contrib import utils, graph_executor
+            from tvm.autotvm.measure import request_remote
+            from tvm_utils import find_device_by_name
+
+            # cmd = "python -m tvm.exec.rpc_tracker --host=0.0.0.0 --port=9190"
+            # rpc_process =subprocess.Popen(cmd, shell=True)
+
+            remote_device_name=args.tvm_dev
+            remote_device=find_device_by_name(remote_device_name)
+            # remote = request_remote(remote_device_name, "127.0.0.1", port=9190)
+            # print(remote.cl().exist)
+            print(remote_device_name)
+            local_lib_dir = os.path.join(".tvm",remote_device_name,"lib")
+            if(os.path.exists(local_lib_dir)==False):
+                os.makedirs(local_lib_dir)
+            # local_lib_filename = name+"_"+args.tvm_tune_method+".tar"
+            local_lib_filename = "_".join([name,args.tvm_backend ,args.tvm_data_precision,args.tvm_tune_method])+".tar"
+            local_lib_path = os.path.join(local_lib_dir,local_lib_filename)
+            remote_lib_path = local_lib_filename
+            if(args.tvm_backend=="cpu"):
+                target = tvm.target.Target(remote_device.cpu_target)
+            elif(args.tvm_backend=="opencl"):
+                target = tvm.target.Target(target=remote_device.opencl_target,host=remote_device.cpu_target)
+            elif(args.tvm_backend=="vulkan"):
+                target = remote_device.vulkan_target
+            else:
+                raise NotImplementedError
+
+            print(str(target))
 
             input_name = 'input'
-            use_onnx = False
-            if use_onnx:
+            if args.tvm_frontend == 'onnx':
                 onnx_model  = onnx.load('.onnx/fp32/'+name+'.onnx')
                 mod, params = relay.frontend.from_onnx(onnx_model, {input_name: inputs.shape})
-            else:
+            elif args.tvm_frontend == 'pytorch':
                 trace_model = torch.jit.trace(model, inputs)
                 mod, params = relay.frontend.from_pytorch(trace_model, [(input_name, inputs.shape)])
+            else:
+                raise NotImplementedError
 
-            use_tune = True
-            if use_tune:
-                """
-                python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key=orin
-                """
-                use_tvmc = False
-                if use_tvmc:
+            if args.tvm_data_precision!="fp32":
+                print("************************")
+                from tvm.driver.tvmc.transform import convert_to_mixed_precision
+                mod = convert_to_mixed_precision(
+                    mod,
+                    ops=None,
+                    calculation_type="float16",
+                    acc_type="float32" if args.tvm_data_precision == "mixed" else "float16",
+                )
+            tuning_records_dir = os.path.join(".tvm/",remote_device_name,args.tvm_backend,args.tvm_data_precision,"tuning_records")
+            if(os.path.exists(tuning_records_dir)==False):
+                os.makedirs(tuning_records_dir)
+            tuning_records_filename=name+"_"+args.tvm_tune_method+".json"
+            tuning_records = os.path.join(tuning_records_dir,tuning_records_filename)
+            if not args.tvm_only_upload:
+                if args.tvm_tune_method!="None":
                     from tvm.driver import tvmc
-                    model = tvmc.frontends.load_model('.onnx/fp32/'+name+'.onnx')
-                    target = 'llvm -mtriple=aarch64-linux-gnu'
-                    # from tvm import auto_scheduler
-                    # hardware_params = auto_scheduler.HardwareParams(num_cores=1, target=target)
+                    from tvm.driver.tvmc.model import TVMCModel
+                    # model = tvmc.frontends.load_model('.onnx/fp32/'+name+'.onnx')
+                    model = TVMCModel(mod,params)
                     tvmc.tune(
                         model,
-                        target=target, # Compilation target as string // Device to compile for
+                        target=str(target),
+                        # Compilation target as string // Device to compile for
                         hostname='127.0.0.1', # The IP address of an RPC tracker, used when benchmarking remotely.
                         port=9190, # The port of the RPC tracker to connect to. Defaults to 9090.
-                        rpc_key='orin', # The RPC tracker key of the target device. Required when rpc_tracker is provided
-                        tuning_records=".tvm/fp32/"+name+".autotvm.json",
+                        rpc_key=remote_device_name, # The RPC tracker key of the target device. Required when rpc_tracker is provided
+                        tuning_records=tuning_records,
                         number=10,
                         repeat=1,
+                        parallel=1,
                         early_stopping=100,
                         min_repeat_ms=0, # since we're tuning on a CPU, can be set to 0
                         timeout=10, # in seconds
-                        # enable_autoscheduler=True,
-                        trials=20,
+                        enable_autoscheduler=(args.tvm_tune_method == 'AutoScheduler'),
+                        trials=1000 if args.tvm_tune_method == 'AutoScheduler' else  5000,
+                        # mixed_precision = False if args.tvm_data_precision == "fp32" else True,
+                        # # mixed_precision_ops = ["nn.conv2d", "nn.dense"],
+                        # mixed_precision_calculation_type = "float16",
+                        # mixed_precision_acc_type = "float32" if args.tvm_data_precision == "mixed" else "float16",
                         # hardware_params=hardware_params,
                     )
-                else:
-                    from tvm import autotvm
-                    # create a TVM runner
-                    runner = autotvm.RPCRunner(
-                        key='orin',
-                        host='127.0.0.1',
-                        port=9190,
-                        number=10,
-                        repeat=1,
-                        timeout=10, # in seconds
-                        min_repeat_ms=0, # since we're tuning on a CPU, can be set to 0
-                        enable_cpu_cache_flush=True,
-                    )
 
-                    # begin by extracting the tasks from the onnx model
-                    target = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
-                    tasks = autotvm.task.extract_from_program(mod["main"], target=target, params=params)
-                    measure_option = autotvm.measure_option(
-                        builder=autotvm.LocalBuilder(build_func="default"), runner=runner
-                    )
-                    n_trial = 20
-
-                    from tvm.autotvm.tuner import XGBTuner
-                    # Tune the extracted tasks sequentially.
-                    for i, task in enumerate(tasks):
-                        prefix = "[Task %2d/%2d] " % (i + 1, len(tasks))
-                        tuner_obj = XGBTuner(task, loss_type="reg") # feature_type
-                        tuner_obj.tune(
-                            n_trial=min(n_trial, len(task.config_space)),
-                            early_stopping=100,
-                            measure_option=measure_option,
-                            callbacks=[
-                                autotvm.callback.progress_bar(n_trial, prefix=prefix),
-                                autotvm.callback.log_to_file('.tvm/fp32/'+name+'.autotvm.json'),
-                            ],
-                        )
-            else:
+            if not args.tvm_only_tune:
                 """
                 python -m tvm.exec.rpc_server --host 0.0.0.0 --port=9090
                 """
-                tvm_device = 'cpu'
-                if tvm_device == 'cpu':
-                    target = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
-                elif tvm_device == 'opencl':
-                    target = tvm.target.Target('opencl', host="llvm -mtriple=aarch64-linux-gnu")
+                # from tvm.autotvm.measure import request_remote
 
-                use_autotvm = False
-                use_auto_scheduler = False
-                if use_autotvm:
+                # target=tvm.target.Target(target)
+                if args.tvm_tune_method == 'AutoTVM':
                     from tvm import autotvm
-                    with autotvm.apply_history_best('.tvm/fp32/'+name+'.autotvm.json'):
+                    with autotvm.apply_history_best(tuning_records):
                         with tvm.transform.PassContext(opt_level=3, config={}):
                             built_lib = relay.build(mod, target=target, params=params)
-                elif use_auto_scheduler:
+                elif args.tvm_tune_method == 'AutoScheduler':
                     from tvm import auto_scheduler
-                    with auto_scheduler.ApplyHistoryBest('.tvm/fp32/'+name+'.ansor.json'):
+                    with auto_scheduler.ApplyHistoryBest(tuning_records):
                         with tvm.transform.PassContext(opt_level=3, config={"relay.backend.use_auto_scheduler": True}):
                             built_lib = relay.build(mod, target=target, params=params)
                 else:
                     with tvm.transform.PassContext(opt_level=3):
                         built_lib = relay.build(mod, target, params=params)
+                    #  built_lib = relay.build(mod, target, params=params)
 
-                if tvm_device == 'cpu':
-                    if not os.path.exists(".tvm/fp32"): os.makedirs(".tvm/fp32")
-                    local_lib_path = ".tvm/fp32/"+name+".tar"
-                elif tvm_device == 'opencl':
-                    if not os.path.exists(".tvm/opencl"): os.makedirs(".tvm/opencl")
-                    local_lib_path = ".tvm/opencl/"+name+".tar"
+
+
 
                 built_lib.export_library(local_lib_path)
 
-                host = "192.168.3.14"; port = 9090 # TODO: should modified by your machine IP!!!
-                remote = rpc.connect(host, port)
+                 # TODO
+                print(f"export success, find it in{remote_lib_path}")
 
-                # upload the library to remote device and load it
-                remote_lib_path = "/tmp/"+name+".tar"
+
+            if args.tvm_remote_run:
+                remote = request_remote(remote_device_name, "127.0.0.1", port=9190)
+
                 remote.upload(local_lib_path, remote_lib_path)
+                print(f"upload lib success, in {remote_lib_path }")
                 rlib = remote.load_module(remote_lib_path)
 
                 # create the remote runtime module
-                if tvm_device == 'cpu':
+                if args.tvm_backend == 'cpu':
                     dev = remote.cpu()
-                elif tvm_device == 'opencl':
+                elif args.tvm_backend == 'opencl':
                     dev = remote.cl()
 
                 module = graph_executor.GraphModule(rlib["default"](dev))
-                # set input data
                 module.set_input(input_name, tvm.nd.array(inputs.numpy()))
-                # run
                 module.run()
+                print(module.benchmark(dev, repeat=1))
+                print(f"build .so success, find it in {remote_lib_path }.so")
+            # rpc_process.kill()
 
         if not args.format or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
