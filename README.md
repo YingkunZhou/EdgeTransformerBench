@@ -1,6 +1,6 @@
 # EdgeTransformerPerf (ETBench)
 
-Edge/mobile CNN+Transformer hybrid CV (computer vision) DNN backbone inference benchmark
+Edge/mobile CNN+Transformer hybrid DNN backbone inference benchmark (currently only for computer vision task)
 
 we filter the model which satisfy one of the condition below:
 - #params > 15M (for FP32 model > 60M) which is too large for edge/mobile devices.
