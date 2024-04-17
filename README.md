@@ -1,4 +1,5 @@
-# EdgeTransformerPerf
+# EdgeTransformerPerf (ETBench)
+
 Edge/mobile CNN+Transformer hybrid CV (computer vision) DNN backbone inference benchmark
 
 we filter the model which satisfy one of the condition below:
