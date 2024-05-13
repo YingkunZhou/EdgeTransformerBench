@@ -131,7 +131,7 @@ if __name__ == '__main__':
         # local_lib_filename = name+"_"+args.tvm_tune_method+".tar"
         local_lib_filename = "_".join([name,args.tvm_backend ,args.tvm_data_precision,args.tvm_tune_method])+".tar"
         local_lib_path = os.path.join(local_lib_dir,local_lib_filename)
-        remote_lib_path = local_lib_filename
+        remote_lib_path = "/tmp/"+local_lib_filename
         # print(remote_lib_path)
         # if(remote.listdir(remote_lib_path)==False):
         #     remote.upload(local_lib_path,remote_lib_path)

@@ -68,7 +68,7 @@ Cflags: -I/opencv/install/include/opencv4
 ```
 </details>
 
-# ncnn
+# ncnn (commit id: 1012f851396d4d6e502e1f1836b6d997b31ed89f)
 
 <details>
 <summary>Linux</summary>
@@ -115,7 +115,7 @@ make install -j`nproc`
 
 </details>
 
-# mnn
+# mnn (commit id: d20f37fd7134127dde9201e74d38dc0c08d4a096)
 
 <details>
 <summary>Linux</summary>
@@ -362,7 +362,7 @@ cp -r ../include/tnn ../install/include
 ```
 </details>
 
-# paddle lite
+# paddle lite (commit id: 8795a4d3d8d209bd812dee95947a294ff017d63f)
 
 https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/demo_guides/opencl.md
 
@@ -436,7 +436,7 @@ build_android.sh: NUM_PROC=32
 
 </details>
 
-# tensorflow lite
+# tensorflow lite (commit id: 53c79c506b9032fa1311ff29ed90fbf1afcba204)
 
 python 3.10 conda install bazel
 
@@ -488,7 +488,7 @@ cp bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model_plus_flex install/b
 
 </details>
 
-## armnn
+## armnn (commit id: fbfa49eeb14c6cb94d47e3c770b0c168e818cf79)
 
 <details>
 <summary>Linux</summary>
@@ -665,7 +665,7 @@ cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
 
 </details>
 
-# onnxruntime
+# onnxruntime (commit id: 435e19953ea54115124fd637a67a87681a7fc8eb)
 
 <details>
 <summary>Linux</summary>
@@ -795,7 +795,7 @@ cp ../../../include/onnxruntime/core/providers/nnapi/nnapi_provider_factory.h in
 
 </details>
 
-# torch
+# torch (`torch-2.4.0.dev20240320-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl`)
 
 <details>
 <summary>Linux</summary>
@@ -1029,6 +1029,73 @@ index 78334c6..5484033 100644
 <details>
 <summary>Linux</summary>
 
+### build host server runtime (we use 13700K)
+
+- nnpack
+```bash
+git clone --recursive ​https://github.com/Maratyszcza/NNPACK.git
+cd NNPACK
+# Add PIC option in CFLAG and CXXFLAG to build NNPACK shared library
+sed -i "s|gnu99|gnu99 -fPIC|g" CMakeLists.txt
+sed -i "s|gnu++11|gnu++11 -fPIC|g" CMakeLists.txt
+mkdir build
+cd build
+cmake -G Ninja -D BUILD_SHARED_LIBS=ON .. -D CMAKE_INSTALL_PREFIX=$PWD/../install -D CMAKE_INSTALL_LIBDIR=lib
+ninja; ninja install
+```
+
+- tvm (version: v0.14.0)
+```bash
+conda create -n tvm_py39 python=3.9
+conda activate tvm_py39
+git clone --recursive https://github.com/apache/tvm tvm
+mkdir build
+cd build
+export NNPACK_PATH=<location dir of nnpack>/NNPACK/install
+cp ../cmake/config.cmake .
+sed -i 's/set(USE_CUDA OFF)/set(USE_CUDA ON)/' config.cmake
+sed -i 's/set(USE_LLVM OFF)/set(USE_LLVM ON)/' config.cmake
+sed -i 's/set(USE_NNPACK OFF)/set(USE_NNPACK ON)/' config.cmake
+cmake .. -G Ninja -D NNPACK_PATH=$NNPACK_PATH
+ninja
+```
+
+### begin to compile and tune models
+
+```bash
+export TVM_HOME=<...>
+export YTHONPATH=$TVM_HOME/python
+python -m tvm.exec.rpc_tracker --host=0.0.0.0 --port=9190
+###------------------------setting in remote edge devices
+export TVM_NUM_THREADS=1
+export PYTHONPATH=~/work/tvm/python
+taskset -c 5 python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key=<the device name like:orpi5b>
+###------------------------query in host server
+python -m tvm.exec.query_rpc_tracker --host=0.0.0.0  --port 9190
+```
+
+```python
+dev=["orpi5b", "m1", "vim3l"]
+model=['efficientformerv2_s0', 'SwiftFormer_XS', 'edgenext_xx_small', 'mobilevitv2_050', 'mobilevit_xx_small', 'LeViT_128S']
+data_precision=["fp16", "fp32"]
+tune_method=["AutoTVM","AutoScheduler", "None"]:
+backend=["cpu", "opencl", "vulkan"]:
+cmd = f"python3 python/convert.py --tvm_dev {dev} --only-convert {model} --tvm_data_precision {data_precision} --tvm_tune_method {tune_method} --tvm_backend {backend}"
+import subprocess
+subprocess.run(cmd, shell=True)
+```
+
+### begin to upload and test models
+
+- upload tvm tar.so shared lib to remote edge devices and do initial benchmarking use the function tvm provided
+
+```python
+# the seperate parameters keep the same as compiling and tuning stage
+cmd = f"python3 python/tvm-perf.py --tvm_dev {dev} --only-test {model} --tvm_data_precision {data_precision} --tvm_tune_method {tune_method} --tvm_backend {backend}"
+```
+
+build device client runtime
+
 ```bash
 git clone --recursive https://github.com/apache/tvm tvm
 cd tvm
@@ -1052,3 +1119,34 @@ tar czf tvm.tar.gz tvm/install
 ```
 
 </details>
+
+# TensorRT
+
+- TensorRT-8.5.2.2.Ubuntu-20.04.aarch64-gnu.cuda-11.8.cudnn8.6.tar.gz
+```bash
+sudo apt-cache show nvidia-jetpack
+Package: nvidia-jetpack
+Version: 5.1-b147
+Architecture: arm64
+Maintainer: NVIDIA Corporation
+Installed-Size: 194
+Depends: nvidia-jetpack-runtime (= 5.1-b147), nvidia-jetpack-dev (= 5.1-b147)
+Homepage: http://developer.nvidia.com/jetson
+Priority: standard
+Section: metapackages
+Filename: pool/main/n/nvidia-jetpack/nvidia-jetpack_5.1-b147_arm64.deb
+
+cat /etc/nv_tegra_release
+# R35 (release), REVISION: 2.1
+```
+
+# CoreML
+
+- MacOS==14.1
+- torch=2.2.0
+- coremltools==7.1
+
+# CANN
+
+- Ascend-cann-toolkit_8.0.RC1.alpha001
+- opiaipro_ubuntu22.04_desktop_aarch64_20240227.img.xz

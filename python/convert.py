@@ -287,8 +287,7 @@ if __name__ == '__main__':
 
             remote_device_name=args.tvm_dev
             remote_device=find_device_by_name(remote_device_name)
-            # remote = request_remote(remote_device_name, "127.0.0.1", port=9190)
-            # print(remote.cl().exist)
+
             print(remote_device_name)
             local_lib_dir = os.path.join(".tvm",remote_device_name,"lib")
             if(os.path.exists(local_lib_dir)==False):
@@ -338,6 +337,11 @@ if __name__ == '__main__':
                     from tvm.driver.tvmc.model import TVMCModel
                     # model = tvmc.frontends.load_model('.onnx/fp32/'+name+'.onnx')
                     model = TVMCModel(mod,params)
+                    trials = 15000 if args.tvm_tune_method == 'AutoScheduler' else 50000
+                    min_repeat_ms=10
+                    if(args.tvm_backend=="cpu"):
+                        trials = trials*10
+                        min_repeat_ms=0
                     tvmc.tune(
                         model,
                         target=str(target),
@@ -349,16 +353,11 @@ if __name__ == '__main__':
                         number=10,
                         repeat=1,
                         parallel=1,
-                        early_stopping=100,
-                        min_repeat_ms=0, # since we're tuning on a CPU, can be set to 0
+                        early_stopping=1000,
+                        min_repeat_ms=min_repeat_ms, # since we're tuning on a CPU, can be set to 0
                         timeout=10, # in seconds
                         enable_autoscheduler=(args.tvm_tune_method == 'AutoScheduler'),
-                        trials=1000 if args.tvm_tune_method == 'AutoScheduler' else  5000,
-                        # mixed_precision = False if args.tvm_data_precision == "fp32" else True,
-                        # # mixed_precision_ops = ["nn.conv2d", "nn.dense"],
-                        # mixed_precision_calculation_type = "float16",
-                        # mixed_precision_acc_type = "float32" if args.tvm_data_precision == "mixed" else "float16",
-                        # hardware_params=hardware_params,
+                        trials=trials,
                     )
 
             if not args.tvm_only_tune:
@@ -389,7 +388,7 @@ if __name__ == '__main__':
                 built_lib.export_library(local_lib_path)
 
                  # TODO
-                print(f"export success, find it in{remote_lib_path}")
+                print(f"export success, find it in{local_lib_path}")
 
 
             if args.tvm_remote_run:
