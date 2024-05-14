@@ -1,6 +1,13 @@
 const int WARMUP_SEC = 5;
 const int TEST_SEC = 20;
 
+#if defined(USE_PERF)
+#include <unistd.h>
+#include <linux/perf_event.h>
+#include <asm/unistd.h>
+#include "arm_pmuv3.h"
+#endif
+
 #if defined(USE_NCNN)
 void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
 #endif
@@ -183,10 +190,53 @@ void benchmark(
     return;
 #endif
 
+#if defined(USE_PERF)
+    struct perf_event_attr perfcnt0;
+    struct perf_event_attr perfcnt1;
+    struct perf_event_attr perfcnt2;
+    struct perf_event_attr perfcnt3;
+    setlocale(LC_NUMERIC, "");
+    memset(&perfcnt0, 0, sizeof(struct perf_event_attr));
+    perfcnt0.type = PERF_TYPE_RAW;
+    perfcnt0.size = sizeof(struct perf_event_attr);
+    perfcnt0.config = ARMV8_PMUV3_PERFCTR_INST_RETIRED;
+    perfcnt0.pinned = 1;
+    perfcnt0.exclude_kernel = 1;
+    perfcnt0.inherit = 1;
+    memset(&perfcnt1, 0, sizeof(struct perf_event_attr));
+    perfcnt1.type = PERF_TYPE_RAW;
+    perfcnt1.size = sizeof(struct perf_event_attr);
+    perfcnt1.config = ARMV8_AMU_PERFCTR_STALL_BACKEND_MEM;
+    perfcnt1.pinned = 1;
+    perfcnt1.exclude_kernel = 1;
+    perfcnt1.inherit = 1;
+    memset(&perfcnt2, 0, sizeof(struct perf_event_attr));
+    perfcnt2.type = PERF_TYPE_RAW;
+    perfcnt2.size = sizeof(struct perf_event_attr);
+    perfcnt2.config = ARMV8_PMUV3_PERFCTR_L1D_CACHE_REFILL;
+    perfcnt2.pinned = 1;
+    perfcnt2.exclude_kernel = 1;
+    perfcnt2.inherit = 1;
+    memset(&perfcnt3, 0, sizeof(struct perf_event_attr));
+    perfcnt3.type = PERF_TYPE_RAW;
+    perfcnt3.size = sizeof(struct perf_event_attr);
+    perfcnt3.config = ARMV8_PMUV3_PERFCTR_BUS_ACCESS;
+    perfcnt3.pinned = 1;
+    perfcnt3.exclude_kernel = 1;
+    perfcnt3.inherit = 1;
+    int fd_0 = syscall(__NR_perf_event_open, &perfcnt0, 0, -1, -1, 0);
+    int fd_1 = syscall(__NR_perf_event_open, &perfcnt1, 0, -1, -1, 0);
+    int fd_2 = syscall(__NR_perf_event_open, &perfcnt2, 0, -1, -1, 0);
+    int fd_3 = syscall(__NR_perf_event_open, &perfcnt3, 0, -1, -1, 0);
+#endif
     /// testup
     std::vector<float> time_list = {};
     float time_tot = 0;
+#if defined(USE_PERF)
+    for (int i=0; i < 10; i++) {
+#else
     while (time_tot < TEST_SEC) {
+#endif
         start = high_resolution_clock::now();
 #if defined(USE_NCNN)
         ncnn::Extractor ex = net.create_extractor();
@@ -237,6 +287,20 @@ void benchmark(
         time_tot += elapse.count() / 1000000.0;
     }
 
+#if defined(USE_PERF)
+    unsigned long count[4] = {0,0,0,0};
+    read(fd_0, &count[0], sizeof(unsigned long));
+    read(fd_1, &count[1], sizeof(unsigned long));
+    read(fd_2, &count[2], sizeof(unsigned long));
+    read(fd_3, &count[3], sizeof(unsigned long));
+    close(fd_0);
+    close(fd_1);
+    close(fd_2);
+    close(fd_3);
+    std::cout << "instructions= " << count[0] << "/stall= "<< count[1] << " == " << count[0]*1.0/count[1] << std::endl;
+    std::cout << "instructions= " << count[0] << "/miss= "<< count[2] << " == " << count[0]*1.0/count[2] << std::endl;
+    std::cout << "instructions= " << count[0] << "/memory= "<< count[3] << " == " << count[0]*1.0/count[3] << std::endl;
+#else
     float time_max = *std::max_element(time_list.begin(), time_list.end());
     float time_min = *std::min_element(time_list.begin(), time_list.end());
     float time_mean = time_tot * 1e3 / time_list.size();
@@ -249,4 +313,5 @@ void benchmark(
     std::cout << " max ="   << std::setw(7) << time_max  << "ms";
     std::cout << " median ="<< std::setw(7) << time_median<<"ms";
     std::cout << " mean ="  << std::setw(7) << time_mean << "ms" << std::endl;
+#endif
 }
