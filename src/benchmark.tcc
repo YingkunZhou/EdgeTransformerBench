@@ -119,7 +119,11 @@ void benchmark(
     auto start = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
     /// warmup
+#if defined(USE_PERF)
+    for (int i=0; i<10; i++) {
+#else
     while (duration_cast<seconds>(stop - start).count() < WARMUP_SEC) {
+#endif
 #if defined(USE_NCNN)
         ncnn::Extractor ex = net.create_extractor();
         ex.input(args.input_name, input_tensor);
@@ -209,43 +213,83 @@ void benchmark(
 #endif
 
 #if defined(USE_PERF)
-    struct perf_event_attr pe0, pe1, pe2, pe3;
-    int fd0, fd1, fd2, fd3;
+    struct perf_event_attr pe0, pe1, pe2, pe3, pe4, pe5, pe6;
+    int fd0, fd1, fd2, fd3, fd4, fd5, fd6;
 
     memset(&pe0, 0, sizeof(struct perf_event_attr));
-    pe0.type = PERF_TYPE_RAW;
-    pe0.size = sizeof(struct perf_event_attr);
-    pe0.config = ARMV8_PMUV3_PERFCTR_INST_RETIRED;
-    pe0.disabled = 1; pe0.pinned = 1; pe0.exclude_kernel = 1; pe0.exclude_hv = 1;
+    pe0.type = PERF_TYPE_RAW; pe0.size = sizeof(struct perf_event_attr);
+    pe0.disabled = 1; pe0.exclude_kernel = 1; pe0.exclude_hv = 1;
 
     memset(&pe1, 0, sizeof(struct perf_event_attr));
-    pe1.type = PERF_TYPE_RAW;
-    pe1.size = sizeof(struct perf_event_attr);
-    pe1.config = ARMV8_PMUV3_PERFCTR_LD_RETIRED;
-    pe1.disabled = 1; pe1.pinned = 1; pe1.exclude_kernel = 1; pe1.exclude_hv = 1;
+    pe1.type = PERF_TYPE_RAW; pe1.size = sizeof(struct perf_event_attr);
+    pe1.disabled = 1; pe1.exclude_kernel = 1; pe1.exclude_hv = 1;
 
     memset(&pe2, 0, sizeof(struct perf_event_attr));
-    pe2.type = PERF_TYPE_RAW;
-    pe2.size = sizeof(struct perf_event_attr);
-    pe2.config = ARMV8_PMUV3_PERFCTR_L1D_CACHE_REFILL;
-    pe2.disabled = 1; pe2.pinned = 1; pe2.exclude_kernel = 1; pe2.exclude_hv = 1;
+    pe2.type = PERF_TYPE_RAW; pe2.size = sizeof(struct perf_event_attr);
+    pe2.disabled = 1; pe2.exclude_kernel = 1; pe2.exclude_hv = 1;
 
     memset(&pe3, 0, sizeof(struct perf_event_attr));
-    pe3.type = PERF_TYPE_RAW;
-    pe3.size = sizeof(struct perf_event_attr);
-    pe3.config = ARMV8_PMUV3_PERFCTR_BUS_ACCESS;
-    pe3.disabled = 1; pe3.pinned = 1; pe3.exclude_kernel = 1; pe3.exclude_hv = 1;
+    pe3.type = PERF_TYPE_RAW; pe3.size = sizeof(struct perf_event_attr);
+    pe3.disabled = 1; pe3.exclude_kernel = 1; pe3.exclude_hv = 1;
+
+    memset(&pe4, 0, sizeof(struct perf_event_attr));
+    pe4.type = PERF_TYPE_RAW; pe4.size = sizeof(struct perf_event_attr);
+    pe4.disabled = 1; pe4.exclude_kernel = 1; pe4.exclude_hv = 1;
+
+    memset(&pe5, 0, sizeof(struct perf_event_attr));
+    pe5.type = PERF_TYPE_RAW; pe5.size = sizeof(struct perf_event_attr);
+    pe5.disabled = 1; pe5.exclude_kernel = 1; pe5.exclude_hv = 1;
+
+    memset(&pe6, 0, sizeof(struct perf_event_attr));
+    pe6.type = PERF_TYPE_RAW; pe6.size = sizeof(struct perf_event_attr);
+    pe6.disabled = 1; pe6.exclude_kernel = 1; pe6.exclude_hv = 1;
+
+    // for microarchitecture-dependent
+    // 1. backend_stalled_cycles
+    // 2. backend_stalled_mem
+    // 3. L1D Cache MPKI
+    // 4. L2 Cache MPKI
+    // 5. LL Cache Read MPKI
+
+    // for microarchitecture-independent
+    // 1. load_percentage
+    // 2. store_percentage
+    // 3. integer_dp_percentage
+    // 4. simd_percentage
+    // 5. branch_percentage
+    pe0.config = ARMV8_PMUV3_PERFCTR_INST_RETIRED;
+#if 1
+    pe1.config = ARMV8_PMUV3_PERFCTR_CPU_CYCLES;
+    pe2.config = ARMV8_PMUV3_PERFCTR_STALL_BACKEND;
+    pe3.config = ARMV8_AMU_PERFCTR_STALL_BACKEND_MEM;
+    pe4.config = ARMV8_PMUV3_PERFCTR_L1D_CACHE_REFILL;
+    pe5.config = ARMV8_PMUV3_PERFCTR_L2D_CACHE_REFILL;
+    pe6.config = ARMV8_PMUV3_PERFCTR_LL_CACHE_MISS_RD;
+#else
+    pe1.config = ARMV8_IMPDEF_PERFCTR_LD_SPEC;
+    pe2.config = ARMV8_IMPDEF_PERFCTR_ST_SPEC;
+    pe3.config = ARMV8_IMPDEF_PERFCTR_DP_SPEC;
+    pe4.config = ARMV8_IMPDEF_PERFCTR_ASE_SPEC;
+    pe5.config = ARMV8_IMPDEF_PERFCTR_BR_IMMED_SPEC;
+    pe6.config = ARMV8_IMPDEF_PERFCTR_BR_INDIRECT_SPEC;
+#endif
 
     // Create the events
     fd0 = perf_event_open(&pe0, 0, -1, -1, 0);
     fd1 = perf_event_open(&pe1, 0, -1, -1, 0);
     fd2 = perf_event_open(&pe2, 0, -1, -1, 0);
     fd3 = perf_event_open(&pe3, 0, -1, -1, 0);
+    fd4 = perf_event_open(&pe4, 0, -1, -1, 0);
+    fd5 = perf_event_open(&pe5, 0, -1, -1, 0);
+    fd6 = perf_event_open(&pe6, 0, -1, -1, 0);
     //Reset counters and start counting
     ioctl(fd0, PERF_EVENT_IOC_RESET, 0); ioctl(fd0, PERF_EVENT_IOC_ENABLE, 0);
     ioctl(fd1, PERF_EVENT_IOC_RESET, 0); ioctl(fd1, PERF_EVENT_IOC_ENABLE, 0);
     ioctl(fd2, PERF_EVENT_IOC_RESET, 0); ioctl(fd2, PERF_EVENT_IOC_ENABLE, 0);
     ioctl(fd3, PERF_EVENT_IOC_RESET, 0); ioctl(fd3, PERF_EVENT_IOC_ENABLE, 0);
+    ioctl(fd4, PERF_EVENT_IOC_RESET, 0); ioctl(fd4, PERF_EVENT_IOC_ENABLE, 0);
+    ioctl(fd5, PERF_EVENT_IOC_RESET, 0); ioctl(fd5, PERF_EVENT_IOC_ENABLE, 0);
+    ioctl(fd6, PERF_EVENT_IOC_RESET, 0); ioctl(fd6, PERF_EVENT_IOC_ENABLE, 0);
 #endif
     /// testup
     std::vector<float> time_list = {};
@@ -311,17 +355,34 @@ void benchmark(
     ioctl(fd1, PERF_EVENT_IOC_DISABLE, 0);
     ioctl(fd2, PERF_EVENT_IOC_DISABLE, 0);
     ioctl(fd3, PERF_EVENT_IOC_DISABLE, 0);
+    ioctl(fd4, PERF_EVENT_IOC_DISABLE, 0);
+    ioctl(fd5, PERF_EVENT_IOC_DISABLE, 0);
+    ioctl(fd6, PERF_EVENT_IOC_DISABLE, 0);
     // Read and print result
-    uint64_t count[4];
+    uint64_t count[7];
     read(fd0, &count[0], sizeof(count[0]));
     read(fd1, &count[1], sizeof(count[1]));
     read(fd2, &count[2], sizeof(count[2]));
     read(fd3, &count[3], sizeof(count[3]));
+    read(fd4, &count[4], sizeof(count[4]));
+    read(fd5, &count[5], sizeof(count[5]));
+    read(fd6, &count[6], sizeof(count[6]));
     // Clean up file descriptor
-    close(fd0); close(fd1); close(fd2); close(fd3);
-    std::cout << "insn= " << count[0] << "/stall=  "<< count[1] << " == " << count[0]*1.0/count[1] << std::endl;
-    std::cout << "insn= " << count[0] << "/miss=   "<< count[2] << " == " << count[0]*1.0/count[2] << std::endl;
-    std::cout << "insn= " << count[0] << "/memory= "<< count[3] << " == " << count[0]*1.0/count[3] << std::endl;
+    close(fd0); close(fd1); close(fd2); close(fd3); close(fd4); close(fd5); close(fd6);
+#if 1
+    std::cout << "insn= " << count[0]/10 << "; cyc= " << count[1]/10 << std::endl;
+    std::cout << "backend_stalled_cycles= " << count[2]*1.0/count[1]*100;
+    std::cout << "; backend_stalled_mem= "  << count[3]*1.0/count[1]*100;
+    std::cout << "; L1D Cache MPKI= "       << count[4]*1.0/count[0]*1000;
+    std::cout << "; L2  Cache MPKI= "       << count[5]*1.0/count[0]*1000;
+    std::cout << "; LL  Cache Read MPKI= "  << count[6]*1.0/count[0]*1000 << std::endl;
+#else
+    std::cout << "load_percentage= "         << count[1]*1.0/count[0]*100;
+    std::cout << "; store_percentage= "      << count[2]*1.0/count[0]*100;
+    std::cout << "; integer_dp_percentage= " << count[3]*1.0/count[0]*100;
+    std::cout << "; simd_percentage= "       << count[4]*1.0/count[0]*100;
+    std::cout << "; branch_percentage= " << (count[5]+count[6])*1.0/count[0]*100 << std::endl;
+#endif
 #else
     float time_max = *std::max_element(time_list.begin(), time_list.end());
     float time_min = *std::min_element(time_list.begin(), time_list.end());

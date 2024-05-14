@@ -6,6 +6,7 @@
 #ifndef __PERF_ARM_PMUV3_H
 #define __PERF_ARM_PMUV3_H
 
+//https://gitlab.arm.com/telemetry-solution/telemetry-solution/-/blob/main/data/pmu/cpu/neoverse/neoverse-n1.json
 #define ARMV8_PMU_MAX_COUNTERS	32
 #define ARMV8_PMU_COUNTER_MASK	(ARMV8_PMU_MAX_COUNTERS - 1)
 
@@ -117,6 +118,7 @@
 #define ARMV8_MTE_PERFCTR_MEM_ACCESS_CHECKED_RD			0x4025
 #define ARMV8_MTE_PERFCTR_MEM_ACCESS_CHECKED_WR			0x4026
 
+//https://github.com/torvalds/linux/blob/master/tools/perf/pmu-events/arch/arm64/recommended.json
 /* ARMv8 recommended implementation defined event types */
 #define ARMV8_IMPDEF_PERFCTR_L1D_CACHE_RD			0x0040
 #define ARMV8_IMPDEF_PERFCTR_L1D_CACHE_WR			0x0041
