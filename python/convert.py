@@ -29,6 +29,7 @@ torch.autograd.set_grad_enabled(False)
 def get_args_parser():
     parser = argparse.ArgumentParser(
         'EdgeTransformerPerf model format conversion script', add_help=False)
+    parser.add_argument('--get-metrics', action='store_true', default=False)
     parser.add_argument('--batch-size', default=1, type=int)
     parser.add_argument('--opset-version', default=None, type=int)
     # by: ln -sf ../.ncnn/calibration .
@@ -154,6 +155,33 @@ if __name__ == '__main__':
             1, #args.batch_size, TODO: here we only support single batch size benchmarking
             channels, resolution, resolution,
         )
+
+        if args.get_metrics:
+            from fvcore.nn import ActivationCountAnalysis, FlopCountAnalysis
+            # 'conv', 'matmul', 'linear'
+            flops = FlopCountAnalysis(model, inputs)
+            activ = ActivationCountAnalysis(model, inputs)
+            flops_total = flops.total()
+            activ_total = activ.total()
+            flops_ops = flops.by_operator()
+            activ_ops = activ.by_operator()
+            ops = 0; kp=''
+            for kk in list(flops.by_module_and_operator().keys()):
+                if kp not in kk: ops+=1
+                kp = kk
+            total_ops = flops.unsupported_ops()
+            del total_ops['aten::sub'], total_ops['aten::rsub'], total_ops['aten::add'], total_ops['aten::mul'], total_ops['aten::add_'], total_ops['aten::mul_']
+            metrics = [0 for _ in range(8)]
+            metrics[0] = flops_total/activ_total
+            metrics[1] = sum(total_ops.values())/ops
+            metrics[2] = flops_ops['conv']  /flops_total*100
+            metrics[3] = flops_ops['matmul']/flops_total*100
+            metrics[4] = flops_ops['linear']/flops_total*100
+            metrics[5] = activ_ops['conv']  /activ_total*100
+            metrics[6] = activ_ops['matmul']/activ_total*100
+            metrics[7] = activ_ops['linear']/activ_total*100
+            print(metrics)
+            continue
 
         if not args.format or args.format == 'onnx':
             if not os.path.exists(".onnx/fp32"):
