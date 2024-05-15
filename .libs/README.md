@@ -1060,41 +1060,7 @@ cmake .. -G Ninja -D NNPACK_PATH=$NNPACK_PATH
 ninja
 ```
 
-### begin to compile and tune models
-
-```bash
-export TVM_HOME=<...>
-export YTHONPATH=$TVM_HOME/python
-python -m tvm.exec.rpc_tracker --host=0.0.0.0 --port=9190
-###------------------------setting in remote edge devices
-export TVM_NUM_THREADS=1
-export PYTHONPATH=~/work/tvm/python
-taskset -c 5 python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key=<the device name like:orpi5b>
-###------------------------query in host server
-python -m tvm.exec.query_rpc_tracker --host=0.0.0.0  --port 9190
-```
-
-```python
-dev=["orpi5b", "m1", "vim3l"]
-model=['efficientformerv2_s0', 'SwiftFormer_XS', 'edgenext_xx_small', 'mobilevitv2_050', 'mobilevit_xx_small', 'LeViT_128S']
-data_precision=["fp16", "fp32"]
-tune_method=["AutoTVM","AutoScheduler", "None"]:
-backend=["cpu", "opencl", "vulkan"]:
-cmd = f"python3 python/convert.py --tvm_dev {dev} --only-convert {model} --tvm_data_precision {data_precision} --tvm_tune_method {tune_method} --tvm_backend {backend}"
-import subprocess
-subprocess.run(cmd, shell=True)
-```
-
-### begin to upload and test models
-
-- upload tvm tar.so shared lib to remote edge devices and do initial benchmarking use the function tvm provided
-
-```python
-# the seperate parameters keep the same as compiling and tuning stage
-cmd = f"python3 python/tvm-perf.py --tvm_dev {dev} --only-test {model} --tvm_data_precision {data_precision} --tvm_tune_method {tune_method} --tvm_backend {backend}"
-```
-
-build device client runtime
+- build device client runtime
 
 ```bash
 git clone --recursive https://github.com/apache/tvm tvm
@@ -1116,6 +1082,41 @@ cp ../build/libtvm_runtime.so lib
 cd ../..
 tar czf tvm.tar.gz tvm/install
 # and then copy tvm.tar.gz the the test machine EdgeTransformerPerf/.libs folder, and `tar xf` to set the tvm runtime
+```
+
+### begin to compile and tune models
+
+```bash
+export TVM_HOME=<tvm path>
+export YTHONPATH=$TVM_HOME/python
+python -m tvm.exec.rpc_tracker --host=0.0.0.0 --port=9190
+###------------------------setting in remote edge devices
+export TVM_NUM_THREADS=1
+export PYTHONPATH=<tvm path>/python
+taskset -c 5 python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key=<the device name like:orpi5b>
+###------------------------query in host server
+python -m tvm.exec.query_rpc_tracker --host=0.0.0.0  --port 9190
+```
+
+```python
+for dev in ["orpi5b", "m1", "vim3l"]
+for model in ['efficientformerv2_s0', 'SwiftFormer_XS', 'edgenext_xx_small', 'mobilevitv2_050', 'mobilevit_xx_small', 'LeViT_128S', 'resnet50', 'mobilenet', 'tf_efficientnet_b0']
+for data_precision in ["fp16", "fp32"]
+for tune_method in ["AutoTVM","AutoScheduler", "None"]:
+for backend in ["cpu", "opencl", "vulkan"]:
+# you may choose dev="orpi5b", model='resnet50', tune_method="AutoTVM", backend="cpu"
+cmd = f"python3 python/convert.py --tvm_dev {dev} --only-convert {model} --tvm_data_precision {data_precision} --tvm_tune_method {tune_method} --tvm_backend {backend}"
+import subprocess
+subprocess.run(cmd, shell=True)
+```
+
+### begin to upload and test models
+
+- upload tvm tar.so shared lib to remote edge devices and do initial benchmarking use the function tvm provided
+
+```python
+# the seperate parameters keep the same as compiling and tuning stage
+cmd = f"python3 python/tvm-perf.py --tvm_dev {dev} --only-test {model} --tvm_data_precision {data_precision} --tvm_tune_method {tune_method} --tvm_backend {backend}"
 ```
 
 </details>
