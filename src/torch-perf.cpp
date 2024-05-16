@@ -155,7 +155,6 @@ int main(int argc, char* argv[])
             continue;
         }
 
-        args.input_size = model.second;
         std::string model_file;
         if (backend == 'n') {
           model_file = ".pt/" + args.model + ".n.ptl";
