@@ -9,6 +9,7 @@ import coremltools as ct
 def get_args_parser():
     parser = argparse.ArgumentParser(
         'EdgeTransformerPerf tflite_runtime evaluation and benchmark script', add_help=False)
+    parser.add_argument('--extern-model', default=None, type=str, help='extern model name;resolution')
     parser.add_argument('--batch-size', default=1, type=int)
     # Dataset parameters
     parser.add_argument('--validation', action='store_true', default=False)
@@ -124,7 +125,7 @@ if __name__ == '__main__':
         ('tf_efficientnetv2_b2' , 260, False),
         # ('tf_efficientnetv2_b3' , 300, False),
     ]:
-        if args.only_test and args.only_test not in name and args.only_test != 'ALL':
+        if args.only_test and args.only_test not in name and args.only_test != 'ALL' and not args.extern_model:
             continue
 
         print(f"Load coreml model: {name}")
@@ -152,6 +153,10 @@ if __name__ == '__main__':
         config = cto.OptimizationConfig(global_config=op_config)
         # mlmodel = cto.palettize_weights(mlmodel, config)
 
+        if args.extern_model:
+            name = args.extern_model.split(',')[0]
+            resolution = int(args.extern_model.split(',')[1])
+
         args.model = name
         args.input_size = resolution
         args.usi_eval = usi_eval
@@ -170,3 +175,5 @@ if __name__ == '__main__':
             evaluate(data_loader_val, mlmodel, args)
         else:
             benchmark(mlmodel, load_image(args))
+
+        if args.extern_model: break

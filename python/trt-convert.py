@@ -120,8 +120,12 @@ if __name__ == '__main__':
         ('tf_efficientnetv2_b2' , 260, False),
         ('tf_efficientnetv2_b3' , 300, False),
     ]:
-        if args.only_convert and args.only_convert not in name:
+        if args.only_convert and args.only_convert not in name and not args.extern_model:
             continue
+
+        if args.extern_model:
+            name = args.extern_model.split(',')[0]
+            resolution = int(args.extern_model.split(',')[1])
 
         args.usi_eval = usi_eval
         args.model = name
@@ -186,3 +190,5 @@ if __name__ == '__main__':
         engine_bytes = builder.build_serialized_network(network, config)
         with open('.onnx/'+args.trt_dev+'-'+args.format+'/'+args.model+'.engine', 'wb') as f:
             f.write(engine_bytes)
+
+        if args.extern_model: break

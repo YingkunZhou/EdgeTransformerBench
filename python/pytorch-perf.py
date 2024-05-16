@@ -81,6 +81,7 @@ def benchmarking_cuda(model, inputs, args):
 def get_args_parser():
     parser = argparse.ArgumentParser(
         'EdgeTransformerPerf evaluation and benchmark script', add_help=False)
+    parser.add_argument('--extern-model', default=None, type=str, help='extern model name;resolution')
     parser.add_argument('--batch-size', default=1, type=int)
     # Model parameters
     parser.set_defaults(pretrained=True)
@@ -180,8 +181,12 @@ if __name__ == '__main__':
             ('tf_efficientnetv2_b2' , 260, True, ""),
             # ('tf_efficientnetv2_b3' , 300, True, ""),
         ]:
-            if args.only_test and args.only_test not in name and args.only_test != 'ALL':
+            if args.only_test and args.only_test not in name and args.only_test != 'ALL' and not args.extern_model:
                 continue
+
+            if args.extern_model:
+                name = args.extern_model.split(',')[0]
+                resolution = int(args.extern_model.split(',')[1])
 
             args.usi_eval = False
             args.model = name
@@ -254,7 +259,6 @@ if __name__ == '__main__':
 
                 quant_model = convert_pt2e(prepared_model)
                 quant_model = torch.compile(quant_model)
-
             if args.use_script:
                 script_model = torch.jit.script(model)
             if args.use_trace:
@@ -337,3 +341,5 @@ if __name__ == '__main__':
                     benchmarking(mobile_model, inputs, args)
                 if args.use_trt:
                     benchmarking(trt_model, inputs, args)
+
+            if args.extern_model: break

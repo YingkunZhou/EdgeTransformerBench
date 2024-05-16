@@ -30,6 +30,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser(
         'EdgeTransformerPerf model format conversion script', add_help=False)
     parser.add_argument('--get-metrics', action='store_true', default=False)
+    parser.add_argument('--extern-model', default=None, type=str, help='extern model name;resolution')
     parser.add_argument('--batch-size', default=1, type=int)
     parser.add_argument('--opset-version', default=None, type=int)
     # by: ln -sf ../.ncnn/calibration .
@@ -96,9 +97,14 @@ if __name__ == '__main__':
         ('tf_efficientnetv2_b2' , 260, None),
         ('tf_efficientnetv2_b3' , 300, None),
     ]:
-        if args.only_convert and args.only_convert not in name:
+        if args.only_convert and args.only_convert not in name and not args.extern_model:
             continue
         args.usi_eval = False
+
+        if args.extern_model:
+            name = args.extern_model.split(',')[0]
+            resolution = int(args.extern_model.split(',')[1])
+
         args.model = name
         args.input_size = resolution
 
@@ -181,9 +187,8 @@ if __name__ == '__main__':
             metrics[6] = activ_ops['matmul']/activ_total*100
             metrics[7] = activ_ops['linear']/activ_total*100
             print(metrics)
-            continue
 
-        if not args.format or args.format == 'onnx':
+        if args.format == 'ALL' or args.format == 'onnx':
             if not os.path.exists(".onnx/fp32"):
                 os.makedirs(".onnx/fp32")
             torch.onnx.export(
@@ -196,7 +201,8 @@ if __name__ == '__main__':
                 do_constant_folding=True,
                 opset_version=args.opset_version
             )
-        if not args.format or args.format == 'trt':
+
+        if args.format == 'ALL' or args.format == 'trt':
             trace_model = torch.jit.trace(model, inputs).cuda()
 
             import torch_tensorrt
@@ -245,8 +251,7 @@ if __name__ == '__main__':
                 trt_fp16 = torch_tensorrt.compile(trace_model, **compile_spec)
                 torch.jit.save(trt_fp16, ".pt/"+dev+"-fp16/"+name+'.ts')
 
-
-        if not args.format or args.format == 'coreml':
+        if args.format == 'ALL' or args.format == 'coreml':
             if not os.path.exists(".coreml"):
                 os.makedirs(".coreml")
             if not os.path.exists(".coreml/int8"):
@@ -272,7 +277,7 @@ if __name__ == '__main__':
             compressed_8_bit_model = cto.linear_quantize_weights(model, config=config)
             compressed_8_bit_model.save(".coreml/int8/"+name+".mlpackage")
 
-        if not args.format or args.format == 'cann':
+        if args.format == 'ALL' or args.format == 'cann':
             # pip install numpy scipy attrs psutil decorator
             # pip install onnx onnxruntime
             opt_shape = ['--input_shape', 'input:1,3,{},{}'.format(resolution,resolution)]
@@ -297,7 +302,7 @@ if __name__ == '__main__':
             else:
                 subprocess.run(convert_cmd + opt_model + ['--output', '.cann/fp16/'+args.model])
 
-        if not args.format or args.format == 'tvm':
+        if args.format == 'ALL' or args.format == 'tvm':
             """
                 python -m tvm.exec.rpc_server --tracker=192.168.3.170:9190 --key={remote_device_name}
             """
@@ -439,7 +444,7 @@ if __name__ == '__main__':
                 print(f"build .so success, find it in {remote_lib_path }.so")
             # rpc_process.kill()
 
-        if not args.format or args.format == 'pt':
+        if args.format == 'ALL' or args.format == 'pt':
             if not os.path.exists(".pt/fp32"):
                 os.makedirs(".pt/fp32")
             if args.mobile:
@@ -457,3 +462,5 @@ if __name__ == '__main__':
             else:
                 trace_model = torch.jit.trace(model, inputs)
                 trace_model.save(".pt/fp32/"+name+'.pt')
+
+        if args.extern_model: break

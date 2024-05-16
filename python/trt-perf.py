@@ -9,6 +9,7 @@ from main import MetricLogger, accuracy, build_dataset, load_image, WARMUP_SEC, 
 def get_args_parser():
     parser = argparse.ArgumentParser(
         'tensorrt evaluation and benchmark script', add_help=False)
+    parser.add_argument('--extern-model', default=None, type=str, help='extern model name;resolution')
     parser.add_argument('--batch-size', default=1, type=int)
     # Model parameters
     parser.set_defaults(pretrained=True)
@@ -68,8 +69,12 @@ if __name__ == '__main__':
         ('tf_efficientnetv2_b3' , 300, False),
     ]:
 
-        if args.only_test and args.only_test != name:
+        if args.only_test and args.only_test != name and not args.extern_model:
             continue
+
+        if args.extern_model:
+            name = args.extern_model.split(',')[0]
+            resolution = int(args.extern_model.split(',')[1])
 
         args.model = name
         args.input_size = resolution
@@ -203,3 +208,5 @@ if __name__ == '__main__':
             time_mean   = np.mean(time_list)   * 1000
             time_median = np.median(time_list) * 1000
             print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
+
+        if args.extern_model: break

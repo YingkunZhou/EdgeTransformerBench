@@ -1,0 +1,376 @@
+total: 293 (model_name, #parameters)
+vit: 38 v.s. cnn: 41 v.s. none: 2
+bat [vit]
+ ('bat_resnext26ts', 10.7312)
+cait [vit]
+ ('cait_xxs24_224', 11.956264)
+ ('cait_xxs24_384', 12.029224)
+coat [vit]
+ ('coat_lite_mini', 11.01156)
+ ('coat_lite_tiny', 5.72196)
+ ('coat_mini', 10.337004)
+ ('coat_tiny', 5.49854)
+coatnet [vit]
+ ('coatnet_nano_cc_224', 13.757328)
+ ('coatnet_nano_rw_224', 15.141244)
+ ('coatnet_pico_rw_224', 10.851364)
+ ('coatnet_rmlp_nano_rw_224', 15.145116)
+coatnext [vit]
+ ('coatnext_nano_rw_224', 14.701244)
+convit [vit]
+ ('convit_tiny', 5.710512)
+convnext [cnn]
+ ('convnext_atto', 3.69552)
+ ('convnext_atto_ols', 3.702912)
+ ('convnext_femto', 5.217784)
+ ('convnext_femto_ols', 5.22652)
+ ('convnext_pico', 9.045672)
+ ('convnext_pico_ols', 9.061928)
+convnextv2 [cnn] [-]
+ ('convnextv2_atto', 3.7084)
+ ('convnextv2_femto', 5.23324)
+ ('convnextv2_pico', 9.06628)
+crossvit [vit]
+ ('crossvit_9_240', 8.553296)
+ ('crossvit_9_dagger_240', 8.776592)
+ ('crossvit_tiny_240', 7.0148)
+darknet [cnn]
+ ('cs3darknet_focus_m', 9.30436)
+ ('cs3darknet_focus_s', 3.274728)
+ ('cs3darknet_m', 9.31024)
+ ('cs3darknet_s', 3.276344)
+deit [vit]
+ ('deit_tiny_distilled_patch16_224', 5.9108)
+ ('deit_tiny_patch16_224', 5.717416)
+densenet [cnn]
+ ('densenet121', 7.978856)
+ ('densenet169', 14.14948)
+ ('densenetblur121d', 7.998088)
+dla [cnn]
+ ('dla46_c', 1.3014)
+ ('dla46x_c', 1.06844)
+ ('dla60x_c', 1.319832)
+dpn [cnn]
+ ('dpn48b', 9.126226)
+ ('dpn68', 12.611602)
+ ('dpn68b', 12.611602)
+eca [vit]
+ ('eca_botnext26ts_256', 10.593301)
+ ('eca_halonext26ts', 10.756885)
+ ('eca_resnext26ts', 10.297988)
+ ('ecaresnext26t_32x4d', 15.40622)
+ ('ecaresnext50t_32x4d', 15.40622)
+edgenext [vit]
+ ('edgenext_small', 5.586832)
+ ('edgenext_small_rw', 7.826512)
+ ('edgenext_x_small', 2.336804)
+ ('edgenext_xx_small', 1.327216)
+efficientformer [vit]
+ ('efficientformer_l1', 12.289928)
+efficientformerv2 [vit]
+ ('efficientformerv2_s0', 3.600256)
+ ('efficientformerv2_s1', 6.18556)
+ ('efficientformerv2_s2', 12.710112)
+efficientnet [cnn]
+ ('efficientnet_b0', 5.288548)
+ ('efficientnet_b0_g8_gn', 6.56266)
+ ('efficientnet_b0_g16_evos', 8.107756)
+ ('efficientnet_b0_gn', 5.288548)
+ ('efficientnet_b1', 7.794184)
+ ('efficientnet_b1_pruned', 6.331916)
+ ('efficientnet_b2', 9.109994)
+ ('efficientnet_b2_pruned', 8.309737)
+ ('efficientnet_b3', 12.233232)
+ ('efficientnet_b3_g8_gn', 14.251432)
+ ('efficientnet_b3_gn', 11.733784)
+ ('efficientnet_b3_pruned', 9.85502)
+ ('efficientnet_cc_b0_4e', 13.314116)
+ ('efficientnet_el', 10.589712)
+ ('efficientnet_el_pruned', 10.589712)
+ ('efficientnet_em', 6.899496)
+ ('efficientnet_es', 5.438392)
+ ('efficientnet_es_pruned', 5.438392)
+efficientnet_lite [cnn]
+ ('efficientnet_lite0', 4.652008)
+ ('efficientnet_lite1', 5.41668)
+ ('efficientnet_lite2', 6.092072)
+ ('efficientnet_lite3', 8.197096)
+ ('efficientnet_lite4', 13.006568)
+efficientnetv2 [cnn]
+ ('efficientnetv2_rw_t', 13.649388)
+efficientvit [vit]
+ ('efficientvit_b0', 3.410008)
+ ('efficientvit_b1', 9.102024)
+ ('efficientvit_m0', 2.349436)
+ ('efficientvit_m1', 2.98056)
+ ('efficientvit_m2', 4.187554)
+ ('efficientvit_m3', 6.900722)
+ ('efficientvit_m4', 8.804228)
+ ('efficientvit_m5', 12.473772)
+ese_vovnet [cnn]
+ ('ese_vovnet19b_dw', 6.54308)
+ ('ese_vovnet19b_slim', 3.166136)
+ ('ese_vovnet19b_slim_dw', 1.897752)
+eva02 [vit]
+ ('eva02_tiny_patch14_224', 5.502144)
+ ('eva02_tiny_patch14_336', 5.756584)
+fastvit [vit]
+ ('fastvit_s12', 9.473576)
+ ('fastvit_sa12', 11.580968)
+ ('fastvit_t8', 4.026232)
+ ('fastvit_t12', 7.553704)
+fbnet [cnn]
+ ('fbnetc_100', 5.5722)
+ ('fbnetv3_b', 8.598464)
+ ('fbnetv3_d', 10.306272)
+gc [vit]
+ ('gc_efficientnetv2_rw_t', 13.677713)
+ ('gcresnext26ts', 10.4766)
+ ('gcvit_xxtiny', 11.995428)
+gernet [cnn]
+ ('gernet_s', 8.173761)
+ghostnet [cnn]
+ ('ghostnet_050', 2.587292)
+ ('ghostnet_100', 5.182508)
+ ('ghostnet_130', 7.35882)
+ghostnetv2 [vit]
+ ('ghostnetv2_100', 6.156908)
+ ('ghostnetv2_130', 8.960404)
+ ('ghostnetv2_160', 12.392698)
+gmixer [vit]
+ ('gmixer_12_224', 12.70108)
+gmlp [vit]
+ ('gmlp_ti16_224', 5.867328)
+halonet [vit]
+ ('halonet26t', 12.480288)
+ ('halonet_h1', 8.100056)
+haloregnetz [vit]
+ ('haloregnetz_b', 11.680072)
+hardcorenas [cnn]
+ ('hardcorenas_a', 5.260232)
+ ('hardcorenas_b', 5.176544)
+ ('hardcorenas_c', 5.521224)
+ ('hardcorenas_d', 7.500208)
+ ('hardcorenas_e', 8.070992)
+ ('hardcorenas_f', 8.199688)
+hgnetv2 [cnn]
+ ('hgnetv2_b0', 5.99655)
+ ('hgnetv2_b1', 6.343158)
+ ('hgnetv2_b2', 11.221356)
+hrnet [cnn]
+ ('hrnet_w18_small', 13.187464)
+lambda [vit]
+ ('lambda_resnet26rpt_256', 10.988688)
+ ('lambda_resnet26t', 10.958272)
+lcnet [cnn]
+ ('lcnet_035', 1.64437)
+ ('lcnet_050', 1.880856)
+ ('lcnet_075', 2.358288)
+ ('lcnet_100', 2.9538)
+ ('lcnet_150', 4.501112)
+legacy_seresnet18 [cnn]
+ ('legacy_seresnet18', 11.778592)
+levit [vit]
+ ('levit_128', 9.213936)
+ ('levit_128s', 7.777058)
+ ('levit_192', 10.947069)
+ ('levit_conv_128', 9.213936)
+ ('levit_conv_128s', 7.777058)
+ ('levit_conv_192', 10.947069)
+maxvit [vit]
+ ('maxvit_nano_rw_256', 15.451148)
+ ('maxvit_pico_rw_256', 7.457996)
+ ('maxvit_rmlp_pico_rw_256', 7.51598)
+mixnet [cnn]
+ ('mixnet_l', 7.329252)
+ ('mixnet_m', 5.014382)
+ ('mixnet_s', 4.134606)
+ ('mixnet_xl', 11.896768)
+mnasnet [cnn]
+ ('mnasnet_050', 2.218512)
+ ('mnasnet_075', 3.170208)
+ ('mnasnet_100', 4.383312)
+ ('mnasnet_140', 7.115728)
+ ('mnasnet_small', 2.030264)
+mobilenetv2 [cnn]
+ ('mobilenetv2_035', 1.677128)
+ ('mobilenetv2_050', 1.96868)
+ ('mobilenetv2_075', 2.636424)
+ ('mobilenetv2_100', 3.504872)
+ ('mobilenetv2_110d', 4.51652)
+ ('mobilenetv2_120d', 5.831144)
+ ('mobilenetv2_140', 6.108776)
+mobilenetv3 [cnn]
+ ('mobilenetv3_large_075', 3.993528)
+ ('mobilenetv3_large_100', 5.483032)
+ ('mobilenetv3_rw', 5.479918)
+ ('mobilenetv3_small_050', 1.593224)
+ ('mobilenetv3_small_075', 2.041872)
+ ('mobilenetv3_small_100', 2.542856)
+mobileone [cnn]
+ ('mobileone_s0', 5.293272)
+ ('mobileone_s1', 4.825192)
+ ('mobileone_s2', 7.884648)
+ ('mobileone_s3', 10.1706)
+ ('mobileone_s4', 14.951248)
+mobilevit [vit]
+ ('mobilevit_s', 5.578632)
+ ('mobilevit_xs', 2.317848)
+ ('mobilevit_xxs', 1.272024)
+mobilevitv2 [vit]
+ ('mobilevitv2_050', 1.370593)
+ ('mobilevitv2_075', 2.866009)
+ ('mobilevitv2_100', 4.901841)
+ ('mobilevitv2_125', 7.478089)
+ ('mobilevitv2_150', 10.594753)
+ ('mobilevitv2_175', 14.251833)
+nf_regnet [cnn]
+ ('nf_regnet_b0', 8.764288)
+ ('nf_regnet_b1', 10.223984)
+ ('nf_regnet_b2', 14.314608)
+pit [vit]
+ ('pit_ti_224', 4.847272)
+ ('pit_ti_distilled_224', 5.104336)
+ ('pit_xs_224', 10.618888)
+ ('pit_xs_distilled_224', 11.003984)
+poolformer [none]
+ ('poolformer_s12', 11.915176)
+ ('poolformerv2_s12', 11.891712)
+pvt_v2 [vit]
+ ('pvt_v2_b0', 3.66676)
+ ('pvt_v2_b1', 14.009)
+regnetx [cnn]
+ ('regnetx_002', 2.684792)
+ ('regnetx_004', 5.157512)
+ ('regnetx_004_tv', 5.495976)
+ ('regnetx_006', 6.19604)
+ ('regnetx_008', 7.259656)
+ ('regnetx_016', 9.190136)
+ ('regnetx_032', 15.296552)
+regnety [cnn]
+ ('regnety_002', 3.162996)
+ ('regnety_004', 4.344144)
+ ('regnety_006', 6.05516)
+ ('regnety_008', 6.263168)
+ ('regnety_008_tv', 6.432512)
+ ('regnety_016', 11.20243)
+regnetz [cnn]
+ ('regnetz_005', 7.122742)
+ ('regnetz_b16', 9.71548)
+ ('regnetz_b16_evos', 9.736824)
+ ('regnetz_c16', 13.45988)
+ ('regnetz_c16_evos', 13.487816)
+repghostnet [cnn]
+ ('repghostnet_050', 2.313968)
+ ('repghostnet_058', 2.546388)
+ ('repghostnet_080', 3.278968)
+ ('repghostnet_100', 4.073604)
+ ('repghostnet_111', 4.539984)
+ ('repghostnet_130', 5.478612)
+ ('repghostnet_150', 6.575336)
+ ('repghostnet_200', 9.796124)
+repvgg [cnn]
+ ('repvgg_a0', 9.108968)
+ ('repvgg_a1', 14.092264)
+repvit [vit]
+ ('repvit_m0_9', 5.489328)
+ ('repvit_m1', 5.485248)
+ ('repvit_m1_0', 7.302796)
+ ('repvit_m1_1', 8.802912)
+ ('repvit_m1_5', 14.644432)
+ ('repvit_m2', 8.797984)
+ ('repvit_m3', 10.682832)
+resmlp [none]
+ ('resmlp_12_224', 15.350872)
+resnest14d [vit]
+ ('resnest14d', 10.611688)
+resnet [cnn]
+ ('resnet10t', 5.435488)
+ ('resnet14t', 10.081632)
+ ('resnet18', 11.689512)
+ ('resnet18d', 11.708744)
+ ('resnetblur18', 11.689512)
+resnext26ts [vit]
+ ('resnext26ts', 10.297952)
+rexnet [cnn]
+ ('rexnet_100', 4.796873)
+ ('rexnet_130', 7.557091)
+ ('rexnet_150', 9.728593)
+rexnetr [cnn]
+ ('rexnetr_100', 4.883304)
+ ('rexnetr_130', 7.60808)
+ ('rexnetr_150', 9.782256)
+sehalonet [vit]
+ ('sehalonet33ts', 13.691712)
+semnasnet [cnn]
+ ('semnasnet_050', 2.082006)
+ ('semnasnet_075', 2.912278)
+ ('semnasnet_100', 3.887038)
+ ('semnasnet_140', 6.105992)
+seresnet [cnn]
+ ('seresnet18', 11.779624)
+seresnext26ts [vit]
+ ('seresnext26ts', 10.388064)
+skresnet18 [cnn]
+ ('skresnet18', 11.958056)
+spnasnet_100 [cnn]
+ ('spnasnet_100', 4.421616)
+efficientnet [cnn]
+ ('tf_efficientnet_b0', 5.288548)
+ ('tf_efficientnet_b1', 7.794184)
+ ('tf_efficientnet_b2', 9.109994)
+ ('tf_efficientnet_b3', 12.233232)
+ ('tf_efficientnet_cc_b0_4e', 13.314116)
+ ('tf_efficientnet_el', 10.589712)
+ ('tf_efficientnet_em', 6.899496)
+ ('tf_efficientnet_es', 5.438392)
+efficientnet_lite [cnn]
+ ('tf_efficientnet_lite0', 4.652008)
+ ('tf_efficientnet_lite1', 5.41668)
+ ('tf_efficientnet_lite2', 6.092072)
+ ('tf_efficientnet_lite3', 8.197096)
+ ('tf_efficientnet_lite4', 13.006568)
+efficientnetv2 [cnn]
+ ('tf_efficientnetv2_b0', 7.139704)
+ ('tf_efficientnetv2_b1', 8.141052)
+ ('tf_efficientnetv2_b2', 10.096086)
+ ('tf_efficientnetv2_b3', 14.358406)
+mixnet [vit]
+ ('tf_mixnet_l', 7.329252)
+ ('tf_mixnet_m', 5.014382)
+ ('tf_mixnet_s', 4.134606)
+mobilenetv3 [cnn]
+ ('tf_mobilenetv3_large_075', 3.993528)
+ ('tf_mobilenetv3_large_100', 5.483032)
+ ('tf_mobilenetv3_large_minimal_100', 3.924288)
+ ('tf_mobilenetv3_small_075', 2.041872)
+ ('tf_mobilenetv3_small_100', 2.542856)
+ ('tf_mobilenetv3_small_minimal_100', 2.044736)
+tiny_vit [vit]
+ ('tiny_vit_5m_224', 12.082725)
+tinynet [cnn]
+ ('tinynet_a', 6.187972)
+ ('tinynet_b', 3.730562)
+ ('tinynet_c', 2.457234)
+ ('tinynet_d', 2.338446)
+ ('tinynet_e', 2.042972)
+visformer [vit]
+ ('visformer_tiny', 10.321368)
+vit_tiny [vit]
+ ('vit_tiny_patch16_224', 5.717416)
+ ('vit_tiny_patch16_384', 5.790376)
+ ('vit_tiny_r_s16_p8_224', 6.337704)
+ ('vit_tiny_r_s16_p8_384', 6.355944)
+xcit [vit]
+ ('xcit_nano_12_p8_224', 3.049016)
+ ('xcit_nano_12_p8_384', 3.049016)
+ ('xcit_nano_12_p16_224', 3.053224)
+ ('xcit_nano_12_p16_384', 3.053224)
+ ('xcit_tiny_12_p8_224', 6.706504)
+ ('xcit_tiny_12_p8_384', 6.706504)
+ ('xcit_tiny_12_p16_224', 6.716272)
+ ('xcit_tiny_12_p16_384', 6.716272)
+ ('xcit_tiny_24_p8_224', 12.107128)
+ ('xcit_tiny_24_p8_384', 12.107128)
+ ('xcit_tiny_24_p16_224', 12.116896)
+ ('xcit_tiny_24_p16_384', 12.116896)
