@@ -1,5 +1,5 @@
-total: 293 (model_name, #parameters)
-vit: 38 v.s. cnn: 41 v.s. none: 2
+total: 291 (model_name, #parameters)
+vit: 37 v.s. cnn: 35 v.s. none: 2 v.s. same: 5
 bat [vit]
  ('bat_resnext26ts', 10.7312)
 cait [vit]
@@ -26,10 +26,10 @@ convnext [cnn]
  ('convnext_femto_ols', 5.22652)
  ('convnext_pico', 9.045672)
  ('convnext_pico_ols', 9.061928)
-convnextv2 [cnn] [-]
- ('convnextv2_atto', 3.7084)
- ('convnextv2_femto', 5.23324)
- ('convnextv2_pico', 9.06628)
+convnextv2 [cnn]
+ ('convnextv2_atto', 3.7084) [-] 288
+ ('convnextv2_femto', 5.23324) [-] 288
+ ('convnextv2_pico', 9.06628) [-] 288
 crossvit [vit]
  ('crossvit_9_240', 8.553296)
  ('crossvit_9_dagger_240', 8.776592)
@@ -49,7 +49,7 @@ densenet [cnn]
 dla [cnn]
  ('dla46_c', 1.3014)
  ('dla46x_c', 1.06844)
- ('dla60x_c', 1.319832)
+ ('dla60x_c', 1.319832) [-] 224
 dpn [cnn]
  ('dpn48b', 9.126226)
  ('dpn68', 12.611602)
@@ -91,10 +91,10 @@ efficientnet [cnn]
  ('efficientnet_es', 5.438392)
  ('efficientnet_es_pruned', 5.438392)
 efficientnet_lite [cnn]
- ('efficientnet_lite0', 4.652008)
- ('efficientnet_lite1', 5.41668)
- ('efficientnet_lite2', 6.092072)
- ('efficientnet_lite3', 8.197096)
+ ('efficientnet_lite0', 4.652008) [-] 224
+ ('efficientnet_lite1', 5.41668)  [-] 240
+ ('efficientnet_lite2', 6.092072) [-] 260
+ ('efficientnet_lite3', 8.197096) [-] 300
  ('efficientnet_lite4', 13.006568)
 efficientnetv2 [cnn]
  ('efficientnetv2_rw_t', 13.649388)
@@ -121,7 +121,7 @@ fastvit [vit]
  ('fastvit_t12', 7.553704)
 fbnet [cnn]
  ('fbnetc_100', 5.5722)
- ('fbnetv3_b', 8.598464)
+ ('fbnetv3_b', 8.598464) [-] 256
  ('fbnetv3_d', 10.306272)
 gc [vit]
  ('gc_efficientnetv2_rw_t', 13.677713)
@@ -131,7 +131,7 @@ gernet [cnn]
  ('gernet_s', 8.173761)
 ghostnet [cnn]
  ('ghostnet_050', 2.587292)
- ('ghostnet_100', 5.182508)
+ ('ghostnet_100', 5.182508) [-] 224
  ('ghostnet_130', 7.35882)
 ghostnetv2 [vit]
  ('ghostnetv2_100', 6.156908)
@@ -149,14 +149,14 @@ haloregnetz [vit]
 hardcorenas [cnn]
  ('hardcorenas_a', 5.260232)
  ('hardcorenas_b', 5.176544)
- ('hardcorenas_c', 5.521224)
+ ('hardcorenas_c', 5.521224) [-] 224
  ('hardcorenas_d', 7.500208)
  ('hardcorenas_e', 8.070992)
  ('hardcorenas_f', 8.199688)
 hgnetv2 [cnn]
- ('hgnetv2_b0', 5.99655)
- ('hgnetv2_b1', 6.343158)
- ('hgnetv2_b2', 11.221356)
+ ('hgnetv2_b0', 5.99655) [-] 288
+ ('hgnetv2_b1', 6.343158) [-] 288
+ ('hgnetv2_b2', 11.221356) [-] 288
 hrnet [cnn]
  ('hrnet_w18_small', 13.187464)
 lambda [vit]
@@ -166,7 +166,7 @@ lcnet [cnn]
  ('lcnet_035', 1.64437)
  ('lcnet_050', 1.880856)
  ('lcnet_075', 2.358288)
- ('lcnet_100', 2.9538)
+ ('lcnet_100', 2.9538) [-] 224
  ('lcnet_150', 4.501112)
 legacy_seresnet18 [cnn]
  ('legacy_seresnet18', 11.778592)
@@ -184,12 +184,12 @@ maxvit [vit]
 mixnet [cnn]
  ('mixnet_l', 7.329252)
  ('mixnet_m', 5.014382)
- ('mixnet_s', 4.134606)
- ('mixnet_xl', 11.896768)
+ ('mixnet_s', 4.134606) [-] 224
+ ('mixnet_xl', 11.896768) [-] 224
 mnasnet [cnn]
  ('mnasnet_050', 2.218512)
  ('mnasnet_075', 3.170208)
- ('mnasnet_100', 4.383312)
+ ('mnasnet_100', 4.383312) [-] 224
  ('mnasnet_140', 7.115728)
  ('mnasnet_small', 2.030264)
 mobilenetv2 [cnn]
@@ -201,15 +201,15 @@ mobilenetv2 [cnn]
  ('mobilenetv2_120d', 5.831144)
  ('mobilenetv2_140', 6.108776)
 mobilenetv3 [cnn]
- ('mobilenetv3_large_075', 3.993528)
- ('mobilenetv3_large_100', 5.483032)
+ ('mobilenetv3_large_075', 3.993528) [-] 224
+ ('mobilenetv3_large_100', 5.483032) [=]
  ('mobilenetv3_rw', 5.479918)
  ('mobilenetv3_small_050', 1.593224)
  ('mobilenetv3_small_075', 2.041872)
  ('mobilenetv3_small_100', 2.542856)
 mobileone [cnn]
  ('mobileone_s0', 5.293272)
- ('mobileone_s1', 4.825192)
+ ('mobileone_s1', 4.825192) [-] 224
  ('mobileone_s2', 7.884648)
  ('mobileone_s3', 10.1706)
  ('mobileone_s4', 14.951248)
@@ -226,7 +226,7 @@ mobilevitv2 [vit]
  ('mobilevitv2_175', 14.251833)
 nf_regnet [cnn]
  ('nf_regnet_b0', 8.764288)
- ('nf_regnet_b1', 10.223984)
+ ('nf_regnet_b1', 10.223984) [-] 288
  ('nf_regnet_b2', 14.314608)
 pit [vit]
  ('pit_ti_224', 4.847272)
@@ -245,18 +245,18 @@ regnetx [cnn]
  ('regnetx_004_tv', 5.495976)
  ('regnetx_006', 6.19604)
  ('regnetx_008', 7.259656)
- ('regnetx_016', 9.190136)
+ ('regnetx_016', 9.190136) [-] 224
  ('regnetx_032', 15.296552)
 regnety [cnn]
  ('regnety_002', 3.162996)
  ('regnety_004', 4.344144)
  ('regnety_006', 6.05516)
  ('regnety_008', 6.263168)
- ('regnety_008_tv', 6.432512)
- ('regnety_016', 11.20243)
+ ('regnety_008_tv', 6.432512) [-] 224
+ ('regnety_016', 11.20243) [-] 224
 regnetz [cnn]
- ('regnetz_005', 7.122742)
- ('regnetz_b16', 9.71548)
+ ('regnetz_005', 7.122742) [-] 288
+ ('regnetz_b16', 9.71548) [-] 288
  ('regnetz_b16_evos', 9.736824)
  ('regnetz_c16', 13.45988)
  ('regnetz_c16_evos', 13.487816)
@@ -266,7 +266,7 @@ repghostnet [cnn]
  ('repghostnet_080', 3.278968)
  ('repghostnet_100', 4.073604)
  ('repghostnet_111', 4.539984)
- ('repghostnet_130', 5.478612)
+ ('repghostnet_130', 5.478612) [-] 224
  ('repghostnet_150', 6.575336)
  ('repghostnet_200', 9.796124)
 repvgg [cnn]
@@ -293,9 +293,9 @@ resnet [cnn]
 resnext26ts [vit]
  ('resnext26ts', 10.297952)
 rexnet [cnn]
- ('rexnet_100', 4.796873)
- ('rexnet_130', 7.557091)
- ('rexnet_150', 9.728593)
+ ('rexnet_100', 4.796873) [-] 224
+ ('rexnet_130', 7.557091) [-] 224
+ ('rexnet_150', 9.728593) [-] 224
 rexnetr [cnn]
  ('rexnetr_100', 4.883304)
  ('rexnetr_130', 7.60808)
@@ -305,17 +305,13 @@ sehalonet [vit]
 semnasnet [cnn]
  ('semnasnet_050', 2.082006)
  ('semnasnet_075', 2.912278)
- ('semnasnet_100', 3.887038)
+ ('semnasnet_100', 3.887038) [-] 224
  ('semnasnet_140', 6.105992)
-seresnet [cnn]
- ('seresnet18', 11.779624)
 seresnext26ts [vit]
  ('seresnext26ts', 10.388064)
-skresnet18 [cnn]
- ('skresnet18', 11.958056)
 spnasnet_100 [cnn]
- ('spnasnet_100', 4.421616)
-efficientnet [cnn]
+ ('spnasnet_100', 4.421616) [-] 224
+efficientnet [same]
  ('tf_efficientnet_b0', 5.288548)
  ('tf_efficientnet_b1', 7.794184)
  ('tf_efficientnet_b2', 9.109994)
@@ -324,22 +320,22 @@ efficientnet [cnn]
  ('tf_efficientnet_el', 10.589712)
  ('tf_efficientnet_em', 6.899496)
  ('tf_efficientnet_es', 5.438392)
-efficientnet_lite [cnn]
+efficientnet_lite [same]
  ('tf_efficientnet_lite0', 4.652008)
  ('tf_efficientnet_lite1', 5.41668)
  ('tf_efficientnet_lite2', 6.092072)
  ('tf_efficientnet_lite3', 8.197096)
  ('tf_efficientnet_lite4', 13.006568)
-efficientnetv2 [cnn]
- ('tf_efficientnetv2_b0', 7.139704)
- ('tf_efficientnetv2_b1', 8.141052)
- ('tf_efficientnetv2_b2', 10.096086)
+efficientnetv2 [same]
+ ('tf_efficientnetv2_b0', 7.139704) [=]
+ ('tf_efficientnetv2_b1', 8.141052) [=]
+ ('tf_efficientnetv2_b2', 10.096086) [=]
  ('tf_efficientnetv2_b3', 14.358406)
-mixnet [vit]
+mixnet [same]
  ('tf_mixnet_l', 7.329252)
  ('tf_mixnet_m', 5.014382)
  ('tf_mixnet_s', 4.134606)
-mobilenetv3 [cnn]
+mobilenetv3 [same]
  ('tf_mobilenetv3_large_075', 3.993528)
  ('tf_mobilenetv3_large_100', 5.483032)
  ('tf_mobilenetv3_large_minimal_100', 3.924288)
@@ -349,8 +345,8 @@ mobilenetv3 [cnn]
 tiny_vit [vit]
  ('tiny_vit_5m_224', 12.082725)
 tinynet [cnn]
- ('tinynet_a', 6.187972)
- ('tinynet_b', 3.730562)
+ ('tinynet_a', 6.187972) [-] 224
+ ('tinynet_b', 3.730562) [-] 224
  ('tinynet_c', 2.457234)
  ('tinynet_d', 2.338446)
  ('tinynet_e', 2.042972)
