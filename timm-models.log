@@ -226,7 +226,7 @@ mobilevitv2 [vit]
  ('mobilevitv2_175', 14.251833)
 nf_regnet [cnn]
  ('nf_regnet_b0', 8.764288)
- ('nf_regnet_b1', 10.223984) [-] 288
+ ('nf_regnet_b1', 10.223984)
  ('nf_regnet_b2', 14.314608)
 pit [vit]
  ('pit_ti_224', 4.847272)
