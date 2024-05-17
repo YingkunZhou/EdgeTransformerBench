@@ -1,5 +1,6 @@
-total: 291 (model_name, #parameters)
-vit: 37 v.s. cnn: 35 v.s. none: 2 v.s. same: 5
+all models in timm==0.9.12: 1017
+total: 288 (model_name, #parameters)
+hybrid vit series: 37 v.s. cnn series: 34 v.s. none series: 2 v.s. same series: 5
 bat [vit]
  ('bat_resnext26ts', 10.7312)
 cait [vit]
@@ -38,7 +39,7 @@ darknet [cnn]
  ('cs3darknet_focus_m', 9.30436)
  ('cs3darknet_focus_s', 3.274728)
  ('cs3darknet_m', 9.31024)
- ('cs3darknet_s', 3.276344)
+ ('cs3darknet_s', 3.276344) [-] 288
 deit [vit]
  ('deit_tiny_distilled_patch16_224', 5.9108)
  ('deit_tiny_patch16_224', 5.717416)
@@ -153,10 +154,6 @@ hardcorenas [cnn]
  ('hardcorenas_d', 7.500208)
  ('hardcorenas_e', 8.070992)
  ('hardcorenas_f', 8.199688)
-hgnetv2 [cnn]
- ('hgnetv2_b0', 5.99655) [-] 288
- ('hgnetv2_b1', 6.343158) [-] 288
- ('hgnetv2_b2', 11.221356)
 hrnet [cnn]
  ('hrnet_w18_small', 13.187464)
 lambda [vit]
