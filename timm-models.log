@@ -27,9 +27,9 @@ convnext [cnn]
  ('convnext_pico', 9.045672)
  ('convnext_pico_ols', 9.061928)
 convnextv2 [cnn]
- ('convnextv2_atto', 3.7084) [-] 288
- ('convnextv2_femto', 5.23324) [-] 288
- ('convnextv2_pico', 9.06628) [-] 288
+ ('convnextv2_atto', 3.7084) [=] 288
+ ('convnextv2_femto', 5.23324) [=] 288
+ ('convnextv2_pico', 9.06628) [=] 288
 crossvit [vit]
  ('crossvit_9_240', 8.553296)
  ('crossvit_9_dagger_240', 8.776592)
@@ -156,7 +156,7 @@ hardcorenas [cnn]
 hgnetv2 [cnn]
  ('hgnetv2_b0', 5.99655) [-] 288
  ('hgnetv2_b1', 6.343158) [-] 288
- ('hgnetv2_b2', 11.221356) [-] 288
+ ('hgnetv2_b2', 11.221356)
 hrnet [cnn]
  ('hrnet_w18_small', 13.187464)
 lambda [vit]
@@ -184,8 +184,8 @@ maxvit [vit]
 mixnet [cnn]
  ('mixnet_l', 7.329252)
  ('mixnet_m', 5.014382)
- ('mixnet_s', 4.134606) [-] 224
- ('mixnet_xl', 11.896768) [-] 224
+ ('mixnet_s', 4.134606)
+ ('mixnet_xl', 11.896768)
 mnasnet [cnn]
  ('mnasnet_050', 2.218512)
  ('mnasnet_075', 3.170208)
