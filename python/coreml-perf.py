@@ -129,6 +129,14 @@ if __name__ == '__main__':
         if args.only_test and args.only_test not in name and args.only_test != 'ALL' and not args.extern_model:
             continue
 
+        if args.extern_model:
+            name = args.extern_model.split(',')[0]
+            resolution = int(args.extern_model.split(',')[1])
+
+        args.model = name
+        args.input_size = resolution
+        args.usi_eval = usi_eval
+        print(f"Load coreml model: {name}")
         """
         ALL = 1  # Allows the model to use all compute units available, including the neural engine
         CPU_AND_GPU = 2 # Allows the model to use both the CPU and GPU, but not the neural engine
@@ -156,15 +164,6 @@ if __name__ == '__main__':
             op_config = cto.OpPalettizerConfig(mode="kmeans", nbits=8)
             config = cto.OptimizationConfig(global_config=op_config)
             mlmodel = cto.palettize_weights(mlmodel, config)
-
-        if args.extern_model:
-            name = args.extern_model.split(',')[0]
-            resolution = int(args.extern_model.split(',')[1])
-
-        args.model = name
-        args.input_size = resolution
-        args.usi_eval = usi_eval
-        print(f"Load coreml model: {name}")
 
         if args.validation:
             dataset_val = build_dataset(args)
