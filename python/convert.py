@@ -169,6 +169,7 @@ if __name__ == '__main__':
             activ = ActivationCountAnalysis(model, inputs)
             flops_total = flops.total()
             activ_total = activ.total()
+            print(flops_total/1000000)
             flops_ops = flops.by_operator()
             activ_ops = activ.by_operator()
             ops = 0; kp=''
@@ -254,8 +255,6 @@ if __name__ == '__main__':
         if args.format == 'ALL' or args.format == 'coreml':
             if not os.path.exists(".coreml"):
                 os.makedirs(".coreml")
-            if not os.path.exists(".coreml/int8"):
-                os.makedirs(".coreml/int8")
             if not os.path.exists(".coreml/fp16"):
                 os.makedirs(".coreml/fp16")
 
@@ -270,12 +269,14 @@ if __name__ == '__main__':
             )
             model.save(".coreml/fp16/"+name+".mlpackage")
             # model.save(".coreml/"+name+".mlmodel")
-
-            import coremltools.optimize.coreml as cto
-            op_config = cto.OpLinearQuantizerConfig(mode="linear_symmetric", weight_threshold=512)
-            config = cto.OptimizationConfig(global_config=op_config)
-            compressed_8_bit_model = cto.linear_quantize_weights(model, config=config)
-            compressed_8_bit_model.save(".coreml/int8/"+name+".mlpackage")
+            if args.int8:
+                import coremltools.optimize.coreml as cto
+                if not os.path.exists(".coreml/int8"):
+                    os.makedirs(".coreml/int8")
+                op_config = cto.OpLinearQuantizerConfig(mode="linear_symmetric", weight_threshold=512)
+                config = cto.OptimizationConfig(global_config=op_config)
+                compressed_8_bit_model = cto.linear_quantize_weights(model, config=config)
+                compressed_8_bit_model.save(".coreml/int8/"+name+".mlpackage")
 
         if args.format == 'ALL' or args.format == 'cann':
             # pip install numpy scipy attrs psutil decorator

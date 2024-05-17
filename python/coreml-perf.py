@@ -12,6 +12,7 @@ def get_args_parser():
     parser.add_argument('--extern-model', default=None, type=str, help='extern model name;resolution')
     parser.add_argument('--batch-size', default=1, type=int)
     # Dataset parameters
+    parser.add_argument('--format', default='fp16', type=str)
     parser.add_argument('--validation', action='store_true', default=False)
     parser.add_argument('--data-path', default='imagenet-div50', type=str, help='dataset path')
     parser.add_argument('--num_workers', default=2, type=int)
@@ -128,7 +129,6 @@ if __name__ == '__main__':
         if args.only_test and args.only_test not in name and args.only_test != 'ALL' and not args.extern_model:
             continue
 
-        print(f"Load coreml model: {name}")
         """
         ALL = 1  # Allows the model to use all compute units available, including the neural engine
         CPU_AND_GPU = 2 # Allows the model to use both the CPU and GPU, but not the neural engine
@@ -145,13 +145,17 @@ if __name__ == '__main__':
         else:
             compute_units = ct.ComputeUnit.ALL
 
-        mlmodel = ct.models.MLModel(model=".coreml/"+name+".mlpackage",
-                                    compute_units=compute_units)
 
-        import coremltools.optimize.coreml as cto
-        op_config = cto.OpPalettizerConfig(mode="kmeans", nbits=8)
-        config = cto.OptimizationConfig(global_config=op_config)
-        # mlmodel = cto.palettize_weights(mlmodel, config)
+        if args.format == 'fp16':
+            mlmodel = ct.models.MLModel(model=".coreml/fp16/"+name+".mlpackage",
+                                        compute_units=compute_units)
+        else:
+            mlmodel = ct.models.MLModel(model=".coreml/int8/"+name+".mlpackage",
+                                        compute_units=compute_units)
+            import coremltools.optimize.coreml as cto
+            op_config = cto.OpPalettizerConfig(mode="kmeans", nbits=8)
+            config = cto.OptimizationConfig(global_config=op_config)
+            mlmodel = cto.palettize_weights(mlmodel, config)
 
         if args.extern_model:
             name = args.extern_model.split(',')[0]
@@ -160,6 +164,7 @@ if __name__ == '__main__':
         args.model = name
         args.input_size = resolution
         args.usi_eval = usi_eval
+        print(f"Load coreml model: {name}")
 
         if args.validation:
             dataset_val = build_dataset(args)
