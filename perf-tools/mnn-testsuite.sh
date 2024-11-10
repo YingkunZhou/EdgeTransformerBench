@@ -18,9 +18,9 @@ download_library()
         then
             if uname -a | grep -q Android
             then
-                [ ! -f "MNN.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/MNN.tar.gz
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/MNN.tar.gz
             else
-                [ ! -f "MNN.tar.gz" ] && wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/MNN.tar.gz
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/MNN.tar.gz
             fi
         fi
         tar xf MNN.tar.gz
