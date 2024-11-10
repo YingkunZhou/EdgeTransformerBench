@@ -62,8 +62,8 @@ CPU_testsuite()
     testsuite fp16 z 16 $1
 
     echo ">>>>>>>>>>>cpu: int8 model<<<<<<<<<"
-    # TODO: testsuite int8 z 16 $1
-    # unable to run in aipro and m1, because missing SMMLA instruction
+    # TODO: unable to run in aipro and m1, because missing SMMLA instruction
+    testsuite int8 z 16 $1
 
 }
 
