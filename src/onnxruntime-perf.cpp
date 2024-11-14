@@ -306,7 +306,7 @@ int main(int argc, char* argv[])
     for (const auto & model: test_models) {
         if (extern_model) {
             args.model = extern_model;
-            rgs.input_size = extern_size;
+            args.input_size = extern_size;
         }
         else {
             args.model = model.first;
