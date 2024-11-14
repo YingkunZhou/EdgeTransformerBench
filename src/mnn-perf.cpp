@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
     config.numThread = num_threads;
     MNN::BackendConfig backendConfig;
     backendConfig.precision = (MNN::BackendConfig::PrecisionMode) precision;
-    backendConfig.power = MNN::BackendConfig::Power_High;
+    backendConfig.power = MNN::BackendConfig::Power_Normal;
     config.backendConfig = &backendConfig;
     // https://www.yuque.com/mnn/cn/create_session#xtQLb
     auto runtimeInfo = MNN::Interpreter::createRuntime({config});
