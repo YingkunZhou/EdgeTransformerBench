@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
                 extern_model = optarg;
                 break;
             case 's':
-                extern_model = atoi(optarg);
+                extern_size = atoi(optarg);
                 break;
             case 'v':
                 args.validation = true;
