@@ -26,8 +26,9 @@ onnx_pdlite()
     #../Paddle-Lite/build.opt/lite/api/opt --model_dir=.pdlite/paddle/$MODEL --valid_targets=arm --optimize_out=.pdlite/int8/$MODEL --quant_model=true --quant_type=QUANT_INT8
 }
 
-cd .pdlite
-mkdir -p .paddle .quant .fp16 .fp32 .int8 .opencl
+mkdir -p .pdlte && cd .pdlite
+# x86 is full of rubbish, so we do not concern about it.
+mkdir -p paddle quant fp16 fp32 int8 opencl
 cd ..
 
 onnx_pdlite efficientformerv2_s0
@@ -67,12 +68,15 @@ onnx_pdlite mobilevit_xx_small
 onnx_pdlite mobilevit_x_small
 onnx_pdlite mobilevit_small
 
+# need to modify the paddlelite convert code: HardSwish
 onnx_pdlite LeViT_128S
 onnx_pdlite LeViT_128
 onnx_pdlite LeViT_192
 onnx_pdlite LeViT_256
 
+# need to modify the paddlelite convert code: comment out the erroneous code
 onnx_pdlite resnet50
+
 onnx_pdlite mobilenetv3_large_100
 
 ## Exception: The padding value is wrong!
