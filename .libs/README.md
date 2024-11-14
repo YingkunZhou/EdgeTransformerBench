@@ -488,6 +488,35 @@ cp bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model_plus_flex install/b
 
 </details>
 
+<details>
+<summary>X86 Linux</summary>
+
+```bash
+wget -c https://github.com/google/flatbuffers/archive/refs/tags/v23.5.26.tar.gz
+wget -c https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.16.1.tar.gz
+conda create --name tflite python=3.11
+conda activate tflite
+conda install bazel --yes
+tar xf v23.5.26.tar.gz
+tar xf v2.16.1.tar.gz
+export BASEDIR=$PWD
+cd tensorflow-2.16.1
+export TF_PYTHON_VERSION=3.11
+bazel build -c opt --config=mkl tensorflow/lite:libtensorflowlite.so
+# 需要和垃圾的bazel做斗争，把所有apple相关的统统删掉！！！
+bazel build -c opt --config=monolithic tensorflow/lite/delegates/flex:tensorflowlite_flex
+
+mkdir -p install/include/tensorflow
+cp -r tensorflow/lite install/include/tensorflow
+cp -r $BASEDIR/flatbuffers-23.5.26/include/flatbuffers install/include
+mkdir -p install/lib
+cp bazel-bin/tensorflow/lite/libtensorflowlite.so install/lib
+cp bazel-bin/tensorflow/lite/delegates/flex/libtensorflowlite_flex.so install/lib
+```
+
+</details>
+
+
 ## armnn (commit id: fbfa49eeb14c6cb94d47e3c770b0c168e818cf79)
 
 <details>
