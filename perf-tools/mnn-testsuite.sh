@@ -3,7 +3,7 @@ download_model()
 {
     if [ ! -d ".mnn" ]
     then
-        [ ! -f "mnn-models.tar.gz" ] && gdown 1nBOlcsk2E_RXwwmc2gQa0OTzFuQe4v-3
+        [ ! -f "mnn-models.tar.gz" ] && gdown 1be8LdqVZ_AJuwF2Ycc28jhytZ4kMkoV4
         tar xf mnn-models.tar.gz;
     fi
     # gdown 1XqF9my9TguiKKlaKxvfvGAXTDZh6HUSG # downloading mnn-fp32-models.tar.gz
