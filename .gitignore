@@ -53,3 +53,4 @@ bin/
 .trt-cache
 *.onnx
 *.tvm
+*.xml

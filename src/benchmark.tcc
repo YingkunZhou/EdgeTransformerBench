@@ -26,54 +26,54 @@ static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu
 }
 #endif
 
+void benchmark(
 #if defined(USE_NCNN)
-void benchmark(ncnn::Net &net, ncnn::Mat &input_tensor)
+    ncnn::Net &net,
+    ncnn::Mat &input_tensor
 #endif
 #if defined(USE_MNN)
-void benchmark(
     std::shared_ptr<MNN::Interpreter> &net,
     MNN::Session *session,
-    MNN::Tensor *input_tensor)
+    MNN::Tensor *input_tensor
 #endif
 #if defined(USE_TNN)
-void benchmark(
     tnn::TNN &net,
     std::shared_ptr<tnn::Instance> &instance,
-    std::vector<float> &input)
+    std::vector<float> &input
 #endif
 #if defined(USE_PDLITE)
-void benchmark(
     std::shared_ptr<paddle::lite_api::PaddlePredictor> &predictor,
-    std::unique_ptr<paddle::lite_api::Tensor> &input_tensor)
+    std::unique_ptr<paddle::lite_api::Tensor> &input_tensor
 #endif
 #if defined(USE_TFLITE)
-void benchmark(
-    std::unique_ptr<Interpreter> &interpreter)
+    std::unique_ptr<Interpreter> &interpreter
 #endif
 #if defined(USE_ONNXRUNTIME)
-void benchmark(
     Ort::Session &session,
     std::vector<float> &input_tensor,
-    std::vector<float> &output_tensor)
+    std::vector<float> &output_tensor
 #endif
 #if defined(USE_TORCH)
-void benchmark(
 #if defined(USE_TORCH_MOBILE)
     torch::jit::mobile::Module
 #else
     torch::jit::script::Module
 #endif
     &module,
-    torch::Tensor &input)
+    torch::Tensor &input
 #endif
 #if defined(USE_TVM)
-void benchmark(
     tvm::runtime::PackedFunc &set_input,
     tvm::runtime::PackedFunc &get_output,
     tvm::runtime::PackedFunc &run,
     tvm::runtime::NDArray &input_tensor,
-    tvm::runtime::NDArray &output_tensor)
+    tvm::runtime::NDArray &output_tensor
 #endif
+#if defined(USE_OPENVINO)
+    ov::InferRequest ireq,
+    ov::Tensor input_tensor
+#endif
+)
 {
     // Measure latency
 #if defined(USE_NCNN)
@@ -114,6 +114,9 @@ void benchmark(
 #if defined(USE_TVM)
     load_image("daisy.jpg", static_cast<float*>(input_tensor->data), args.model, args.input_size, args.batch_size);
     set_input("input", input_tensor);
+#endif
+#if defined(USE_OPENVINO)
+    load_image("daisy.jpg", static_cast<float*>(input_tensor.data()), args.model, args.input_size, args.batch_size);
 #endif
 
     auto start = high_resolution_clock::now();
@@ -156,6 +159,9 @@ void benchmark(
 #endif
 #if defined(USE_TVM)
         run();
+#endif
+#if defined(USE_OPENVINO)
+        ireq.infer();
 #endif
 #if defined(DEBUG) || defined(TEST)
         break;
@@ -207,6 +213,10 @@ void benchmark(
 #if defined(USE_TVM)
     get_output(0, output_tensor);
     print_topk(static_cast<float*>(output_tensor->data), 3);
+#endif
+#if defined(USE_OPENVINO)
+    ov::Tensor output_tensor = ireq.get_output_tensor();
+    print_topk(static_cast<float*>(output_tensor.data()), 3);
 #endif
 #if defined(TEST)
     return;
@@ -342,6 +352,9 @@ void benchmark(
 #endif
 #if defined(USE_TVM)
         run();
+#endif
+#if defined(USE_OPENVINO)
+        ireq.infer();
 #endif
         stop = high_resolution_clock::now();
         auto elapse = duration_cast<microseconds>(stop - start);

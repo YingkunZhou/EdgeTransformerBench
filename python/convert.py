@@ -464,4 +464,21 @@ if __name__ == '__main__':
                 trace_model = torch.jit.trace(model, inputs)
                 trace_model.save(".pt/fp32/"+name+'.pt')
 
+        if args.format == 'ALL' or args.format == 'openvino':
+            # https://docs.openvino.ai/2024/openvino-workflow/model-optimization-guide/quantizing-models-post-training/basic-quantization-flow.html
+            import openvino as ov
+            ov_model = ov.convert_model('.onnx/fp32/'+name+'.onnx')
+            ov.save_model(ov_model, '.xml/fp16/'+name+'.xml')
+            dataset_val = build_dataset(args)
+            calib_dataset = [i[0] for i in dataset_val]
+            calibration_dataloader = torch.utils.data.DataLoader(
+                dataset=calib_dataset,
+                batch_size=1, shuffle=False)
+            def transform_fn(data_item):
+                return data_item
+            import nncf
+            calibration_dataset = nncf.Dataset(calibration_dataloader, transform_fn)
+            ov_quantized_model = nncf.quantize(ov_model, calibration_dataset)
+            ov.save_model(ov_quantized_model, '.xml/int8/'+name+'.xml')
+
         if args.extern_model: break

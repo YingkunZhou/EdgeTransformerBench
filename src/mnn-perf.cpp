@@ -59,7 +59,6 @@ int main(int argc, char* argv[])
         {"data-path",  required_argument, 0, 'd'},
         {"only-test",  required_argument, 0, 'o'},
         {"threads",  required_argument, 0, 't'},
-        {"append",  required_argument, 0, 0},
         {0, 0, 0, 0}
     };
     int option_index;
