@@ -45,8 +45,7 @@ csv_result = ""
 def dump_csv():
     csv_result = "model,median\n"
     for ml in model_list:
-        name = ml[0]
-        baseline = ml[1]
+        (name, baseline) = ml
         if name in model_results:
             latency = model_results[name]
             csv_result += f"{name},{latency},"
@@ -65,6 +64,7 @@ if __name__ == "__main__":
     output_csv_file =  sys.argv[2] if len(sys.argv) == 3 else log_file_path[:-3] + "csv"
 
     model_log = open(log_file_path).readlines()
+    append_flag = False
     for l in model_log:
         if ">>>>>>>>>>>" in l and model_results != {}:
             csv_result += dump_csv()
@@ -73,9 +73,11 @@ if __name__ == "__main__":
             l = l.strip()
             tmp = l.split()[-1]
             if tmp != '' and tmp in [m[0] for m in model_list]:
+                append_flag = True
                 model_name = tmp
-            if "median" in l:
+            if "median" in l and append_flag:
                 data = l.split()
                 model_results[model_name] = data[data.index("median")+2][:-2]
+                append_flag = False
     csv_result += dump_csv()
     open(output_csv_file, "w").write(csv_result)
