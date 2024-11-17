@@ -20,8 +20,9 @@ def get_args_parser():
     parser.add_argument('--num_workers', default=2, type=int)
     # Benchmark parameters
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
-    parser.add_argument('--device', default='CPU', type=str, help='backend device name')
+    parser.add_argument('--device', default='PCORE', type=str, help='backend device name')
     parser.add_argument('--threads', default=1, type=int, help='number of cpu threads')
+    parser.add_argument('--sleep', default=0, type=int, help='sleep seconds for earch model test')
 
     return parser
 
@@ -145,8 +146,10 @@ if __name__ == '__main__':
             args.format = 'fp16'
         else:
             config['INFERENCE_PRECISION_HINT'] = 'f16'
-        if args.device == 'CPU':
+        if args.device[1:] == 'CORE':
             config['INFERENCE_NUM_THREADS'] = args.threads
+            config['SCHEDULING_CORE_TYPE'] = args.device + '_ONLY'
+            args.device = 'CPU'
 
         core = ov.Core()
         compiled_model = core.compile_model(f'.xml/{args.format}/{name}.xml', args.device, config)
@@ -165,6 +168,9 @@ if __name__ == '__main__':
             args.len_dataset_val = len(dataset_val)
             evaluate(data_loader_val, ireq, args)
         else:
+            if args.sleep > 0:
+                import time
+                time.sleep(args.sleep)
             benchmark(ireq, load_image(args))
 
         if args.extern_model: break
