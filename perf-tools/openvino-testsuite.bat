@@ -3,13 +3,19 @@ powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMIN 100
 powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMAX 100
 
 :testsuite_series
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test SwiftFormer       2>nul
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test EMO               2>nul
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test edgenext          2>nul
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test mobilevitv2       2>nul
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test mobilevit_        2>nul
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test LeViT             2>nul
-python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test net               2>nul
+SETLOCAL
+SET _device=%1
+SET _format=%2
+SET _threads=%3
+SET _sleep=%4
+ENDLOCAL
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test SwiftFormer       2>nul
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test EMO               2>nul
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test edgenext          2>nul
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test mobilevitv2       2>nul
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test mobilevit_        2>nul
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test LeViT             2>nul
+python python/openvino-perf.py --device %_device% --format %_format% --threads %_threads% --sleep %_sleep% --only-test net               2>nul
 EXIT /B 0
 
 SET _sleep=0
