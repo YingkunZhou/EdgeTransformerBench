@@ -31,6 +31,7 @@ echo ">>>>>>>>>>>GPU: int8<<<<<<<<<"
 CALL :testsuite_series GPU int8 1 %_sleep%
 
 :testsuite_series
+python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test efficientformerv2 2>nul
 python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test SwiftFormer       2>nul
 python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test EMO               2>nul
 python python/openvino-perf.py --device %1 --format %2 --threads %3 --sleep %4 --only-test edgenext          2>nul
