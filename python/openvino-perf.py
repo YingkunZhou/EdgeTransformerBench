@@ -140,19 +140,21 @@ if __name__ == '__main__':
         # Optimize for latency. Most of the devices are configured for latency by default,
         # but there are exceptions like GNA
         config = {}
+        format = args.format
+        device = args.device
         config['PERFORMANCE_HINT'] = 'LATENCY'
         if args.format == 'fp32':
+            format = 'fp16'
             config['INFERENCE_PRECISION_HINT'] = 'f32'
-            args.format = 'fp16'
         else:
             config['INFERENCE_PRECISION_HINT'] = 'f16'
         if args.device[1:] == 'CORE':
+            device = 'CPU'
             config['INFERENCE_NUM_THREADS'] = args.threads
             config['SCHEDULING_CORE_TYPE'] = args.device + '_ONLY'
-            args.device = 'CPU'
 
         core = ov.Core()
-        compiled_model = core.compile_model(f'.xml/{args.format}/{name}.xml', args.device, config)
+        compiled_model = core.compile_model(f'.xml/{format}/{name}.xml', device, config)
         ireq = compiled_model.create_infer_request()
 
         if args.validation:
