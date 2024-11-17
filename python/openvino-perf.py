@@ -5,8 +5,6 @@ import time
 from main import load_image, build_dataset, MetricLogger, WARMUP_SEC, TEST_SEC
 from timm.utils import accuracy
 import openvino as ov
-from openvino.runtime import get_version
-from openvino.runtime.utils.types import get_dtype
 
 def get_args_parser():
     parser = argparse.ArgumentParser(
