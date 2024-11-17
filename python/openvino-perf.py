@@ -131,6 +131,12 @@ if __name__ == '__main__':
             name = args.extern_model.split(',')[0]
             resolution = int(args.extern_model.split(',')[1])
 
+        if name == 'efficientformerv2_s0':
+            if args.device[1:] == 'CORE':
+                print(f">>>>>>>>>>>{args.device}{args.threads}: {args.format} <<<<<<<<<")
+            else:
+                print(f">>>>>>>>>>>{args.device}: {args.format} <<<<<<<<<")
+
         args.model = name
         args.input_size = resolution
         args.usi_eval = usi_eval
