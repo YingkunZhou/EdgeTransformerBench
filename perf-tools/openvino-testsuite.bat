@@ -3,31 +3,31 @@ powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMIN 100
 powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMAX 100
 
 SET _sleep=0
-echo >>>>>>>>>>>PCORE1: fp32<<<<<<<<<
+echo ">>>>>>>>>>>PCORE1: fp32<<<<<<<<<"
 CALL :testsuite_series PCORE fp32 1 %_sleep%
-echo >>>>>>>>>>>PCORE1: int8<<<<<<<<<
+echo ">>>>>>>>>>>PCORE1: int8<<<<<<<<<"
 CALL :testsuite_series PCORE int8 1 %_sleep%
 
-echo >>>>>>>>>>>ECORE1: fp32<<<<<<<<<
+echo ">>>>>>>>>>>ECORE1: fp32<<<<<<<<<"
 CALL :testsuite_series ECORE fp32 1 %_sleep%
-echo >>>>>>>>>>>ECORE1: int8<<<<<<<<<
+echo ">>>>>>>>>>>ECORE1: int8<<<<<<<<<"
 CALL :testsuite_series ECORE int8 1 %_sleep%
 
-echo >>>>>>>>>>>ECORE4: fp32<<<<<<<<<
+echo ">>>>>>>>>>>ECORE4: fp32<<<<<<<<<"
 CALL :testsuite_series ECORE fp32 4 %_sleep%
-echo >>>>>>>>>>>ECORE4: int8<<<<<<<<<
+echo ">>>>>>>>>>>ECORE4: int8<<<<<<<<<"
 CALL :testsuite_series ECORE int8 4 %_sleep%
 
-echo >>>>>>>>>>>NPU: fp16<<<<<<<<<
+echo ">>>>>>>>>>>NPU: fp16<<<<<<<<<"
 CALL :testsuite_series NPU fp16 1 %_sleep%
-echo >>>>>>>>>>>NPU: int8<<<<<<<<<
+echo ">>>>>>>>>>>NPU: int8<<<<<<<<<"
 CALL :testsuite_series NPU int8 1 %_sleep%
 
-echo >>>>>>>>>>>GPU: fp32<<<<<<<<<
+echo ">>>>>>>>>>>GPU: fp32<<<<<<<<<"
 CALL :testsuite_series GPU fp32 1 %_sleep%
-echo >>>>>>>>>>>GPU: fp16<<<<<<<<<
+echo ">>>>>>>>>>>GPU: fp16<<<<<<<<<"
 CALL :testsuite_series GPU fp16 1 %_sleep%
-echo >>>>>>>>>>>GPU: int8<<<<<<<<<
+echo ">>>>>>>>>>>GPU: int8<<<<<<<<<"
 CALL :testsuite_series GPU int8 1 %_sleep%
 
 :testsuite_series
