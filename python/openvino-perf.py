@@ -168,9 +168,13 @@ if __name__ == '__main__':
             args.len_dataset_val = len(dataset_val)
             evaluate(data_loader_val, ireq, args)
         else:
+            benchmark(ireq, load_image(args))
             if args.sleep > 0:
                 import time
                 time.sleep(args.sleep)
-            benchmark(ireq, load_image(args))
+                power_log = open('power.CSV').readlines()
+                size_log = len(power_log) - 15
+                for i in range(15):
+                    print(power_log[size_log + i])
 
         if args.extern_model: break
