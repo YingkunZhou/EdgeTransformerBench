@@ -1,7 +1,28 @@
 import sys
+import numpy as np
+
+meteorlake_win_idle = 2.84
+meteorlake_lin_idle = 1.32
+power_bias = meteorlake_lin_idle
+
+#define custom function
+def g_mean(x):
+    a = np.log(x)
+    return np.exp(a.mean())
+
+def avg_power(p_list):
+    p_median = np.median(p_list)
+    p_sum = 0
+    p_cnt = 0
+    for p in p_list:
+        if abs(p - p_median) / p_median < 0.2:
+            p_sum += p
+            p_cnt += 1
+    return p_sum / p_cnt
 
 # (name, baseline)
 model_list = [
+    # SOTA Conv-ViT hybrid
     ('efficientformerv2_s0', 447.78),
     ('efficientformerv2_s1', 658.58),
     ('efficientformerv2_s2', 1052.78),
@@ -31,6 +52,7 @@ model_list = [
     ('LeViT_192', 232.05),
     ('', None),
     ('', None),
+    # conventional CNNs
     ('mobilenetv3_large_100', 144.67),
     ('tf_efficientnetv2_b0', 315.8),
     ('tf_efficientnetv2_b1', 478.43),
@@ -43,17 +65,50 @@ model_results = {}
 csv_result = ""
 
 def dump_csv():
-    csv_result = "model,median\n"
+    csv_result = "model,median,score,g-mean,power,a-mean\n"
+    scores = []
+    powers = []
+    tri_geomean = False
+    tri_average = False
+
+    # travel model list
     for ml in model_list:
+        # unpack model name and baseline
         (name, baseline) = ml
         if name in model_results:
-            latency = model_results[name]
+            latency = model_results[name][0]
             csv_result += f"{name},{latency},"
-            csv_result += "{:.2f}\n".format(baseline/float(latency))
+            # calculate score
+            score = baseline/float(latency)
+            scores.append(score)
+            csv_result += "{:.2f},".format(score)
+            if len(model_results[name]) > 1:
+                power = float(model_results[name][1]) - power_bias
+                powers.append(power)
+                csv_result += ",{:.2f}".format(power)
+                tri_average = True
+            csv_result += '\n'
+            tri_geomean = True
         elif name == '':
-            csv_result += ",,\n"
+            if tri_geomean:
+                # calculate model series (3 models) total score
+                tri_geomean = False
+                csv_result += ",,,{:.2f},".format(g_mean(scores[-3:]))
+                if tri_average:
+                    tri_average = False
+                    csv_result += ",{:.2f}".format(np.average(powers[-3:]))
+                csv_result += '\n'
+            elif len(scores) == 21:
+                # calculate 21 models total score
+                csv_result += ",,,{:.2f},".format(g_mean(scores))
+                if powers:
+                    csv_result += ",{:.2f}".format(np.average(powers))
+                csv_result += '\n'
+            else:
+                # missing certain models, don't caculate scores
+                csv_result += ",,,,\n"
         else:
-            csv_result += f"{name},,\n"
+            csv_result += f"{name},,,,\n"
     return csv_result
 
 if __name__ == "__main__":
@@ -65,19 +120,54 @@ if __name__ == "__main__":
 
     model_log = open(log_file_path).readlines()
     append_flag = False
+    windows_logging = False
+    x86linux_logging = False
+    android_logging = False
+    power_list = []
     for l in model_log:
         if ">>>>>>>>>>>" in l and model_results != {}:
+            if windows_logging and model_name in model_results and len(model_results[model_name]) == 1:
+                # for windows hwinfo, append the last model's power data
+                model_results[model_name].append(avg_power(power_list))
+            # create a new benchmark iteration, dump the previous one
             csv_result += dump_csv()
             model_results = {}
         elif l.strip():
             l = l.strip()
-            tmp = l.split()[-1]
-            if tmp != '' and tmp in [m[0] for m in model_list]:
-                append_flag = True
-                model_name = tmp
-            if "median" in l and append_flag:
-                data = l.split()
-                model_results[model_name] = data[data.index("median")+2][:-2]
+            l_list = l.split()
+            if 'PkgWatt' in l:
+                # intel linux turbostat format
+                x86linux_logging = True
+            elif l[0].isnumeric():
+                # is the first one is number, which means it's the power log data
+                # collect power_logs by scan each line
+                if ',' in l:
+                    # windows hwinfo csv format
+                    windows_logging = True
+                    power_list.append(float(l.split(',')[2]))
+                elif x86linux_logging:
+                    power_list.append(float(l_list[0]))
+            elif l_list[0] == 'Load' or l_list[0] == 'Creating':
+                # python api    or c++ api
+                if windows_logging and model_name in model_results and len(model_results[model_name]) == 1:
+                    # which means still need to append power data from windows hwinfo
+                    model_results[model_name].append(avg_power(power_list))
+                power_list = []
+                # decide which models to append
+                if l_list[-1] in [m[0] for m in model_list]:
+                    append_flag = True
+                    model_name = l_list[-1]
+            elif "median" in l and append_flag:
+                # to get the median latency (ms)
                 append_flag = False
+                # begin register name in model_results dictionary
+                model_results[model_name] = [l_list[l_list.index("median")+2][:-2]]
+                if x86linux_logging:
+                    model_results[model_name].append(avg_power(power_list))
+                    power_list = []
+    if windows_logging and len(model_results[model_name]) == 1:
+        # for windows hwinfo, append the last model's power data
+        model_results[model_name].append(avg_power(power_list))
+    # dump the last one
     csv_result += dump_csv()
     open(output_csv_file, "w").write(csv_result)
