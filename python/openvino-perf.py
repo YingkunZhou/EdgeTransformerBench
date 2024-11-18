@@ -172,9 +172,9 @@ if __name__ == '__main__':
             if args.sleep > 0:
                 import time
                 time.sleep(args.sleep)
-                power_log = open('power.CSV').readlines()
-                size_log = len(power_log) - 15
+                power_log = open('power.CSV', encoding='UTF-8').readlines()
+                size_log = len(power_log) - 18
                 for i in range(15):
-                    print(power_log[size_log + i])
+                    print(power_log[size_log + i].strip())
 
         if args.extern_model: break
