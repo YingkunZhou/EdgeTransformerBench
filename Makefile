@@ -5,6 +5,7 @@ THREADS ?=1
 FP ?= 32
 SIZE ?= 224
 ANDROID := $(shell uname -a | grep -q Android; echo $$?)
+ARCH_ARM := $(shell uname -m | grep -q aarch64; echo $$?)
 
 all: ncnn-perf mnn-perf tnn-perf pdlite-perf tflite-perf onnxruntime-perf torch-perf
 run-all: run-ncnn-perf run-mnn-perf run-tnn-perf run-pdlite-perf run-tflite-perf run-onnxruntime-perf run-torch-perf
@@ -160,16 +161,20 @@ ifeq ($(ANDROID),0)
 	NNAPI_FLAGS += -lnnapi_util -lnnapi_delegate_no_nnapi_implementation -lnnapi_implementation -DUSE_NNAPI
 endif
 
-ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
--I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN
-ifneq ($(ANDROID),0)
-	ARMNN_FLAGS += -lflatbuffers
+ifeq ($(ARCH_ARM),0)
+	ARMNN_FLAGS = -I$(TFLITE_INC)/armnn/delegate/classic/include -I$(TFLITE_INC)/armnn/delegate/common/include \
+	-I$(TFLITE_INC)/armnn/include -larmnnDelegate -larmnn -DUSE_ARMNN
+	ifneq ($(ANDROID),0)
+		ARMNN_FLAGS += -lflatbuffers
+	endif
 endif
 
-# sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
-GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU -lEGL
-ifneq ($(ANDROID),0)
-	ARMNN_FLAGS += -lGL
+ifeq ($(ARCH_ARM),0)
+	# sudo apt install libgles2-mesa-dev libegl1-mesa-dev xorg-dev
+	GPU_FLAGS = -ltensorflowlite_gpu_delegate -DUSE_GPU -lEGL
+	ifneq ($(ANDROID),0)
+		ARMNN_FLAGS += -lGL
+	endif
 endif
 
 tflite-perf: bin/tflite-perf
