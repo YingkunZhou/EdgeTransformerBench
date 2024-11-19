@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <sys/stat.h>
+#include <algorithm>
 
 const float IMAGENET_DEFAULT_MEAN[3] = {0.485f, 0.456f, 0.406f};
 const float IMAGENET_DEFAULT_STD[3]  = {0.229f, 0.224f, 0.225f};
