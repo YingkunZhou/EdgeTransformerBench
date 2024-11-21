@@ -9,6 +9,20 @@ download_model()
     # gdown 1XqF9my9TguiKKlaKxvfvGAXTDZh6HUSG # downloading mnn-fp32-models.tar.gz
 }
 
+download_library()
+{
+    cd .libs
+    if [ ! -d "openvino" ]
+    then
+        if [ ! -f "openvino.tar.gz" ]
+        then
+            wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v2.1/openvino.tar.gz
+        fi
+        tar xf openvino.tar.gz
+    fi
+    cd ..
+}
+
 testsuite()
 {
     cd .xml; rm *; ln -sf $1/* .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..

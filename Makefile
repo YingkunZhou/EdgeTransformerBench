@@ -329,29 +329,31 @@ tvm-model-test: bin/tvm-perf-test
 ########################
 ###### openvino part #######
 ########################
+OPENVINO_LIB ?= $(PWD)/.libs/openvino/runtime/lib/intel64
+OPENVINO_INC ?= $(PWD)/.libs/openvino/runtime/include
 openvino-perf: bin/openvino-perf
 openvino-perf-test: bin/openvino-perf-test
 
 bin/openvino-perf: src/openvino-perf.cpp $(DEPS)
-	$(CXX) -O3 -o bin/openvino-perf src/openvino-perf.cpp -lopenvino $(FLAGS)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB) $(CXX) -O3 -o bin/openvino-perf src/openvino-perf.cpp -I$(OPENVINO_INC) -L$(OPENVINO_LIB) -lopenvino $(FLAGS)
 
 bin/openvino-perf-test: src/ncnn-perf.cpp $(DEPS)
-	$(CXX) -O3 -DTEST -o bin/openvino-perf-test src/openvino-perf.cpp -lopenvino $(FLAGS)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB) $(CXX) -O3 -DTEST -o bin/openvino-perf src/openvino-perf.cpp -I$(OPENVINO_INC) -L$(OPENVINO_LIB) -lopenvino $(FLAGS)
 
 run-openvino-perf: bin/openvino-perf
-	bin/openvino-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB):$(LD_LIBRARY_PATH) bin/openvino-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-openvino: bin/openvino-perf
-	bin/openvino-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB):$(LD_LIBRARY_PATH) bin/openvino-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 openvino-model-perf: bin/openvino-perf
-	bin/openvino-perf --model $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP) --size $(SIZE)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB):$(LD_LIBRARY_PATH) bin/openvino-perf --model $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP) --size $(SIZE)
 
 openvino-model-validation: bin/openvino-perf
-	bin/openvino-perf --model $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) --size $(SIZE) $(VAL_EXTRA)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB):$(LD_LIBRARY_PATH) bin/openvino-perf --model $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) --size $(SIZE) $(VAL_EXTRA)
 
 test-openvino-perf: bin/openvino-perf-test
-	bin/openvino-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB):$(LD_LIBRARY_PATH) bin/openvino-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 openvino-model-test: bin/openvino-perf-test
-	bin/openvino-perf-test --model $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP) --size $(SIZE)
+	LD_LIBRARY_PATH=$(OPENVINO_LIB):$(LD_LIBRARY_PATH) bin/openvino-perf-test --model $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP) --size $(SIZE)

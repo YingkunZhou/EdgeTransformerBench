@@ -68,7 +68,9 @@ Cflags: -I/opencv/install/include/opencv4
 ```
 </details>
 
-# ncnn (commit id: 1012f851396d4d6e502e1f1836b6d997b31ed89f)
+# ncnn
+
+commit id: 1012f851396d4d6e502e1f1836b6d997b31ed89f
 
 <details>
 <summary>Linux</summary>
@@ -115,7 +117,9 @@ make install -j`nproc`
 
 </details>
 
-# mnn (commit id: d20f37fd7134127dde9201e74d38dc0c08d4a096)
+# mnn
+
+commit id: d20f37fd7134127dde9201e74d38dc0c08d4a096
 
 <details>
 <summary>Linux</summary>
@@ -362,7 +366,9 @@ cp -r ../include/tnn ../install/include
 ```
 </details>
 
-# paddle lite (commit id: 8795a4d3d8d209bd812dee95947a294ff017d63f)
+# paddle lite
+
+commit id: 8795a4d3d8d209bd812dee95947a294ff017d63f
 
 https://github.com/PaddlePaddle/Paddle-Lite/blob/develop/docs/demo_guides/opencl.md
 
@@ -436,7 +442,9 @@ build_android.sh: NUM_PROC=32
 
 </details>
 
-# tensorflow lite (commit id: 53c79c506b9032fa1311ff29ed90fbf1afcba204)
+# tensorflow lite
+
+commit id: 53c79c506b9032fa1311ff29ed90fbf1afcba204
 
 python 3.10 conda install bazel
 
@@ -517,7 +525,9 @@ cp bazel-bin/tensorflow/lite/delegates/flex/libtensorflowlite_flex.so install/li
 </details>
 
 
-## armnn (commit id: fbfa49eeb14c6cb94d47e3c770b0c168e818cf79)
+## armnn
+
+commit id: fbfa49eeb14c6cb94d47e3c770b0c168e818cf79
 
 <details>
 <summary>Linux</summary>
@@ -694,7 +704,9 @@ cp -a $BASEDIR/armnn/build/delegate/libarmnnDelegate.so*  install/lib
 
 </details>
 
-# onnxruntime (commit id: 435e19953ea54115124fd637a67a87681a7fc8eb)
+# onnxruntime
+
+commit id: 435e19953ea54115124fd637a67a87681a7fc8eb
 
 <details>
 <summary>Linux</summary>
@@ -824,7 +836,9 @@ cp ../../../include/onnxruntime/core/providers/nnapi/nnapi_provider_factory.h in
 
 </details>
 
-# torch (`torch-2.4.0.dev20240320-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl`)
+# torch
+
+torch-2.4.0.dev20240320-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
 
 <details>
 <summary>Linux</summary>
@@ -1180,3 +1194,18 @@ cat /etc/nv_tegra_release
 
 - Ascend-cann-toolkit_8.0.RC1.alpha001
 - opiaipro_ubuntu22.04_desktop_aarch64_20240227.img.xz
+
+# openvino
+
+version: 2024.4.0
+
+[buld_linux](https://github.com/openvinotoolkit/openvino/blob/master/docs/dev/build_linux.md)
+```bash
+git clone https://github.com/openvinotoolkit/openvino.git
+git checkout 2024.4.0
+cd openvino
+git submodule update --init --recursive
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=$PWD/../install ..
+cmake --build . --target install --parallel 8
+```

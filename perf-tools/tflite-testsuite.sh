@@ -26,11 +26,20 @@ download_library()
             if uname -a | grep -q Android
             then
                 wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/tensorflow.tar.gz
+            elif uname -m | grep -q x86_64
+            then
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v2.1/tensorflow-2.16.1.tar.gz
             else
                 wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/tensorflow.tar.gz
             fi
         fi
-        tar xf tensorflow.tar.gz
+        if uname -m | grep -q x86_64
+        then
+            tar xf tensorflow-2.16.1.tar.gz
+            mv tensorflow-2.16.1 tensorflow
+        else
+            tar xf tensorflow.tar.gz
+        fi
         if uname -a | grep -q Android
         then
             echo "assert all android devices have armv8.2 fp16 isa and opencl support"
@@ -249,20 +258,24 @@ NNAPI_testsuite()
 download_model
 download_library
 
-if vulkaninfo | grep -q Adreno
+if uname -m | grep -q x86_64
 then
-    cp /vendor/lib64/libOpenCL.so .libs/tensorflow/install/lib
-fi
+    echo "skip vulkan & opencl & nnapi testsuite in x86 platform"
+else
+    if vulkaninfo | grep -q Adreno
+    then
+        cp /vendor/lib64/libOpenCL.so .libs/tensorflow/install/lib
+    fi
 
-if uname -a | grep -q Android
-then
-    NNAPI_testsuite
-fi
+    if uname -a | grep -q Android
+    then
+        NNAPI_testsuite
+    fi
 
-if clinfo >/dev/null
-then
-    GPU_testsuite
-fi
+    if clinfo >/dev/null
+    then
+        GPU_testsuite
+    fi
 
 CPU_testsuite 1
 CPU_testsuite 4

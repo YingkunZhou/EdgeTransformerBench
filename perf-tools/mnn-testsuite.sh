@@ -19,6 +19,9 @@ download_library()
             if uname -a | grep -q Android
             then
                 wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/MNN.tar.gz
+            elif uname -m | grep -q x86_64
+            then
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v2.1/MNN.tar.gz
             else
                 wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/MNN.tar.gz
             fi
@@ -58,8 +61,13 @@ CPU_testsuite()
     echo ">>>>>>>>>>>cpu: fp16 model + fp32 arith<<<<<<<<<"
     testsuite fp16 z 32 $1
 
-    echo ">>>>>>>>>>>cpu: fp16 model + fp16 arith<<<<<<<<<"
-    testsuite fp16 z 16 $1
+    if uname -m | grep -q x86_64
+    then
+        echo "intel client don't support avx512 fp16 instr"
+    else
+        echo ">>>>>>>>>>>cpu: fp16 model + fp16 arith<<<<<<<<<"
+        testsuite fp16 z 16 $1
+    fi
 
     echo ">>>>>>>>>>>cpu: int8 model<<<<<<<<<"
     # TODO: unable to run in aipro and m1, because missing SMMLA instruction
@@ -70,19 +78,24 @@ CPU_testsuite()
 download_model
 download_library
 
-if vulkaninfo | grep -q Adreno
+if uname -m | grep -q x86_64
 then
-    cp /vendor/lib64/libOpenCL.so .libs/MNN/install/lib
-fi
+    echo "skip opencl & vulkan testsuite in x86 platform"
+else
+    if vulkaninfo | grep -q Adreno
+    then
+        cp /vendor/lib64/libOpenCL.so .libs/MNN/install/lib
+    fi
 
-if clinfo >/dev/null
-then
-    OPENCL_testsuite
-fi
+    if clinfo >/dev/null
+    then
+        OPENCL_testsuite
+    fi
 
-if vulkaninfo >/dev/null
-then
-    VULKAN_testsuite
+    if vulkaninfo >/dev/null
+    then
+        VULKAN_testsuite
+    fi
 fi
 CPU_testsuite 1
 CPU_testsuite 4

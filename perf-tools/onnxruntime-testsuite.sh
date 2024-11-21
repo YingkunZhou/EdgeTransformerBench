@@ -18,11 +18,20 @@ download_library()
             if uname -a | grep -q Android
             then
                 wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.1/onnxruntime.tar.gz
+            elif uname -m | grep -q x86_64
+            then
+                wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v2.1/onnxruntime-linux-x64-1.20.0.tgz
             else
                 wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/onnxruntime.tar.gz
             fi
         fi
-        tar xf onnxruntime.tar.gz
+        if uname -m | grep -q x86_64
+        then
+            tar xf onnxruntime-linux-x64-1.20.0.tgz
+            mv onnxruntime-linux-x64-1.20.0 onnxruntime
+        else
+            tar xf onnxruntime.tar.gz
+        fi
     fi
     cd ..
 }
@@ -83,4 +92,9 @@ then
     # QNN_testsuite
 fi
 CPU_testsuite 1
-CPU_testsuite 3 # 3+1 threads
+if uname -m | grep -q x86_64
+then
+    echo "onnxruntime multi-thread support in x86 linux is rubbish!!!"
+else
+    CPU_testsuite 3 # 3+1 threads
+fi
