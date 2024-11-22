@@ -25,6 +25,14 @@ int main(int argc, char *argv[])
         // Closing the file
         fclose(ptr);
         printf(",");
+        ptr = fopen("/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq", "r");
+        while (1) {
+            ch = fgetc(ptr);
+            if (ch == '\n') break;
+            printf("%c", ch);
+        }
+        fclose(ptr);
+        printf(",");
         ptr = fopen("/sys/class/kgsl/kgsl-3d0/devfreq/cur_freq", "r");
         while (1) {
             ch = fgetc(ptr);
