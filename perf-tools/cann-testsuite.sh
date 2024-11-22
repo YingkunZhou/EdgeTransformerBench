@@ -4,6 +4,14 @@ SLEEP="${2:-$NOSLEEP}"
 EVAL=$3
 DATA=$4
 
+# USAGE: bash perf-tools/ncnn-testsuite.sh
+
+if [ ! -d ".cann" ]
+then
+    [ ! -f "cann-models.tar.gz" ] && gdown 12kU9snxMNiZiGV_qPdwhPbeqyPqTV0GL
+    tar xf cann-models.tar.gz;
+fi
+
 python python/cann-perf.py --format $FMT $EVAL $DATA --only-test efficientformerv2_s0 2>/dev/null ; sleep $SLEEP
 python python/cann-perf.py --format $FMT $EVAL $DATA --only-test efficientformerv2_s1 2>/dev/null ; sleep $SLEEP
 python python/cann-perf.py --format $FMT $EVAL $DATA --only-test efficientformerv2_s2 2>/dev/null ; sleep $SLEEP
