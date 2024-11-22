@@ -176,12 +176,12 @@ int main(int argc, char* argv[])
         }
 
 
-        std::cout << "Creating MNN Interpreter: " << args.model << std::endl;
         std::string model_file = ".mnn/" + args.model + ".mnn";
         if (model_exists(model_file) == 0) {
             std::cerr << args.model << " model doesn't exist!!!" << std::endl;
             continue;
         }
+        std::cout << "Creating MNN Interpreter: " << args.model << std::endl;
         std::shared_ptr<MNN::Interpreter> net(MNN::Interpreter::createFromFile(model_file.c_str()), MNN::Interpreter::destroy);
 #if 0
         // https://www.yuque.com/mnn/cn/create_session#KtfMk
