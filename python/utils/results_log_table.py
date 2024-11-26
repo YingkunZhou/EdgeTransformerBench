@@ -1,9 +1,20 @@
 import sys
 import numpy as np
 
-meteorlake_win_idle = 2.84
-meteorlake_lin_idle = 1.32
-power_bias = meteorlake_lin_idle
+meteorlake_win_idle = 2.84 #W
+meteorlake_lin_idle = 1.32 #W
+lunarlake_win_idle = 0.68 #W
+lunarlake_lin_idle = 0.49 #W
+m1mini_lin_idle = 4.96045 #W
+m1mini_mac_idle = 1.81085 #W
+power_bias = m1mini_mac_idle
+android_offset = {
+    'sd845': [1000000, 1000000],
+    'sd888': [1000000, 1000000],
+    'sd8gen2': [1000000, 1000],
+    's20p': [1000000, -1000],
+}
+
 
 #define custom function
 def g_mean(x):
@@ -65,7 +76,7 @@ model_results = {}
 csv_result = ""
 
 def dump_csv():
-    csv_result = "model,median,score,g-mean,power,a-mean\n"
+    csv_result = "model,median,score,g-mean,power,a-mean,perf/W\n"
     scores = []
     powers = []
     tri_geomean = False
@@ -97,6 +108,7 @@ def dump_csv():
                 if tri_average:
                     tri_average = False
                     csv_result += ",{:.2f}".format(np.average(powers[-3:]))
+                    csv_result += ",{:.2f}".format(g_mean(scores[-3:])/np.average(powers[-3:]))
                 csv_result += '\n'
             elif len(scores) == 21:
                 # calculate 21 models total score
@@ -122,31 +134,58 @@ if __name__ == "__main__":
     append_flag = False
     windows_logging = False
     x86linux_logging = False
+    power_z_logging = False
     android_logging = False
     power_list = []
     for l in model_log:
-        if ">>>>>>>>>>>" in l and model_results != {}:
-            if windows_logging and model_name in model_results and len(model_results[model_name]) == 1:
-                # for windows hwinfo, append the last model's power data
-                model_results[model_name].append(avg_power(power_list))
-            # create a new benchmark iteration, dump the previous one
-            csv_result += dump_csv()
-            model_results = {}
+        if ">>>>>>>>>>>" in l:
+            if model_results != {}:
+                if windows_logging and model_name in model_results and len(model_results[model_name]) == 1:
+                    # for windows hwinfo, append the last model's power data
+                    model_results[model_name].append(avg_power(power_list))
+                # create a new benchmark iteration, dump the previous one
+                csv_result += dump_csv()
+                model_results = {}
+            elif android_logging:
+                # the first time
+                power_bias = avg_power(power_list)
+                print(power_bias)
         elif l.strip():
             l = l.strip()
             l_list = l.split()
-            if 'PkgWatt' in l:
+            if len(l) > 3 and l[0:3] == 'AN-':
+                android_logging = True
+                ll = l.split(',')
+                voltage = ll[-2]
+                current = ll[-1]
+                voltage = float(voltage)/android_offset[ll[0][3:]][0]
+                current = float(current)/android_offset[ll[0][3:]][1]
+                power_list.append(voltage * current)
+            elif 'PkgWatt' in l:
                 # intel linux turbostat format
                 x86linux_logging = True
+            elif 'power-z' in l:
+                # power-z logging format
+                power_z_logging = True
+                power_bias = 0
+                for end in model_log[-20:]:
+                    power_bias += float(end.split(',')[-1])
+                power_bias /= 20
+                print(power_bias)
             elif l[0].isnumeric():
                 # is the first one is number, which means it's the power log data
                 # collect power_logs by scan each line
-                if ',' in l:
+                if x86linux_logging:
+                    power_list.append(float(l_list[0]))
+                elif power_z_logging:
+                    power_list.append(float(l.split(',')[-1]))
+                elif ',' in l:
                     # windows hwinfo csv format
                     windows_logging = True
                     power_list.append(float(l.split(',')[2]))
-                elif x86linux_logging:
-                    power_list.append(float(l_list[0]))
+                else:
+                    # wall power meter format
+                    power_list.append(float(l))
             elif l_list[0] == 'Load' or l_list[0] == 'Creating':
                 # python api    or c++ api
                 if windows_logging and model_name in model_results and len(model_results[model_name]) == 1:
@@ -157,14 +196,20 @@ if __name__ == "__main__":
                 if l_list[-1] in [m[0] for m in model_list]:
                     append_flag = True
                     model_name = l_list[-1]
+            elif android_logging and l_list[0] == "(index:":
+                power_list = []
             elif "median" in l and append_flag:
                 # to get the median latency (ms)
                 append_flag = False
                 # begin register name in model_results dictionary
                 model_results[model_name] = [l_list[l_list.index("median")+2][:-2]]
-                if x86linux_logging:
+                if power_z_logging:
+                    model_results[model_name].append(avg_power(power_list[-20:]))
+                    power_list = []
+                elif power_list != []:
                     model_results[model_name].append(avg_power(power_list))
                     power_list = []
+
     if windows_logging and len(model_results[model_name]) == 1:
         # for windows hwinfo, append the last model's power data
         model_results[model_name].append(avg_power(power_list))

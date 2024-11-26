@@ -5,6 +5,34 @@ SLEEP="${3:-$NOSLEEP}"
 EVAL=$4
 DATA=$5
 
+download_model()
+{
+    if [ ! -d ".onnx" ]
+    then
+        [ ! -f "onnx-models.tar.gz" ] && gdown 1eS2sGylZeSuUcrSLtrSo2nJafHQvzVIR
+        tar xf onnx-models.tar.gz;
+        [ ! -f "tensorrt-models.tar.gz" ] && gdown 1azQdDgE8_gH0cseWvUNrdn31wyKrET7x
+        tar xf tensorrt-models.tar.gz;
+    fi
+}
+
+download_library()
+{
+    cd .libs
+    if [ ! -d "onnxruntime" ]
+    then
+        if [ ! -f "onnxruntime.tar.gz" ]
+        then
+            wget https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v1.0/onnxruntime.tar.gz
+        fi
+        tar xf onnxruntime.tar.gz
+    fi
+    cd ..
+}
+
+download_model
+download_library
+
 rm bin/onnxruntime-perf; TENSORRT_FLAGS="-DUSE_TENSORRT" make bin/onnxruntime-perf
 cd .onnx; rm -rf *.onnx; ln -sf fp32/*.onnx .; rm LeViT_256.*  mobilevitv2_1[257]*  mobilevitv2_200.*  tf_efficientnetv2_b3.*; cd ..
 

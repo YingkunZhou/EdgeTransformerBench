@@ -15,7 +15,7 @@ if __name__ == "__main__":
     start = True
     merged_output = ''
     while start:
-        if 'Creating ' in perf_logs[i]:
+        if '(index: ' in perf_logs[i] or '[(' == perf_logs[i][:2]:
             start = False
         merged_output += perf_logs[i]
         i+=1
@@ -26,11 +26,11 @@ if __name__ == "__main__":
         pls = pl.strip().split(',')
         if pls:
             cur_pow = float(pls[-1])
-            start = (prev_pow - cur_pow) > 1 and damping == 0
+            start = (prev_pow - cur_pow) > 3 and damping == 0
             while start and i < len(perf_logs):
                 damping = 20
                 merged_output += perf_logs[i]
-                if 'Creating ' in perf_logs[i]:
+                if '(index: ' in perf_logs[i] or '[(' == perf_logs[i][:2]:
                     start = False
                 i += 1
             merged_output += pl

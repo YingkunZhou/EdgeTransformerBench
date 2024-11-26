@@ -19,6 +19,7 @@ def get_args_parser():
     # Benchmark parameters
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
     parser.add_argument('--compute', default='', type=str, help='Apple soc compute units')
+    parser.add_argument('--sleep', default=0, type=int, help='sleep seconds for earch model test')
 
     return parser
 
@@ -178,6 +179,9 @@ if __name__ == '__main__':
             args.len_dataset_val = len(dataset_val)
             evaluate(data_loader_val, mlmodel, args)
         else:
+            if args.sleep > 0:
+                import time
+                time.sleep(args.sleep)
             benchmark(mlmodel, load_image(args))
 
         if args.extern_model: break

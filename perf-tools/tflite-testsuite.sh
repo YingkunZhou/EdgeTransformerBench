@@ -276,6 +276,7 @@ else
     then
         GPU_testsuite
     fi
+fi
 
 CPU_testsuite 1
 CPU_testsuite 4

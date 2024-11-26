@@ -10,22 +10,8 @@ int main(int argc, char *argv[])
     int end = atoi(argv[1]);
 
     while(end) {
-        printf("devboard-rk3588,");
-        // Opening file in reading mode
-        ptr = fopen("/sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq", "r");
-        // Printing what is written in file
-        // character by character using loop.
-        while (1) {
-            ch = fgetc(ptr);
-            // Checking if character is not EOF.
-            // If it is EOF stop reading.
-            if (ch == '\n') break;
-            printf("%c", ch);
-        }
-        // Closing the file
-        fclose(ptr);
-        printf(",");
-        ptr = fopen("/sys/devices/system/cpu/cpufreq/policy4/scaling_cur_freq", "r");
+        printf("devboard-a11d,");
+        ptr = fopen("/sys/devices/system/cpu/cpufreq/policy2/scaling_cur_freq", "r");
         while (1) {
             ch = fgetc(ptr);
             if (ch == '\n') break;
@@ -41,7 +27,7 @@ int main(int argc, char *argv[])
         }
         fclose(ptr);
         printf(",");
-        ptr = fopen("/sys/devices/platform/fb000000.gpu/devfreq/fb000000.gpu/cur_freq", "r");
+        ptr = fopen("/sys/class/mpgpu/cur_freq", "r");
         while (1) {
             ch = fgetc(ptr);
             if (ch == '\n') break;
@@ -49,7 +35,23 @@ int main(int argc, char *argv[])
         }
         fclose(ptr);
         printf(",");
-        ptr = fopen("/sys/devices/platform/fb000000.gpu/utilisation", "r");
+        ptr = fopen("/sys/class/mpgpu/utilization", "r");
+        while (1) {
+            ch = fgetc(ptr);
+            if (ch == '\n') break;
+            printf("%c", ch);
+        }
+        fclose(ptr);
+        printf(",");
+        ptr = fopen("/sys/class/mpgpu/util_cl", "r");
+        while (1) {
+            ch = fgetc(ptr);
+            if (ch == '\n') break;
+            printf("%c", ch);
+        }
+        fclose(ptr);
+        printf(",");
+        ptr = fopen("/sys/class/mpgpu/util_gl", "r");
         while (1) {
             ch = fgetc(ptr);
             if (ch == '\n') break;

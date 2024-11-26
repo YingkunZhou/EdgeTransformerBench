@@ -6,7 +6,6 @@ download_model()
         [ ! -f "openvino-models.tar.gz" ] && gdown 1Mhc4g5zSww1NRKIPUjWwO_PNVhYRuNPC
         tar xf openvino-models.tar.gz;
     fi
-    # gdown 1XqF9my9TguiKKlaKxvfvGAXTDZh6HUSG # downloading mnn-fp32-models.tar.gz
 }
 
 download_library()

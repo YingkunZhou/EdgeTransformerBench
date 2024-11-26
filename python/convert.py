@@ -9,8 +9,6 @@ import subprocess
 import torch
 from timm.models import create_model
 from main import build_dataset
-from torch.ao.quantization import get_default_qconfig_mapping
-from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
 
 import copy
 
@@ -202,6 +200,21 @@ if __name__ == '__main__':
                 do_constant_folding=True,
                 opset_version=args.opset_version
             )
+
+        if args.format == 'ALL' or args.format == 'tflite':
+            import ai_edge_torch
+            import tensorflow as tf
+            tfl_converter_flags = {
+                'optimizations': [tf.lite.Optimize.DEFAULT],
+                'target_spec.supported_types': [tf.float16],
+                'target_spec.supported_ops': [
+                    tf.lite.OpsSet.TFLITE_BUILTINS,
+                    tf.lite.OpsSet.SELECT_TF_OPS,]
+                }
+            edge_model = ai_edge_torch.convert(model, (inputs,),
+                            # _ai_edge_converter_flags=tfl_converter_flags,
+                        )
+            edge_model.export('.tflite/litert/' + name + '.tflite')
 
         if args.format == 'ALL' or args.format == 'trt':
             trace_model = torch.jit.trace(model, inputs).cuda()

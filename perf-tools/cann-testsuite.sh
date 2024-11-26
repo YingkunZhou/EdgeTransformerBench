@@ -4,7 +4,7 @@ SLEEP="${2:-$NOSLEEP}"
 EVAL=$3
 DATA=$4
 
-# USAGE: bash perf-tools/ncnn-testsuite.sh
+# USAGE: bash perf-tools/cann-testsuite.sh
 
 if [ ! -d ".cann" ]
 then
