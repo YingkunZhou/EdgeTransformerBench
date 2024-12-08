@@ -54,3 +54,5 @@ bin/
 *.onnx
 *.tvm
 *.xml
+*.coreml
+*.apk

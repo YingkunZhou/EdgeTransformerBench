@@ -201,6 +201,36 @@ if __name__ == '__main__':
                 opset_version=args.opset_version
             )
 
+        if args.format == 'ALL' or args.format == 'tinynn':
+            # pip install git+https://github.com/alibaba/TinyNeuralNetwork.git
+            from tinynn.converter import TFLiteConverter
+            converter = TFLiteConverter(
+                model,
+                inputs,
+                ".tflite/tinynn-32/"+args.model+'.tflite',
+                # float16_quantization = True,
+                nchw_transpose=False,
+            )
+            converter.convert()
+
+            converter = TFLiteConverter(
+                model,
+                inputs,
+                tflite_path='.tflite/tinynn-d8/'+args.model+'.tflite',
+                quantize_target_type='int8', # Defaults to 'uint8'
+                strict_symmetric_check=True,
+                # Enable hybrid quantization
+                hybrid_quantization_from_float=True,
+                # Enable hybrid per-channel quantization (lower q-loss, but slower??? really)
+                hybrid_per_channel=True,
+                # Use asymmetric inputs for hybrid quantization (probably lower q-loss, but a bit slower)
+                hybrid_asymmetric_inputs=True,
+                # Enable hybrid per-channel quantization for `Conv2d` and `DepthwiseConv2d`
+                hybrid_conv=True,
+                nchw_transpose=False,
+            )
+            converter.convert()
+
         if args.format == 'ALL' or args.format == 'tflite':
             import ai_edge_torch
             import tensorflow as tf
@@ -215,7 +245,7 @@ if __name__ == '__main__':
                             # _ai_edge_converter_flags=tfl_converter_flags,
                         )
             edge_model.export('.tflite/litert/' + name + '.tflite')
-
+        # Experimental, please use trt-convert.py
         if args.format == 'ALL' or args.format == 'trt':
             trace_model = torch.jit.trace(model, inputs).cuda()
 
