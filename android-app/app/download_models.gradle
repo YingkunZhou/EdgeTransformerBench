@@ -80,4 +80,4 @@ task copyTestModel(type: Copy, dependsOn: downloadLabelsFile) {
 }
 
 preBuild.dependsOn downloadLabelsFile, downloadModelFile0, downloadModelFile1, downloadModelFile2,
-        downloadModelFile3, downloadModelFile4, downloadModelFile5, downloadModelFile6, copyTestModel
+        downloadModelFile3, downloadModelFile4, downloadModelFile5, downloadModelFile6, downloadModelFile7, downloadModelFile8, copyTestModel
