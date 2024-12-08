@@ -43,6 +43,8 @@
     </string-array>
 
     <string-array name="models_spinner_titles">
+        <item>mobilenetv3_large_100</item>
+        <item>tf_efficientnetv2_b0</item>
         <item>efficientformerv2_s0</item>
         <item>SwiftFormer_XS</item>
         <item>EMO_1M</item>
