@@ -231,7 +231,11 @@ if __name__ == '__main__':
             )
             converter.convert()
 
-        if args.format == 'ALL' or args.format == 'tflite':
+        if args.format == 'ALL' or args.format == 'litert':
+            if not os.path.exists(".tflite/litert"):
+                os.makedirs(".tflite/litert")
+            # https://developers.googleblog.com/en/ai-edge-torch-high-performance-inference-of-pytorch-models-on-mobile-devices/
+            # pip install git+https://github.com/google-ai-edge/ai-edge-torch.git
             import ai_edge_torch
             import tensorflow as tf
             tfl_converter_flags = {
@@ -242,6 +246,10 @@ if __name__ == '__main__':
                     tf.lite.OpsSet.SELECT_TF_OPS,]
                 }
             edge_model = ai_edge_torch.convert(model, (inputs,),
+                            ### will cause segmentation fault on tensorflow-2.18.0 ...... or
+                            ### ERROR: Didn't find op for builtin opcode 'FULLY_CONNECTED' version '12'.
+                            ### An older version of this builtin might be supported. Are you using an old
+                            ### TFLite binary with a newer model?
                             # _ai_edge_converter_flags=tfl_converter_flags,
                         )
             edge_model.export('.tflite/litert/' + name + '.tflite')
