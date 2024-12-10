@@ -268,7 +268,7 @@ void benchmark(
     // 4. simd_percentage
     // 5. branch_percentage
     pe0.config = ARMV8_PMUV3_PERFCTR_INST_RETIRED;
-#if 1
+#if 0
     pe1.config = ARMV8_PMUV3_PERFCTR_CPU_CYCLES;
     pe2.config = ARMV8_PMUV3_PERFCTR_STALL_BACKEND;
     pe3.config = ARMV8_AMU_PERFCTR_STALL_BACKEND_MEM;
@@ -281,7 +281,9 @@ void benchmark(
     pe3.config = ARMV8_IMPDEF_PERFCTR_DP_SPEC;
     pe4.config = ARMV8_IMPDEF_PERFCTR_ASE_SPEC;
     pe5.config = ARMV8_IMPDEF_PERFCTR_BR_IMMED_SPEC;
-    pe6.config = ARMV8_IMPDEF_PERFCTR_BR_INDIRECT_SPEC;
+    // since we don't care indirect branch too much
+    // pe6.config = ARMV8_IMPDEF_PERFCTR_BR_INDIRECT_SPEC;
+    pe6.config = ARMV8_PMUV3_PERFCTR_CPU_CYCLES;
 #endif
 
     // Create the events
@@ -382,7 +384,7 @@ void benchmark(
     read(fd6, &count[6], sizeof(count[6]));
     // Clean up file descriptor
     close(fd0); close(fd1); close(fd2); close(fd3); close(fd4); close(fd5); close(fd6);
-#if 1
+#if 0
     std::cout << "insn= " << count[0]/10 << "; cyc= " << count[1]/10 << std::endl;
     std::cout << "backend_stalled_cycles= " << count[2]*1.0/count[1]*100;
     std::cout << "; backend_stalled_mem= "  << count[3]*1.0/count[1]*100;
@@ -390,11 +392,18 @@ void benchmark(
     std::cout << "; L2  Cache MPKI= "       << count[5]*1.0/count[0]*1000;
     std::cout << "; LL  Cache Read MPKI= "  << count[6]*1.0/count[0]*1000 << std::endl;
 #else
+    std::cout << "insn= " << count[0]/10 << "; cyc= " << count[6]/10 << "; IPC= " << count[0]*1.0/count[6] << std::endl;
+    std::cout << "load_insn= "         << count[1]/10;
+    std::cout << "; store_insn= "      << count[2]/10;
+    std::cout << "; integer_dp_insn= " << count[3]/10;
+    std::cout << "; simd_insn= "       << count[4]/10;
+    std::cout << "; imm_branch_insn= " << count[5]/10<< std::endl;
     std::cout << "load_percentage= "         << count[1]*1.0/count[0]*100;
     std::cout << "; store_percentage= "      << count[2]*1.0/count[0]*100;
     std::cout << "; integer_dp_percentage= " << count[3]*1.0/count[0]*100;
     std::cout << "; simd_percentage= "       << count[4]*1.0/count[0]*100;
-    std::cout << "; branch_percentage= " << (count[5]+count[6])*1.0/count[0]*100 << std::endl;
+    // std::cout << "; branch_percentage= " << (count[5]+count[6])*1.0/count[0]*100 << std::endl;
+    std::cout << "; branch_percentage= " << 100-(count[1]+count[2]+count[3]+count[4])*1.0/count[0]*100 << std::endl;
 #endif
 #else
     float time_max = *std::max_element(time_list.begin(), time_list.end());
