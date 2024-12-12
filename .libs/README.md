@@ -1206,6 +1206,7 @@ git checkout 2024.4.0
 cd openvino
 git submodule update --init --recursive
 mkdir build && cd build
+export CXXFLAGS="-Wno-error=dangling-reference"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=$PWD/../install ..
 cmake --build . --target install --parallel 8
 ```
