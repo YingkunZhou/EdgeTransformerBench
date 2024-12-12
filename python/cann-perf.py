@@ -1,5 +1,7 @@
 """
 Reference code:
+- https://github.com/Ascend/samples
+- https://blog.csdn.net/m0_37605642/article/details/125691134
 """
 
 import os
@@ -15,6 +17,52 @@ ACL_MEM_MALLOC_HUGE_FIRST = 0
 ACL_MEMCPY_HOST_TO_DEVICE = 1
 ACL_MEMCPY_DEVICE_TO_HOST = 2
 
+# 6.实现管道读取订阅数据的函数。
+# 6.1 自定义函数，实现从用户内存中读取订阅数据的函数。
+def get_model_info(data, data_len):
+    # 获取算子信息个数。
+    op_number, ret = acl.prof.get_op_num(data, data_len)
+    # 遍历用户内存的算子信息。
+    for i in range(op_number):
+        # 获取算子的模型id。
+        # model_id = acl.prof.get_model_id(data, data_len, i)
+        # 获取算子的类型名称。
+        op_type, ret = acl.prof.get_op_type(data, data_len, i, 65)
+        # 获取算子的名称。
+        op_name, ret = acl.prof.get_op_name(data, data_len, i, 275)
+        # 获取算子的执行开始时间。
+        # op_start = acl.prof.get_op_start(data, data_len, i)
+        # 获取算子的执行结束时间。
+        # op_end = acl.prof.get_op_end(data, data_len, i)
+        # 获取算子执行的耗时时间。
+        # https://www.hiascend.com/doc_center/source/zh/canncommercial/80RC3/apiref/appdevgapi/aclpythondevg_01_0885.html
+        op_duration = acl.prof.get_op_duration(data, data_len, i)
+        print(op_type, op_name, op_duration)
+
+# 6.2 自定义函数，实现从管道中读取数据到用户内存的函数。
+def prof_data_read(args):
+    fd, ctx = args
+    ret = acl.rt.set_context(ctx)
+    # 获取单位算子信息的大小（Byte）。
+    buffer_size, ret = acl.prof.get_op_desc_size()
+    # 设置每次从管道中读取的算子信息个数。
+    N = 10
+    # 计算存储算子信息的内存的大小。
+    data_len = buffer_size * N
+    # 从管道中读取数据到申请的内存中，读取到的实际数据大小可能小于buffer_size * N，如果管道中没有数据，默认会阻塞直到读取到数据为止。
+    while True:
+        data = os.read(fd, data_len)
+        if len(data) == 0:
+            break
+        np_data = np.array(data)
+
+        bytes_data = np_data.tobytes()
+        np_data_ptr = acl.util.bytes_to_ptr(bytes_data)
+        size = np_data.itemsize * np_data.size
+        # 调用6.1实现的函数解析内存中的数据。
+        get_model_info(np_data_ptr, size)
+
+
 class net:
     def __init__(self, model_path):
         self.device_id = 0
@@ -24,6 +72,8 @@ class net:
         # check_ret("acl.init", ret)
         # set device id
         ret = acl.rt.set_device(self.device_id)
+        # https://github.com/search?q=repo%3AAscend%2Fsamples+context+language%3APython&type=code&l=Python
+        self.context, ret = acl.rt.create_context(self.device_id)
 
         # step2: load offline model and return model ID
         self.model_id, ret = acl.mdl.load_from_file(model_path)
@@ -130,6 +180,8 @@ def get_args_parser():
     # Dataset parameters
     parser.add_argument('--validation', action='store_true', default=False)
     parser.add_argument('--data-path', default='imagenet-div50', type=str, help='dataset path')
+
+    parser.add_argument('--profile', action='store_true', default=False)
 
     return parser
 
@@ -248,15 +300,37 @@ if __name__ == '__main__':
             val, idx = outputs.topk(3)
             print(list(zip(idx[0].tolist(), val[0].tolist())))
 
-            time_list = []
-            while sum(time_list) < TEST_SEC:
-                start = time.perf_counter()
+            if args.profile:
+                # https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/inferapplicationdev/aclpythondevg/aclpythondevg_0128.html
+                # 4.创建管道，用于读取以及写入模型订阅的数据。
+                r, w = os.pipe()
+
+                # 5.创建模型订阅的配置并且进行模型订阅。
+                ACL_AICORE_NONE = 0xFF
+                subscribe_config = acl.prof.create_subscribe_config(1, ACL_AICORE_NONE, w)
+                # 模型订阅需要传入模型的model_id。
+                ret = acl.prof.model_subscribe(om_net.model_id, subscribe_config)
+                # 7.启动线程读取管道数据并解析。
+                thr_id, ret = acl.util.start_thread(prof_data_read, [r, om_net.context])
+
                 om_net.forward(images)
-                time_list.append(time.perf_counter() - start)
-            time_max = max(time_list) * 1000
-            time_min = min(time_list) * 1000
-            time_mean   = np.mean(time_list)   * 1000
-            time_median = np.median(time_list) * 1000
-            print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
+
+                # 11.取消订阅，释放订阅相关资源。
+                acl.prof.model_un_subscribe(om_net.model_id)
+                acl.util.stop_thread(thr_id)
+                os.close(r)
+                ret = acl.prof.destroy_subscribe_config(subscribe_config)
+            else:
+                time_list = []
+                while sum(time_list) < TEST_SEC:
+                    start = time.perf_counter()
+                    om_net.forward(images)
+                    time_list.append(time.perf_counter() - start)
+
+                time_max = max(time_list) * 1000
+                time_min = min(time_list) * 1000
+                time_mean   = np.mean(time_list)   * 1000
+                time_median = np.median(time_list) * 1000
+                print("min = {:7.2f}ms  max = {:7.2f}ms  mean = {:7.2f}ms, median = {:7.2f}ms".format(time_min, time_max, time_mean, time_median))
 
         if args.extern_model: break
