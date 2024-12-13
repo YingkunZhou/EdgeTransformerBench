@@ -189,27 +189,27 @@ bin/tflite-perf-test: src/tflite-perf.cpp $(DEPS)
 	$(ARMNN_FLAGS) $(GPU_FLAGS) $(NNAPI_FLAGS)
 
 run-tflite-perf: bin/tflite-perf
-	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
+	LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
 	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 validation-tflite: bin/tflite-perf
-	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
+	LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
 	bin/tflite-perf --only-test $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) $(VAL_EXTRA)
 
 tflite-model-perf: bin/tflite-perf
-	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
+	LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
 	bin/tflite-perf --model $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP) --size $(SIZE)
 
 tflite-model-validation: bin/tflite-perf
-	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
+	LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
 	bin/tflite-perf --model $(MODEL) --backend $(BACK) --validation --threads $(THREADS) --fp $(FP) --size $(SIZE) $(VAL_EXTRA)
 
 test-tflite-perf: bin/tflite-perf-test
-	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
+	LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
 	bin/tflite-perf-test --only-test $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP)
 
 tflite-model-test: bin/tflite-perf-test
-	LD_PRELOAD=$(TFLITE_LIB)/libtensorflowlite_flex.so LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
+	LD_LIBRARY_PATH=$(TFLITE_LIB):$(LD_LIBRARY_PATH) \
 	bin/tflite-perf-test --model $(MODEL) --backend $(BACK) --threads $(THREADS) --fp $(FP) --size $(SIZE)
 
 ########################
