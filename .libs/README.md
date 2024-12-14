@@ -1186,7 +1186,7 @@ cat /etc/nv_tegra_release
 
 # CoreML
 
-- MacOS==14.1
+- MacOS==14.3.1
 - torch=2.2.0
 - coremltools==7.1
 
