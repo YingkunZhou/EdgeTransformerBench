@@ -1,4 +1,27 @@
-# TensorFlow Lite Image Classification Demo
+# Quick start
+
+```bash
+cd $HOME
+wget https://mirrors.cloud.tencent.com/AndroidSDK/commandlinetools-linux-8512546_latest.zip
+unzip commandlinetools-linux-8512546_latest.zip
+mkdir android-sdk && cd android-sdk
+mkdir cmdline-tools
+mv ../cmdline-tools/ cmdline-tools/latest
+./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;34.0.0"
+export ANDROID_HOME=$HOME/android-sdk
+# gradlew neeed java17...
+sudo apt install openjdk-17-jdk
+cd - # cd back to android-app dir
+./gradlew assembleRelease #-Dhttp.proxyHost=xxx -Dhttp.proxyPort=xxx -Dhttps.proxyHost=xxx -Dhttps.proxyPort=xxx
+keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias
+$ANDROID_HOME/build-tools/30.0.3/apksigner sign --ks my-release-key.jks --out app-release.apk ./app/build/outputs/apk/release/app-release-unsigned.apk
+# now you get app-release.apk which can adb install into your android phones
+# or simply build debug version apk
+./gradlew assembleDebug
+```
+
+
+# TensorFlow Lite Image Classification Demo (original from `tensorflow/examples` and has been minor modified by myself to support models in ETBench)
 
 ### Overview
 
