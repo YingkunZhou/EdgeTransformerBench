@@ -1,5 +1,7 @@
 # Quick start
 
+Added since [v3.0](https://github.com/YingkunZhou/EdgeTransformerBench/releases/tag/v3.0)
+
 ```bash
 cd $HOME
 wget https://mirrors.cloud.tencent.com/AndroidSDK/commandlinetools-linux-8512546_latest.zip
