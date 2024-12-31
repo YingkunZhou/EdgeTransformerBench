@@ -20,6 +20,7 @@ def get_args_parser():
     parser.add_argument('--only-test', default='', type=str, help='only test a certain model series')
     parser.add_argument('--compute', default='', type=str, help='Apple soc compute units')
     parser.add_argument('--sleep', default=0, type=int, help='sleep seconds for earch model test')
+    parser.add_argument('--prune', default='', type=str, help='[threshold, magnitude, n_m_ratio]')
 
     return parser
 
@@ -158,6 +159,39 @@ if __name__ == '__main__':
         if args.format == 'fp16':
             mlmodel = ct.models.MLModel(model=".coreml/fp16/"+name+".mlpackage",
                                         compute_units=compute_units)
+            if args.prune != '':
+                from coremltools.optimize.coreml import (
+                    OpMagnitudePrunerConfig,
+                    OpThresholdPrunerConfig,
+                    OptimizationConfig,
+                    prune_weights,
+                )
+                if args.prune == 'threshold':
+                    global_config=OpThresholdPrunerConfig(
+                        threshold=0.02
+                    )
+                elif args.prune == 'magnitude':
+                    global_config = OpMagnitudePrunerConfig(
+                        target_sparsity=0.25,
+                        weight_threshold=1024,
+                    )
+                else:
+                    global_config = OpMagnitudePrunerConfig(
+                        n_m_ratio=[2, 8]
+                    )
+                if args.prune == 'threshold':
+                    config = OptimizationConfig(
+                        global_config=global_config
+                    )
+                else:
+                    linear_config = OpMagnitudePrunerConfig(target_sparsity=0.05)
+                    config = OptimizationConfig(
+                        global_config=global_config,
+                        op_type_configs={"linear": linear_config},
+                        op_name_configs={"fc": None}
+                    )
+                mlmodel = prune_weights(mlmodel, config=config)
+                mlmodel.save(name+".mlpackage")
         else:
             mlmodel = ct.models.MLModel(model=".coreml/int8/"+name+".mlpackage",
                                         compute_units=compute_units)
