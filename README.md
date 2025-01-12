@@ -1,5 +1,7 @@
 # EdgeTransformerPerf (ETBench)
 
+Please check [tutorials.md](https://github.com/YingkunZhou/EdgeTransformerBench/blob/main/tutorials.md) to figure out how to use ETBench for latest models assessment on Linux, Android, Macos and Windows across various CPUs/GPUs/NPUS.
+
 Edge/mobile CNN+Transformer hybrid DNN backbone inference benchmark (currently only for computer vision task)
 
 we filter the model which satisfy one of the condition below:
