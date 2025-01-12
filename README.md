@@ -4,7 +4,7 @@ Please check [tutorials.md](https://github.com/YingkunZhou/EdgeTransformerBench/
 
 Edge/mobile CNN+Transformer hybrid DNN backbone inference benchmark (currently only for computer vision task)
 
-we filter the model which satisfy one of the condition below:
+we filter out the model which satisfy one of the condition below:
 - #params > 15M (for FP32 model > 60M) which is too large for edge/mobile devices.
 - GMACs > 2G for low computational power edge devices, it is beyond their capacity to sustain, especially in scenarios that require real-time processing.
 
