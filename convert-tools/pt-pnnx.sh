@@ -4,15 +4,29 @@ pt_ncnn()
     MODEL=$2
     SHAPE=$1
     ROOT=$PWD
+
     mkdir -p .ncnn/fp16 && cd .ncnn/fp16
     ln -s $ROOT/.pt/fp32/$MODEL.pt .
-    $ROOT/.libs/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE fp16=1
+    $ROOT/pnnx-20250819-linux/pnnx $MODEL.pt inputshape=$SHAPE fp16=1
+    cd -
 
     mkdir -p .ncnn/fp32 && cd .ncnn/fp32
     ln -s $ROOT/.pt/fp32/$MODEL.pt .
-    $ROOT/.libs/ncnn/tools/pnnx/build/src/pnnx $MODEL.pt inputshape=$SHAPE fp16=0
+    $ROOT/pnnx-20250819-linux/pnnx $MODEL.pt inputshape=$SHAPE fp16=0
     cd -
 }
+
+# To avoid build pnnx by myself with symbol not found buges!!!!!
+# Use the official prebuilt pnnx binary
+if [ ! -d "pnnx-20250819-linux" ]
+then
+    if [ ! -f "pnnx-20250819-linux.zip" ]
+    then
+        # https://github.com/pnnx/pnnx/releases
+        wget https://github.com/pnnx/pnnx/releases/download/20250819/pnnx-20250819-linux.zip
+    fi
+    unzip pnnx-20250819-linux.zip
+fi
 
 pt_ncnn [1,3,224,224] efficientformerv2_s0
 pt_ncnn [1,3,224,224] efficientformerv2_s1
