@@ -121,7 +121,7 @@ if __name__ == '__main__':
                 print("============Extracting weights============")
                 subprocess.run(['tar', 'xf', 'EdgeTransformerPerf-weights.tar'])
 
-            weights_dict = torch.load('weights/'+weight, map_location="cpu")
+            weights_dict = torch.load('weights/'+weight, map_location="cpu", weights_only=False)
             # print(weights_dict.keys())
 
             if "state_dict" in weights_dict:

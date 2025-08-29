@@ -1,1 +1,1 @@
-.convert-pt.sh
+.convert.sh
