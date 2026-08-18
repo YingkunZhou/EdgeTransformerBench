@@ -1,3 +1,5 @@
+
+
 # EdgeTransformerPerf (ETBench)
 
 Please check [tutorials.md](https://github.com/YingkunZhou/EdgeTransformerBench/blob/main/tutorials.md) to figure out how to use ETBench for latest models assessment on Linux, Android, Macos and Windows across various CPUs/GPUs/NPUS.
@@ -8,7 +10,7 @@ we filter out the model which satisfy one of the condition below:
 - #params > 15M (for FP32 model > 60M) which is too large for edge/mobile devices.
 - GMACs > 2G for low computational power edge devices, it is beyond their capacity to sustain, especially in scenarios that require real-time processing.
 
-| Model | Top-1 |  [Top-1 <br />//20 est.](https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v0.0/imagenet-div20.tar) | [Top-1 <br />//50 est.](https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v0.0/imagenet-div50.tar) | #params | GMACs | wight
+| Model | Top-1 |  [Top-1 <br />//20 est.](https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v0.0/imagenet-div20.tar) | [Top-1 <br />//50 est.](https://github.com/YingkunZhou/EdgeTransformerBench/releases/download/v0.0/imagenet-div50.tar) | #params | GMACs | weight
 |:---------------|:----:|:---:|:--:|:--:|:--:|:--:|
 | [efficientformerv2_s0](https://arxiv.org/abs/2212.08059) |   76.2   |  76.3  | 76.0 |  3.5M    |   0.40G   | [eformer_s0_450.pth](https://drive.google.com/file/d/1PXb7b9pv9ZB4cfkRkYEdwgWuVwvEiazq/view?usp=share_link) |
 | efficientformerv2_s1 |   79.7   |  78.8  | 79.6 |  6.1M    |   0.65G   | [eformer_s1_450.pth](https://drive.google.com/file/d/1EKe1vt-3mG7iceVIMaET_DyISzVTJMn8/view?usp=share_link) |
@@ -46,7 +48,7 @@ we filter out the model which satisfy one of the condition below:
 
 ## Traditional CNN
 
-| Model | Top-1 |  Top-1 <br />//20 est. | Top-1 <br />//50 est. | #params | [GMACs](https://github.com/da2so/efficientnetv2) | wight
+| Model | Top-1 |  Top-1 <br />//20 est. | Top-1 <br />//50 est. | #params | [GMACs](https://github.com/da2so/efficientnetv2) | weight
 |:---------------|:----:|:---:|:--:|:--:|:--:|:--:|
 |resnet50 | 80.4 | 80.3 | 81.1 | 25.6M | 4.1G |
 ||
